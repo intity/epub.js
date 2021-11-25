@@ -2,44 +2,47 @@ import {uuid, isNumber, isElement, windowBounds, extend} from "../../utils/core"
 import throttle from 'lodash/throttle'
 
 class Stage {
-	constructor(_options) {
-		this.settings = _options || {};
-		this.id = "epubjs-container-" + uuid();
+	constructor(options) {
 
-		this.container = this.create(this.settings);
+		this.settings = options || {};
+		
+		if (this.settings.view === "iframe") {
+			this.id = "epubjs-container" + uuid();;
+			this.container = this.create(this.settings);
 
-		if(this.settings.hidden) {
-			this.wrapper = this.wrap(this.container);
+			if(this.settings.hidden) {
+				this.wrapper = this.wrap(this.container);
+			}
 		}
-
 	}
 
 	/*
 	* Creates an element to render to.
 	* Resizes to passed width and height or to the elements size
 	*/
-	create(options){
-		let height  = options.height;// !== false ? options.height : "100%";
-		let width   = options.width;// !== false ? options.width : "100%";
-		let overflow  = options.overflow || false;
+	create(options) {
+
+		let height = options.height;// !== false ? options.height : "100%";
+		let width = options.width;// !== false ? options.width : "100%";
+		let overflow = options.overflow || false;
 		let axis = options.axis || "vertical";
 		let direction = options.direction;
 
 		extend(this.settings, options);
 
-		if(options.height && isNumber(options.height)) {
+		if (options.height && isNumber(options.height)) {
 			height = options.height + "px";
 		}
 
-		if(options.width && isNumber(options.width)) {
+		if (options.width && isNumber(options.width)) {
 			width = options.width + "px";
 		}
 
 		// Create new container element
-		let container = document.createElement("div");
+		const container = document.createElement("div");
 
 		container.id = this.id;
-		container.classList.add("epub-container");
+		//container.classList.add("epub-container");
 
 		// Style Element
 		// container.style.fontSize = "0";
@@ -48,18 +51,18 @@ class Stage {
 		container.style.verticalAlign = "top";
 		container.style.position = "relative";
 
-		if(axis === "horizontal") {
+		if (axis === "horizontal") {
 			// container.style.whiteSpace = "nowrap";
 			container.style.display = "flex";
 			container.style.flexDirection = "row";
 			container.style.flexWrap = "nowrap";
 		}
 
-		if(width){
+		if (width) {
 			container.style.width = width;
 		}
 
-		if(height){
+		if (height) {
 			container.style.height = height;
 		}
 
@@ -88,7 +91,8 @@ class Stage {
 	}
 
 	wrap(container) {
-		var wrapper = document.createElement("div");
+
+		const wrapper = document.createElement("div");
 
 		wrapper.style.visibility = "hidden";
 		wrapper.style.overflow = "hidden";
@@ -99,76 +103,76 @@ class Stage {
 		return wrapper;
 	}
 
+	getElement(element) {
 
-	getElement(_element){
-		var element;
+		let _element;
 
-		if(isElement(_element)) {
-			element = _element;
-		} else if (typeof _element === "string") {
-			element = document.getElementById(_element);
+		if (isElement(element)) {
+			_element = element;
+		} else if (typeof element === "string") {
+			_element = document.getElementById(element);
 		}
 
-		if(!element){
+		if (!_element) {
 			throw new Error("Not an Element");
 		}
 
-		return element;
+		return _element;
 	}
 
-	attachTo(what){
+	attachTo(element) {
 
-		var element = this.getElement(what);
-		var base;
+		const _element = this.getElement(element);
 
-		if(!element){
+		if (!_element) {
 			return;
 		}
 
-		if(this.settings.hidden) {
-			base = this.wrapper;
+		if (this.settings.view === "inline") {
+			this.container = _element;
 		} else {
-			base = this.container;
+			let base;
+			if (this.settings.hidden) {
+				base = this.wrapper;
+			} else {
+				base = this.container;
+			}
+
+			_element.appendChild(base);
+			this.element = _element;
 		}
-
-		element.appendChild(base);
-
-		this.element = element;
-
-		return element;
-
+		return _element;
 	}
 
 	getContainer() {
 		return this.container;
 	}
 
-	onResize(func){
+	onResize(func) {
 		// Only listen to window for resize event if width and height are not fixed.
 		// This applies if it is set to a percent or auto.
-		if(!isNumber(this.settings.width) ||
-			 !isNumber(this.settings.height) ) {
+		if (!isNumber(this.settings.width) ||
+			!isNumber(this.settings.height)) {
 			this.resizeFunc = throttle(func, 50);
 			window.addEventListener("resize", this.resizeFunc, false);
 		}
-
 	}
 
-	onOrientationChange(func){
+	onOrientationChange(func) {
 		this.orientationChangeFunc = func;
 		window.addEventListener("orientationchange", this.orientationChangeFunc, false);
 	}
 
-	size(width, height){
-		var bounds;
+	size(width, height) {
+		let bounds;
 		let _width = width || this.settings.width;
 		let _height = height || this.settings.height;
 
 		// If width or height are set to false, inherit them from containing element
-		if(width === null) {
+		if (width === null) {
 			bounds = this.element.getBoundingClientRect();
 
-			if(bounds.width) {
+			if (bounds.width) {
 				width = Math.floor(bounds.width);
 				this.container.style.width = width + "px";
 			}
@@ -180,10 +184,10 @@ class Stage {
 			}
 		}
 
-		if(height === null) {
+		if (height === null) {
 			bounds = bounds || this.element.getBoundingClientRect();
 
-			if(bounds.height) {
+			if (bounds.height) {
 				height = bounds.height;
 				this.container.style.height = height + "px";
 			}
@@ -196,72 +200,63 @@ class Stage {
 			}
 		}
 
-		if(!isNumber(width)) {
+		if (!isNumber(width)) {
 			width = this.container.clientWidth;
 		}
 
-		if(!isNumber(height)) {
+		if (!isNumber(height)) {
 			height = this.container.clientHeight;
 		}
 
-		this.containerStyles = window.getComputedStyle(this.container);
-
-		this.containerPadding = {
-			left: parseFloat(this.containerStyles["padding-left"]) || 0,
-			right: parseFloat(this.containerStyles["padding-right"]) || 0,
-			top: parseFloat(this.containerStyles["padding-top"]) || 0,
-			bottom: parseFloat(this.containerStyles["padding-bottom"]) || 0
+		const containerStyles = window.getComputedStyle(this.container);
+		const containerPadding = {
+			left:   parseFloat(containerStyles["padding-left"]) || 0,
+			right:  parseFloat(containerStyles["padding-right"]) || 0,
+			top:    parseFloat(containerStyles["padding-top"]) || 0,
+			bottom: parseFloat(containerStyles["padding-bottom"]) || 0
 		};
 
 		// Bounds not set, get them from window
 		let _windowBounds = windowBounds();
-		let bodyStyles = window.getComputedStyle(document.body);
-		let bodyPadding = {
-			left: parseFloat(bodyStyles["padding-left"]) || 0,
-			right: parseFloat(bodyStyles["padding-right"]) || 0,
-			top: parseFloat(bodyStyles["padding-top"]) || 0,
+		const bodyStyles = window.getComputedStyle(document.body);
+		const bodyPadding = {
+			left:   parseFloat(bodyStyles["padding-left"]) || 0,
+			right:  parseFloat(bodyStyles["padding-right"]) || 0,
+			top:    parseFloat(bodyStyles["padding-top"]) || 0,
 			bottom: parseFloat(bodyStyles["padding-bottom"]) || 0
 		};
 
 		if (!_width) {
-			width = _windowBounds.width -
-								bodyPadding.left -
-								bodyPadding.right;
+			width = _windowBounds.width - bodyPadding.left - bodyPadding.right;
 		}
 
 		if ((this.settings.fullsize && !_height) || !_height) {
-			height = _windowBounds.height -
-								bodyPadding.top -
-								bodyPadding.bottom;
+			height = _windowBounds.height - bodyPadding.top - bodyPadding.bottom;
 		}
 
 		return {
-			width: width -
-							this.containerPadding.left -
-							this.containerPadding.right,
-			height: height -
-							this.containerPadding.top -
-							this.containerPadding.bottom
+			width: width - containerPadding.left - containerPadding.right,
+			height: height - containerPadding.top - containerPadding.bottom
 		};
-
 	}
 
-	bounds(){
+	bounds() {
+
 		let box;
 		if (this.container.style.overflow !== "visible") {
 			box = this.container && this.container.getBoundingClientRect();
 		}
 
-		if(!box || !box.width || !box.height) {
+		if (!box || !box.width || !box.height) {
 			return windowBounds();
 		} else {
 			return box;
 		}
-
 	}
 
-	getSheet(){
-		var style = document.createElement("style");
+	getSheet() {
+
+		const style = document.createElement("style");
 
 		// WebKit hack --> https://davidwalsh.name/add-rules-stylesheets
 		style.appendChild(document.createTextNode(""));
@@ -271,17 +266,18 @@ class Stage {
 		return style.sheet;
 	}
 
-	addStyleRules(selector, rulesArray){
-		var scope = "#" + this.id + " ";
-		var rules = "";
+	addStyleRules(selector, rulesArray) {
 
-		if(!this.sheet){
+		let scope = "#" + this.id + " ";
+		let rules = "";
+
+		if (!this.sheet) {
 			this.sheet = this.getSheet();
 		}
 
-		rulesArray.forEach(function(set) {
-			for (var prop in set) {
-				if(set.hasOwnProperty(prop)) {
+		rulesArray.forEach(function (set) {
+			for (let prop in set) {
+				if (set.hasOwnProperty(prop)) {
 					rules += prop + ":" + set[prop] + ";";
 				}
 			}
@@ -291,7 +287,8 @@ class Stage {
 	}
 
 	axis(axis) {
-		if(axis === "horizontal") {
+
+		if (axis === "horizontal") {
 			this.container.style.display = "flex";
 			this.container.style.flexDirection = "row";
 			this.container.style.flexWrap = "nowrap";
@@ -312,11 +309,11 @@ class Stage {
 	// }
 
 	direction(dir) {
+
 		if (this.container) {
 			this.container.dir = dir;
 			this.container.style["direction"] = dir;
 		}
-
 		if (this.settings.fullsize) {
 			document.body.style["direction"] = dir;
 		}
@@ -324,6 +321,7 @@ class Stage {
 	}
 
 	overflow(overflow) {
+
 		if (this.container) {
 			if (overflow === "scroll" && this.settings.axis === "vertical") {
 				this.container.style["overflow-y"] = overflow;
@@ -339,23 +337,22 @@ class Stage {
 	}
 
 	destroy() {
-		var base;
+		let base;
 
 		if (this.element) {
 
-			if(this.settings.hidden) {
+			if (this.settings.hidden) {
 				base = this.wrapper;
 			} else {
 				base = this.container;
 			}
 
-			if(this.element.contains(this.container)) {
+			if (this.element.contains(this.container)) {
 				this.element.removeChild(this.container);
 			}
 
 			window.removeEventListener("resize", this.resizeFunc);
 			window.removeEventListener("orientationChange", this.orientationChangeFunc);
-
 		}
 	}
 }
