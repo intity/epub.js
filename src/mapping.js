@@ -23,8 +23,8 @@ class Mapping {
 	 */
 	section(view) {
 
-		var ranges = this.findRanges(view);
-		var map = this.rangeListToCfiList(view.section.cfiBase, ranges);
+		const ranges = this.findRanges(view);
+		const map = this.rangeListToCfiList(view.section.cfiBase, ranges);
 		return map;
 	}
 
@@ -37,26 +37,23 @@ class Mapping {
 	 */
 	page(contents, cfiBase, start, end) {
 
-		var root = contents && contents.content ? contents.content : false;
-		//var root = contents && contents.document ? contents.document.body : false;
-		var result;
-
+		const root = contents && contents.content ? contents.content : false;
 		if (!root) {
 			return;
 		}
 
-		result = this.rangePairToCfiPair(cfiBase, {
+		const result = this.rangePairToCfiPair(cfiBase, {
 			start: this.findStart(root, start, end),
 			end: this.findEnd(root, start, end)
 		});
 
 		if (this._dev === true) {
-			let doc = contents.document;
-			let startRange = new EpubCFI(result.start).toRange(doc);
-			let endRange = new EpubCFI(result.end).toRange(doc);
+			const doc = contents.document;
+			const startRange = new EpubCFI(result.start).toRange(doc);
+			const endRange = new EpubCFI(result.end).toRange(doc);
 
-			let selection = doc.defaultView.getSelection();
-			let r = doc.createRange();
+			const selection = doc.defaultView.getSelection();
+			const r = doc.createRange();
 			selection.removeAllRanges();
 			r.setStart(startRange.startContainer, startRange.startOffset);
 			r.setEnd(endRange.endContainer, endRange.endOffset);
@@ -82,7 +79,7 @@ class Mapping {
 		}
 		// safeFilter is required so that it can work in IE as filter is a function for IE
 		// and for other browser filter is an object.
-		var filter = {
+		const filter = {
 			acceptNode: function (node) {
 				if (node.data.trim().length > 0) {
 					return NodeFilter.FILTER_ACCEPT;
@@ -91,12 +88,12 @@ class Mapping {
 				}
 			}
 		};
-		var safeFilter = filter.acceptNode;
+		const safeFilter = filter.acceptNode;
 		safeFilter.acceptNode = filter.acceptNode;
 
-		var treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, safeFilter, false);
-		var node;
-		var result;
+		const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, safeFilter, false);
+		let node;
+		let result;
 		while ((node = treeWalker.nextNode())) {
 			result = func(node);
 			if (result) break;
@@ -107,17 +104,16 @@ class Mapping {
 
 	findRanges(view) {
 
-		var columns = [];
-		var scrollWidth = view.contents.scrollWidth();
-		var spreads = Math.ceil(scrollWidth / this.layout.spreadWidth);
-		var count = spreads * this.layout.divisor;
-		var columnWidth = this.layout.columnWidth;
-		var gap = this.layout.gap;
-		var start, end;
+		const columns = [];
+		const scrollWidth = view.contents.scrollWidth();
+		const spreads = Math.ceil(scrollWidth / this.layout.spreadWidth);
+		const count = spreads * this.layout.divisor;
+		const columnWidth = this.layout.columnWidth;
+		const gap = this.layout.gap;
 
-		for (var i = 0; i < count.pages; i++) {
-			start = (columnWidth + gap) * i;
-			end = (columnWidth * (i + 1)) + (gap * i);
+		for (let i = 0; i < count.pages; i++) {
+			const start = (columnWidth + gap) * i;
+			const end = (columnWidth * (i + 1)) + (gap * i);
 			columns.push({
 				start: this.findStart(view.document.body, start, end),
 				end: this.findEnd(view.document.body, start, end)
@@ -137,21 +133,16 @@ class Mapping {
 	 */
 	findStart(root, start, end) {
 
-		var stack = [root];
-		var $el;
-		var found;
-		var $prev = root;
+		const stack = [root];
+		let $prev = root;
 
 		while (stack.length) {
 
-			$el = stack.shift();
+			const $el = stack.shift();
 
-			found = this.walk($el, (node) => {
-				var left, right, top, bottom;
-				var elPos;
-				var elRange;
-
-				elPos = nodeBounds(node);
+			const found = this.walk($el, (node) => {
+				let left, right, top, bottom;
+				const elPos = nodeBounds(node);
 
 				if (this.horizontal && this.direction === "ltr") {
 
@@ -216,22 +207,17 @@ class Mapping {
 	 */
 	findEnd(root, start, end) {
 
-		var stack = [root];
-		var $el;
-		var $prev = root;
-		var found;
+		const stack = [root];
+		let $prev = root;
 
 		while (stack.length) {
 
-			$el = stack.shift();
+			const $el = stack.shift();
 
-			found = this.walk($el, (node) => {
+			const found = this.walk($el, (node) => {
 
-				var left, right, top, bottom;
-				var elPos;
-				var elRange;
-
-				elPos = nodeBounds(node);
+				let left, right, top, bottom;
+				const elPos = nodeBounds(node);
 
 				if (this.horizontal && this.direction === "ltr") {
 
@@ -296,15 +282,13 @@ class Mapping {
 	 */
 	findTextStartRange(node, start, end) {
 
-		var ranges = this.splitTextNodeIntoRanges(node);
-		var range;
-		var pos;
-		var left, top, right;
+		const ranges = this.splitTextNodeIntoRanges(node);
+		let left, top, right;
 
-		for (var i = 0; i < ranges.length; i++) {
-			range = ranges[i];
+		for (let i = 0; i < ranges.length; i++) {
 
-			pos = range.getBoundingClientRect();
+			const range = ranges[i];
+			const pos = range.getBoundingClientRect();
 
 			if (this.horizontal && this.direction === "ltr") {
 
@@ -344,16 +328,14 @@ class Mapping {
 	 */
 	findTextEndRange(node, start, end) {
 
-		var ranges = this.splitTextNodeIntoRanges(node);
-		var prev;
-		var range;
-		var pos;
-		var left, right, top, bottom;
+		const ranges = this.splitTextNodeIntoRanges(node);
+		let prev;
+		let left, right, top, bottom;
 
-		for (var i = 0; i < ranges.length; i++) {
-			range = ranges[i];
+		for (let i = 0; i < ranges.length; i++) {
 
-			pos = range.getBoundingClientRect();
+			const range = ranges[i];
+			const pos = range.getBoundingClientRect();
 
 			if (this.horizontal && this.direction === "ltr") {
 
@@ -405,14 +387,14 @@ class Mapping {
 	 */
 	splitTextNodeIntoRanges(node, _splitter) {
 
-		var ranges = [];
-		var textContent = node.textContent || "";
-		var text = textContent.trim();
-		var range;
-		var doc = node.ownerDocument;
-		var splitter = _splitter || " ";
+		const ranges = [];
+		const textContent = node.textContent || "";
+		const text = textContent.trim();
+		const doc = node.ownerDocument;
+		const splitter = _splitter || " ";
 
-		var pos = text.indexOf(splitter);
+		let pos = text.indexOf(splitter);
+		let range;
 
 		if (pos === -1 || node.nodeType != Node.TEXT_NODE) {
 			range = doc.createRange();
@@ -459,14 +441,14 @@ class Mapping {
 	 */
 	rangePairToCfiPair(cfiBase, rangePair) {
 
-		var startRange = rangePair.start;
-		var endRange = rangePair.end;
+		const startRange = rangePair.start;
+		const endRange = rangePair.end;
 
 		startRange.collapse(true);
 		endRange.collapse(false);
 
-		let startCfi = new EpubCFI(startRange, cfiBase).toString();
-		let endCfi = new EpubCFI(endRange, cfiBase).toString();
+		const startCfi = new EpubCFI(startRange, cfiBase).toString();
+		const endCfi = new EpubCFI(endRange, cfiBase).toString();
 
 		return {
 			start: startCfi,
@@ -476,12 +458,11 @@ class Mapping {
 
 	rangeListToCfiList(cfiBase, columns) {
 
-		var map = [];
-		var cifPair;
+		const map = [];
 
-		for (var i = 0; i < columns.length; i++) {
+		for (let i = 0; i < columns.length; i++) {
 
-			cifPair = this.rangePairToCfiPair(cfiBase, columns[i]);
+			const cifPair = this.rangePairToCfiPair(cfiBase, columns[i]);
 			map.push(cifPair);
 		}
 
@@ -494,6 +475,7 @@ class Mapping {
 	 * @return {boolean} is it horizontal?
 	 */
 	axis(axis) {
+
 		if (axis) {
 			this.horizontal = (axis === "horizontal") ? true : false;
 		}
