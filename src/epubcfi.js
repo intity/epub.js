@@ -275,7 +275,7 @@ class EpubCFI {
 				segment += 1 + (2 * part.index); // TODO: double check that this is odd
 			}
 
-			if(part.id) {
+			if(part.id && part.id !== "inline-view") {
 				segment += "[" + part.id + "]";
 			}
 
@@ -449,8 +449,7 @@ class EpubCFI {
 		var currentNode = node;
 		var step;
 
-		while(currentNode && currentNode.parentNode &&
-					currentNode.parentNode.nodeType != DOCUMENT_NODE) {
+		while(this.requiredPosition(currentNode)) {
 
 			if (ignoreClass) {
 				step = this.filteredStep(currentNode, ignoreClass);
@@ -482,6 +481,18 @@ class EpubCFI {
 
 
 		return segment;
+	}
+
+	requiredPosition(node) {
+
+		if (node && node.parentNode) {
+			if (node.ownerDocument.isEqualNode(document)) {
+				return node.id !== "viewer";
+			} else {
+				return node.parentNode.nodeType !== DOCUMENT_NODE;
+			}
+		}
+		return false;
 	}
 
 	equalStep(stepA, stepB) {
