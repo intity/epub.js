@@ -883,12 +883,16 @@ class EpubCFI {
 
 	findNode(steps, _doc, ignoreClass) {
 		var doc = _doc || document;
+		var element = doc;
 		var container;
 		var xpath;
 
 		if(!ignoreClass && typeof doc.evaluate != "undefined") {
 			xpath = this.stepsToXpath(steps);
-			container = doc.evaluate(xpath, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+			if (doc === cocument) {
+				element = doc.querySelector("#viewer").parentNode;
+			}
+			container = doc.evaluate(xpath, element, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 		} else if(ignoreClass) {
 			container = this.walkToNode(steps, doc, ignoreClass);
 		} else {
