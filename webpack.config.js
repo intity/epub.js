@@ -1,41 +1,23 @@
-var webpack = require("webpack");
-var path = require("path");
-var PROD = (process.env.NODE_ENV === "production")
-var LEGACY = (process.env.LEGACY)
-var MINIMIZE = (process.env.MINIMIZE === "true")
-var hostname = "localhost";
-var port = 8080;
+const webpack = require("webpack");
+const path = require("path");
 
-var filename = "[name]";
-var sourceMapFilename = "[name]";
-if (LEGACY) {
-	filename += ".legacy";
-}
-if (MINIMIZE) {
-	filename += ".min.js";
-	sourceMapFilename += ".min.js.map";
-} else {
-	filename += ".js";
-	sourceMapFilename += ".js.map";
-}
-
-module.exports = {
-	mode: process.env.NODE_ENV,
+const config = {
+	mode: "development",
 	entry: {
 		"epub": "./src/epub.js",
 	},
-	devtool: MINIMIZE ? false : 'source-map',
+	devtool: "source-map",
 	output: {
 		path: path.resolve("./dist"),
-		filename: filename,
-		sourceMapFilename: sourceMapFilename,
+		filename: "[name].js",
+		sourceMapFilename: "[name].js.map",
 		library: "ePub",
 		libraryTarget: "umd",
 		libraryExport: "default",
 		publicPath: "/dist/"
 	},
 	optimization: {
-		minimize: MINIMIZE
+		minimize: false
 	},
 	externals: {
 		"jszip/dist/jszip": "JSZip",
@@ -48,9 +30,8 @@ module.exports = {
 		}
 	},
 	devServer: {
-		host: hostname,
-		port: port,
-		inline: true,
+		host: "localhost",
+		port: 8080,
 		headers: {
 			"Access-Control-Allow-Origin": "*",
 			"Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
@@ -66,7 +47,7 @@ module.exports = {
 					loader: "babel-loader",
 					options: {
 						presets: [["@babel/preset-env", {
-							targets: LEGACY ? "defaults" : "last 2 Chrome versions, last 2 Safari versions, last 2 ChromeAndroid versions, last 2 iOS versions, last 2 Firefox versions, last 2 Edge versions",
+							targets: "last 2 Chrome versions, last 2 Safari versions, last 2 ChromeAndroid versions, last 2 iOS versions, last 2 Firefox versions, last 2 Edge versions",
 							corejs: 3,
 							useBuiltIns: "usage",
 							bugfixes: true,
@@ -81,3 +62,21 @@ module.exports = {
 		hints: false
 	}
 }
+
+module.exports = (env, args) => {
+
+	let name = "[name]";
+	if (env.legacy === "true") {
+		name += ".legacy";
+		config.module.rules[0].use.options.presets[0][1].targets = "defaults";
+	}
+	if (args.optimizationMinimize) {
+		config.devtool = false;
+		config.output.filename = name + ".min.js";
+	} else {
+		config.devtool = "source-map";
+		config.output.filename = name + ".js";
+		config.output.sourceMapFilename = name + ".js.map";
+	}
+	return config;
+};
