@@ -44,6 +44,7 @@
     "karma-webpack": "^5.0.1",
     "mocha": "^10.4.0",
     "path-webpack": "^0.0.3",
+    "process": "^0.11.10",
     "raw-loader": "^4.0.2",
     "terser-webpack-plugin": "^5.3.10",
     "webpack": "^5.91.0",
@@ -53,6 +54,7 @@
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.8.10",
+    "assert": "^2.1.0",
     "core-js": "^3.37.0",
     "event-emitter": "^0.3.5",
     "jszip": "^3.10.1",

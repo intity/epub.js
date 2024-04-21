@@ -41,10 +41,15 @@ module.exports = {
 		"jszip/dist/jszip": "JSZip",
 		"xmldom": "xmldom"
 	},
-	plugins: [],
+	plugins: [
+		new webpack.ProvidePlugin({
+			process: "process/browser"
+		})
+	],
 	resolve: {
 		alias: {
-			path: "path-webpack"
+			path: "path-webpack",
+			process: "process/browser"
 		}
 	},
 	devServer: {
