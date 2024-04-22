@@ -4,7 +4,7 @@ import ePub from "../src/epub"
 const bookPath = "./fixtures/alice/"
 const settings = { width: 400, height: 400 }
 
-describe("section", () => {
+describe("Section", () => {
     it("finds a single result in a section", async () => {
         const book = ePub(bookPath, settings)
         return book.ready.then(() => {
@@ -65,9 +65,9 @@ describe("section", () => {
             return section.load().then(() => {
                 const queryString = "I beg your pardon"
                 const findResult = section.find(queryString)
-                assert.equal(findResult.length, 0);
+                assert.equal(findResult.length, 0)
                 const searchResults = section.search(queryString)
-                assert.equal(searchResults.length, 1);
+                assert.equal(searchResults.length, 1)
                 assert.equal(searchResults[0].cfi, "epubcfi(/6/26!/4/2/6,/1:5,/3:12)")
                 assert.equal(searchResults[0].excerpt, "\"Oh, I beg your pardon!\" she exclaimed in a tone of great dismay.")
             })
