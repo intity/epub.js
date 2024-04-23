@@ -3,9 +3,6 @@ var path = require("path");
 var PROD = (process.env.NODE_ENV === "production")
 var LEGACY = (process.env.LEGACY)
 var MINIMIZE = (process.env.MINIMIZE === "true")
-var hostname = "localhost";
-var port = 8080;
-
 var filename = "[name]";
 var sourceMapFilename = "[name]";
 if (LEGACY) {
@@ -53,13 +50,10 @@ module.exports = {
 		}
 	},
 	devServer: {
-		host: hostname,
-		port: port,
-		inline: true,
-		headers: {
-			"Access-Control-Allow-Origin": "*",
-			"Access-Control-Allow-Methods": "GET,PUT,POST,DELETE",
-			"Access-Control-Allow-Headers": "Content-Type"
+		hot: false,
+		liveReload: true,
+		static: {
+			directory: path.resolve(__dirname, "examples")
 		}
 	},
 	module: {

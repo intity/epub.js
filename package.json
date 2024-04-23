@@ -15,7 +15,7 @@
     "docs:html": "documentation build src/epub.js -f html -o documentation/html/",
     "docs:md": "documentation build src/epub.js -f md -o documentation/md/API.md",
     "lint": "eslint -c .eslintrc.js src; exit 0",
-    "start": "webpack-dev-server --inline --d",
+    "start": "NODE_ENV=development webpack serve",
     "build": "NODE_ENV=production webpack --progress",
     "minify": "NODE_ENV=production MINIMIZE=true webpack --progress",
     "legacy": "NODE_ENV=production LEGACY=true webpack --progress",
