@@ -1,19 +1,19 @@
-var webpack = require("webpack");
-var path = require("path");
-var PROD = (process.env.NODE_ENV === "production")
-var LEGACY = (process.env.LEGACY)
-var MINIMIZE = (process.env.MINIMIZE === "true")
-var filename = "[name]";
-var sourceMapFilename = "[name]";
+const webpack = require("webpack")
+const path = require("path")
+const PROD = (process.env.NODE_ENV === "production")
+const LEGACY = (process.env.LEGACY)
+const MINIMIZE = (process.env.MINIMIZE === "true")
+let filename = "[name]"
+let sourceMapFilename = "[name]"
 if (LEGACY) {
-	filename += ".legacy";
+	filename += ".legacy"
 }
 if (MINIMIZE) {
-	filename += ".min.js";
-	sourceMapFilename += ".min.js.map";
+	filename += ".min.js"
+	sourceMapFilename += ".min.js.map"
 } else {
-	filename += ".js";
-	sourceMapFilename += ".js.map";
+	filename += ".js"
+	sourceMapFilename += ".js.map"
 }
 
 module.exports = {
