@@ -3,7 +3,7 @@ webpackConfig.mode = "development";
 webpackConfig.externals = {};
 webpackConfig.module.rules.push({
   test: /\.xhtml$/i,
-  use: 'raw-loader',
+  type: "asset/source"
 });
 
 module.exports = function(config) {

@@ -1,10 +1,10 @@
 import assert from "assert"
 import Locations from "../src/locations"
 import * as core from "../src/utils/core"
+import chapter from "./fixtures/locations.xhtml"
 
 describe("Locations", () => {
 	describe("#parse", () => {
-		const chapter = require('./fixtures/locations.xhtml').default
 		it("parse locations from a document", () => {
 			const doc = core.parse(chapter, "application/xhtml+xml")
 			const contents = doc.documentElement

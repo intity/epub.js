@@ -1,8 +1,13 @@
 import assert from "assert"
 import EpubCFI from "../src/epubcfi"
-if (typeof DOMParser === "undefined") {
-	global.DOMParser = require("@xmldom/xmldom").DOMParser
-}
+import content1 from "./fixtures/chapter1.xhtml"
+import content2 from "./fixtures/chapter1-highlights.xhtml"
+import content3 from "./fixtures/highlight.xhtml"
+
+const parser = new DOMParser();
+const doc1 = parser.parseFromString(content1, "application/xhtml+xml")
+const doc2 = parser.parseFromString(content2, "application/xhtml+xml")
+const doc3 = parser.parseFromString(content3, "application/xhtml+xml")
 
 describe("EpubCFI", () => {
 	it("parse a cfi on init", () => {
@@ -152,30 +157,28 @@ describe("EpubCFI", () => {
 	})
 	describe("#fromNode()", () => {
 		const base = "/6/4[chap01ref]"
-		const contents = require("./fixtures/chapter1-highlights.xhtml").default
-		const doc = new DOMParser().parseFromString(contents, "application/xhtml+xml")
 		it("get a cfi from a p node", () => {
-			const elm = doc.getElementById("c001p0004")
+			const elm = doc2.getElementById("c001p0004")
 			const cfi = new EpubCFI(elm, base)
 			assert.equal(elm.nodeType, Node.ELEMENT_NODE, "provided a element node")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/10/2[c001p0004])")
 		})
 		it("get a cfi from a text node", () => {
-			const elm = doc.getElementById("c001p0004")
+			const elm = doc2.getElementById("c001p0004")
 			const txt = elm.childNodes[0]
 			const cfi = new EpubCFI(txt, base)
 			assert.equal(txt.nodeType, Node.TEXT_NODE, "provided a text node")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/10/2[c001p0004]/1)")
 		})
 		it("get a cfi from a text node inside a highlight", () => {
-			const elm = doc.getElementById("highlight-1")
+			const elm = doc2.getElementById("highlight-1")
 			const txt = elm.childNodes[0]
 			const cfi = new EpubCFI(txt, base, "annotator-hl")
 			assert.equal(txt.nodeType, Node.TEXT_NODE, "provided a text node")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/32/2[c001p0017]/1)")
 		})
 		it("get a cfi from a highlight node", () => {
-			const txt = doc.getElementById("highlight-1")
+			const txt = doc2.getElementById("highlight-1")
 			const cfi = new EpubCFI(txt, base, "annotator-hl")
 			assert.equal(txt.nodeType, Node.ELEMENT_NODE, "provided a highlight node")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/32/2[c001p0017])")
@@ -183,24 +186,18 @@ describe("EpubCFI", () => {
 	})
 	describe("#fromRange()", () => {
 		const base = "/6/4[chap01ref]"
-		const contentsClean = require("./fixtures/chapter1.xhtml").default
-		const doc = new DOMParser().parseFromString(contentsClean, "application/xhtml+xml")
-		const contentsHighlights = require("./fixtures/chapter1-highlights.xhtml").default
-		const docHighlights = new DOMParser().parseFromString(contentsHighlights, "application/xhtml+xml")
-		const highlightContents = require("./fixtures/highlight.xhtml").default
-		const docHighlightsAlice = new DOMParser().parseFromString(highlightContents, "application/xhtml+xml")
 		it("get a cfi from a collapsed range", () => {
-			const t1 = doc.getElementById("c001p0004").childNodes[0]
-			const range = doc.createRange()
+			const t1 = doc1.getElementById("c001p0004").childNodes[0]
+			const range = doc1.createRange()
 			range.setStart(t1, 6)
 			const cfi = new EpubCFI(range, base)
 			assert.equal(cfi.range, false)
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/10/2[c001p0004]/1:6)")
 		})
 		it("get a cfi from a range", () => {
-			const t1 = doc.getElementById("c001p0004").childNodes[0]
-			const t2 = doc.getElementById("c001p0007").childNodes[0]
-			const range = doc.createRange()
+			const t1 = doc1.getElementById("c001p0004").childNodes[0]
+			const t2 = doc1.getElementById("c001p0007").childNodes[0]
+			const range = doc1.createRange()
 			range.setStart(t1, 6)
 			range.setEnd(t2, 27)
 			const cfi = new EpubCFI(range, base)
@@ -208,8 +205,8 @@ describe("EpubCFI", () => {
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2,/10/2[c001p0004]/1:6,/16/2[c001p0007]/1:27)")
 		})
 		it("get a cfi from a range with offset 0", () => {
-			const t1 = doc.getElementById("c001p0004").childNodes[0]
-			const range = doc.createRange()
+			const t1 = doc1.getElementById("c001p0004").childNodes[0]
+			const range = doc1.createRange()
 			range.setStart(t1, 0)
 			range.setEnd(t1, 1)
 			const cfi = new EpubCFI(range, base)
@@ -217,30 +214,30 @@ describe("EpubCFI", () => {
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/10/2[c001p0004],/1:0,/1:1)")
 		})
 		it("get a cfi from a range inside a highlight", () => {
-			const t1 = docHighlights.getElementById("highlight-1").childNodes[0]
-			const range = docHighlights.createRange()
+			const t1 = doc2.getElementById("highlight-1").childNodes[0]
+			const range = doc2.createRange()
 			range.setStart(t1, 6)
 			const cfi = new EpubCFI(range, base, "annotator-hl")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/32/2[c001p0017]/1:43)")
 		})
 		// TODO: might need to have double ranges in front
 		it("get a cfi from a range past a highlight", () => {
-			const t1 = docHighlights.getElementById("c001s0001").childNodes[1]
-			const range = docHighlights.createRange()
+			const t1 = doc2.getElementById("c001s0001").childNodes[1]
+			const range = doc2.createRange()
 			range.setStart(t1, 25)
 			const cfi = new EpubCFI(range, base, "annotator-hl")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/4/2[c001s0001]/1:41)")
 		})
 		it("get a cfi from a range in between two highlights", () => {
-			const t1 = docHighlightsAlice.getElementById("p2").childNodes[1]
-			const range = docHighlightsAlice.createRange()
+			const t1 = doc3.getElementById("p2").childNodes[1]
+			const range = doc3.createRange()
 			range.setStart(t1, 4)
 			const cfi = new EpubCFI(range, base, "annotator-hl")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/4[p2]/1:123)")
 		})
 		it("correctly count text nodes, independent of any elements present inbetween", () => {
-			const t1 = docHighlightsAlice.getElementById("p3").childNodes[2]
-			const range = docHighlightsAlice.createRange()
+			const t1 = doc3.getElementById("p3").childNodes[2]
+			const range = doc3.createRange()
 			range.setStart(t1, 4)
 			const cfi = new EpubCFI(range, base)
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/6[p3]/3:4)")
@@ -248,32 +245,30 @@ describe("EpubCFI", () => {
 	})
 	describe("#toRange()", () => {
 		const base = "/6/4[chap01ref]"
-		const contents = require("./fixtures/chapter1-highlights.xhtml").default
-		const doc = new DOMParser().parseFromString(contents, "application/xhtml+xml")
 		it("get a range from a cfi", () => {
-			const t1 = doc.getElementById("c001p0004").childNodes[0]
-			const ogRange = doc.createRange()
+			const t1 = doc2.getElementById("c001p0004").childNodes[0]
+			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 6)
 			const cfi = new EpubCFI(ogRange, base)
 			// Check it was parse correctly
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/10/2[c001p0004]/1:6)")
 			// Check the range
-			const newRange = cfi.toRange(doc)
+			const newRange = cfi.toRange(doc2)
 			assert.equal(newRange.startContainer, t1)
 			assert.equal(newRange.startOffset, 6)
 			assert.equal(newRange.collapsed, true)
 		})
 		it("get a range from a cfi with a range", () => {
-			const t1 = doc.getElementById("c001p0004").childNodes[0]
-			const t2 = doc.getElementById("c001p0007").childNodes[0]
-			const ogRange = doc.createRange()
+			const t1 = doc2.getElementById("c001p0004").childNodes[0]
+			const t2 = doc2.getElementById("c001p0007").childNodes[0]
+			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 6)
 			ogRange.setEnd(t2, 27)
 			const cfi = new EpubCFI(ogRange, base)
 			// Check it was parse correctly
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2,/10/2[c001p0004]/1:6,/16/2[c001p0007]/1:27)")
 			// Check the range
-			const newRange = cfi.toRange(doc)
+			const newRange = cfi.toRange(doc2)
 			assert.equal(newRange.startContainer, t1)
 			assert.equal(newRange.startOffset, 6)
 			assert.equal(newRange.endContainer, t2)
@@ -281,27 +276,27 @@ describe("EpubCFI", () => {
 			assert.equal(newRange.collapsed, false)
 		})
 		it("get a cfi from a range inside a highlight", () => {
-			const t1 = doc.getElementById("highlight-1").childNodes[0]
-			const ogRange = doc.createRange()
+			const t1 = doc2.getElementById("highlight-1").childNodes[0]
+			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 6)
 			const cfi = new EpubCFI(ogRange, base, "annotator-hl")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/32/2[c001p0017]/1:43)")
 			// Check the range
-			const newRange = cfi.toRange(doc, "annotator-hl")
+			const newRange = cfi.toRange(doc2, "annotator-hl")
 			assert.ok(newRange.startContainer)
 			assert.equal(newRange.startContainer, t1)
 			assert.equal(newRange.startOffset, 6)
 		})
 		it("get a cfi from a range inside a highlight range", () => {
-			const t1 = doc.getElementById("highlight-2").childNodes[0]
-			const t2 = doc.getElementById("c001s0001").childNodes[1]
-			const ogRange = doc.createRange()
+			const t1 = doc2.getElementById("highlight-2").childNodes[0]
+			const t2 = doc2.getElementById("c001s0001").childNodes[1]
+			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 5)
 			ogRange.setEnd(t2, 25)
 			const cfi = new EpubCFI(ogRange, base, "annotator-hl")
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/4/2[c001s0001],/1:5,/1:41)")
 			// Check the range
-			const newRange = cfi.toRange(doc, "annotator-hl")
+			const newRange = cfi.toRange(doc2, "annotator-hl")
 			assert.strictEqual(newRange.startContainer.textContent, t1.textContent)
 			// assert.strictEqual(newRange.startContainer, t1)
 			// assert.equal(newRange.startOffset, 5)
