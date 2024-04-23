@@ -24,7 +24,7 @@ module.exports = {
 	entry: {
 		"epub": "./src/epub.js",
 	},
-	devtool: MINIMIZE ? false : 'source-map',
+	devtool: PROD ? "source-map" : "eval-source-map",
 	output: {
 		path: path.resolve("./dist"),
 		filename: filename,
