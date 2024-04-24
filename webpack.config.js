@@ -23,7 +23,7 @@ module.exports = {
 	},
 	devtool: PROD ? "source-map" : "eval-source-map",
 	output: {
-		path: path.resolve("./dist"),
+		path: path.resolve("dist"),
 		filename: filename,
 		sourceMapFilename: sourceMapFilename,
 		library: "ePub",
@@ -53,7 +53,7 @@ module.exports = {
 		hot: false,
 		liveReload: true,
 		static: {
-			directory: path.resolve(__dirname, "examples")
+			directory: path.resolve("examples")
 		}
 	},
 	module: {
