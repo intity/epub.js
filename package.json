@@ -11,7 +11,7 @@
   },
   "scripts": {
     "test": "karma start --single-run --browsers ChromeHeadlessNoSandbox",
-    "docs": "jsdoc2md src/epub.js > docs/API.md",
+    "docs": "node docsgen.js",
     "lint": "eslint -c .eslintrc.js src; exit 0",
     "start": "NODE_ENV=development webpack serve",
     "build": "NODE_ENV=production webpack --progress",
