@@ -14,13 +14,12 @@ const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 
 /**
-	* Handles DOM manipulation, queries and events for View contents
-	* @class
-	* @param {document} doc Document
-	* @param {element} content Parent Element (typically Body)
-	* @param {string} cfiBase Section component of CFIs
-	* @param {number} sectionIndex Index in Spine of Conntent's Section
-	*/
+ * Handles DOM manipulation, queries and events for View contents
+ * @param {document} doc Document
+ * @param {element} content Parent Element (typically Body)
+ * @param {string} cfiBase Section component of CFIs
+ * @param {number} sectionIndex Index in Spine of Conntent's Section
+ */
 class Contents {
 	constructor(doc, content, cfiBase, sectionIndex) {
 		// Blank Cfi for Parsing
@@ -595,7 +594,7 @@ class Contents {
 	 * Get the location offset of a EpubCFI or an #id
 	 * @param {string | EpubCFI} target
 	 * @param {string} [ignoreClass] for the cfi
-	 * @returns { {left: Number, top: Number }
+	 * @returns {object} target position left and top
 	 */
 	locationOf(target, ignoreClass) {
 		var position;

@@ -21,21 +21,20 @@ import ContinuousViewManager from "./managers/continuous/index";
  * Displays an Epub as a series of Views for each Section.
  * Requires Manager and View class to handle specifics of rendering
  * the section content.
- * @class
  * @param {Book} book
  * @param {object} [options]
  * @param {number} [options.width]
  * @param {number} [options.height]
  * @param {string} [options.ignoreClass] class for the cfi parser to ignore
- * @param {string | function | object} [options.manager='default']
- * @param {string | function} [options.view='iframe']
+ * @param {string|function|object} [options.manager='default'] string values: default / continuous
+ * @param {string|function} [options.view='iframe']
  * @param {string} [options.layout] layout to force
  * @param {string} [options.spread] force spread value
  * @param {number} [options.minSpreadWidth] overridden by spread: none (never) / both (always)
  * @param {string} [options.stylesheet] url of stylesheet to be injected
  * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
- * @param {boolean | object} [options.snap=false] use snap scrolling
+ * @param {boolean|object} [options.snap=false] use snap scrolling
  * @param {string} [options.defaultDirection='ltr'] default text direction
  * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
  * @param {boolean} [options.allowPopups=false] enable opening popup in content

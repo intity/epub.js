@@ -1,3 +1,7 @@
+/**
+ * @module mime
+ */
+
 /*
  From Zip.js, by Gildas Lormeau
 edited down
@@ -162,6 +166,11 @@ var mimeTypes = (function() {
 
 var defaultValue = "text/plain";//"application/octet-stream";
 
+/**
+ * lookup
+ * @param {string} filename 
+ * @returns {string}
+ */
 function lookup(filename) {
 	return filename && mimeTypes[filename.split(".").pop().toLowerCase()] || defaultValue;
 };

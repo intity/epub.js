@@ -1,9 +1,18 @@
 import {uuid, isNumber, isElement, windowBounds, extend} from "../../utils/core";
 import throttle from 'lodash/throttle'
 
+/**
+ * Stage
+ * @param {object} options
+ * @param {string} options.axis
+ * @param {string} options.direction
+ * @param {boolean} options.fullsize
+ * @param {string|number} options.width
+ * @param {string|number} options.height
+ */
 class Stage {
-	constructor(_options) {
-		this.settings = _options || {};
+	constructor(options) {
+		this.settings = options || {};
 		this.id = "epubjs-container-" + uuid();
 
 		this.container = this.create(this.settings);
@@ -14,10 +23,12 @@ class Stage {
 
 	}
 
-	/*
-	* Creates an element to render to.
-	* Resizes to passed width and height or to the elements size
-	*/
+	/**
+	 * Creates an element to render to.
+	 * Resizes to passed width and height or to the elements size
+	 * @param {object} options 
+	 * @returns {Element} container
+	 */
 	create(options){
 		let height  = options.height;// !== false ? options.height : "100%";
 		let width   = options.width;// !== false ? options.width : "100%";
@@ -87,6 +98,11 @@ class Stage {
 		return container;
 	}
 
+	/**
+	 * wrap
+	 * @param {Element} container 
+	 * @returns {Element} wrapper
+	 */
 	wrap(container) {
 		var wrapper = document.createElement("div");
 
@@ -99,23 +115,32 @@ class Stage {
 		return wrapper;
 	}
 
+	/**
+	 * getElement
+	 * @param {Element|string} element 
+	 * @returns {Element}
+	 */
+	getElement(element){
+		var elm;
 
-	getElement(_element){
-		var element;
-
-		if(isElement(_element)) {
-			element = _element;
-		} else if (typeof _element === "string") {
-			element = document.getElementById(_element);
+		if(isElement(element)) {
+			elm = element;
+		} else if (typeof element === "string") {
+			elm = document.getElementById(element);
 		}
 
-		if(!element){
+		if(!elm){
 			throw new Error("Not an Element");
 		}
 
-		return element;
+		return elm;
 	}
 
+	/**
+	 * attachTo
+	 * @param {Element|string} what 
+	 * @returns {Element}
+	 */
 	attachTo(what){
 
 		var element = this.getElement(what);
@@ -139,10 +164,18 @@ class Stage {
 
 	}
 
+	/**
+	 * getContainer
+	 * @returns {Element} container
+	 */
 	getContainer() {
 		return this.container;
 	}
 
+	/**
+	 * onResize
+	 * @param {*} func 
+	 */
 	onResize(func){
 		// Only listen to window for resize event if width and height are not fixed.
 		// This applies if it is set to a percent or auto.
@@ -154,11 +187,21 @@ class Stage {
 
 	}
 
+	/**
+	 * onOrientationChange
+	 * @param {*} func 
+	 */
 	onOrientationChange(func){
 		this.orientationChangeFunc = func;
 		window.addEventListener("orientationchange", this.orientationChangeFunc, false);
 	}
 
+	/**
+	 * size
+	 * @param {string|number} width 
+	 * @param {string|number} height 
+	 * @returns {object}
+	 */
 	size(width, height){
 		var bounds;
 		let _width = width || this.settings.width;
@@ -246,6 +289,10 @@ class Stage {
 
 	}
 
+	/**
+	 * bounds
+	 * @returns {object}
+	 */
 	bounds(){
 		let box;
 		if (this.container.style.overflow !== "visible") {
@@ -260,6 +307,10 @@ class Stage {
 
 	}
 
+	/**
+	 * getSheet
+	 * @returns {CSSStyleSheet}
+	 */
 	getSheet(){
 		var style = document.createElement("style");
 
@@ -271,6 +322,11 @@ class Stage {
 		return style.sheet;
 	}
 
+	/**
+	 * addStyleRules
+	 * @param {*} selector 
+	 * @param {object[]} rulesArray 
+	 */
 	addStyleRules(selector, rulesArray){
 		var scope = "#" + this.id + " ";
 		var rules = "";
@@ -290,6 +346,10 @@ class Stage {
 		this.sheet.insertRule(scope + selector + " {" + rules + "}", 0);
 	}
 
+	/**
+	 * axis
+	 * @param {string} axis 
+	 */
 	axis(axis) {
 		if(axis === "horizontal") {
 			this.container.style.display = "flex";
@@ -311,6 +371,10 @@ class Stage {
 	// 	this.orientation = orientation;
 	// }
 
+	/**
+	 * direction
+	 * @param {string} dir 
+	 */
 	direction(dir) {
 		if (this.container) {
 			this.container.dir = dir;
@@ -323,6 +387,10 @@ class Stage {
 		this.settings.dir = dir;
 	}
 
+	/**
+	 * overflow
+	 * @param {string} overflow 
+	 */
 	overflow(overflow) {
 		if (this.container) {
 			if (overflow === "scroll" && this.settings.axis === "vertical") {
@@ -338,6 +406,9 @@ class Stage {
 		this.settings.overflow = overflow;
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
 		var base;
 

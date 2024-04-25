@@ -5,10 +5,26 @@ import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
 import { Pane, Highlight, Underline } from "marks-pane";
 
+/**
+ * IframeView
+ * @param {*} section
+ * @param {object} [options]
+ * @param {boolean} [options.allowPopups=false]
+ * @param {boolean} [options.allowScriptedContent=false]
+ * @param {*} [options.axis]
+ * @param {*} [options.direction]
+ * @param {boolean} [options.forceRight=false]
+ * @param {object} [options.globalLayoutProperties={}]
+ * @param {number} [options.width]
+ * @param {number} [options.height]
+ * @param {string} [options.ignoreClass='']
+ * @param {*} [options.layout]
+ * @param {*} [options.method]
+ */
 class IframeView {
 	constructor(section, options) {
 		this.settings = extend({
-			ignoreClass : "",
+			ignoreClass: "",
 			axis: undefined, //options.layout && options.layout.props.flow === "scrolled" ? "vertical" : "horizontal",
 			direction: undefined,
 			width: 0,
@@ -51,6 +67,11 @@ class IframeView {
 
 	}
 
+	/**
+	 * container
+	 * @param {*} axis 
+	 * @returns {Element} HTML element
+	 */
 	container(axis) {
 		var element = document.createElement("div");
 
@@ -72,6 +93,10 @@ class IframeView {
 		return element;
 	}
 
+	/**
+	 * create
+	 * @returns {Element} iframe
+	 */
 	create() {
 
 		if(this.iframe) {
@@ -140,6 +165,12 @@ class IframeView {
 		return this.iframe;
 	}
 
+	/**
+	 * render
+	 * @param {*} request 
+	 * @param {*} show 
+	 * @returns {object} section render object
+	 */
 	render(request, show) {
 
 		// view.onLayout = this.layout.format.bind(this.layout);
@@ -209,6 +240,9 @@ class IframeView {
 
 	}
 
+	/**
+	 * reset
+	 */
 	reset () {
 		if (this.iframe) {
 			this.iframe.style.width = "0";
@@ -223,7 +257,12 @@ class IframeView {
 		this._needsReframe = true;
 	}
 
-	// Determine locks base on settings
+	/**
+	 * size
+	 * Determine locks base on settings
+	 * @param {*} _width 
+	 * @param {*} _height 
+	 */
 	size(_width, _height) {
 		var width = _width || this.settings.width;
 		var height = _height || this.settings.height;
@@ -240,7 +279,13 @@ class IframeView {
 		this.settings.height = height;
 	}
 
-	// Lock an axis to element dimensions, taking borders into account
+	/**
+	 * lock
+	 * Lock an axis to element dimensions, taking borders into account
+	 * @param {*} what 
+	 * @param {*} width 
+	 * @param {*} height 
+	 */
 	lock(what, width, height) {
 		var elBorders = borders(this.element);
 		var iframeBorders;
@@ -280,7 +325,11 @@ class IframeView {
 
 	}
 
-	// Resize a single axis based on content dimensions
+	/**
+	 * expand
+	 * Resize a single axis based on content dimensions
+	 * @param {*} force 
+	 */
 	expand(force) {
 		var width = this.lockedWidth;
 		var height = this.lockedHeight;
@@ -333,6 +382,11 @@ class IframeView {
 		this._expanding = false;
 	}
 
+	/**
+	 * reframe
+	 * @param {*} width 
+	 * @param {*} height 
+	 */
 	reframe(width, height) {
 		var size;
 
@@ -380,7 +434,11 @@ class IframeView {
 
 	}
 
-
+	/**
+	 * load
+	 * @param {*} contents 
+	 * @returns {Promise} loading promise
+	 */
 	load(contents) {
 		var loading = new defer();
 		var loaded = loading.promise;
@@ -431,6 +489,11 @@ class IframeView {
 		return loaded;
 	}
 
+	/**
+	 * onLoad
+	 * @param {*} event 
+	 * @param {*} promise 
+	 */
 	onLoad(event, promise) {
 
 		this.window = this.iframe.contentWindow;
@@ -471,6 +534,10 @@ class IframeView {
 		promise.resolve(this.contents);
 	}
 
+	/**
+	 * setLayout
+	 * @param {*} layout 
+	 */
 	setLayout(layout) {
 		this.layout = layout;
 
@@ -480,6 +547,10 @@ class IframeView {
 		}
 	}
 
+	/**
+	 * setAxis
+	 * @param {*} axis 
+	 */
 	setAxis(axis) {
 
 		this.settings.axis = axis;
@@ -494,6 +565,10 @@ class IframeView {
 
 	}
 
+	/**
+	 * setWritingMode
+	 * @param {*} mode 
+	 */
 	setWritingMode(mode) {
 		// this.element.style.writingMode = writingMode;
 		this.writingMode = mode;
@@ -507,6 +582,11 @@ class IframeView {
 		//TODO: remove content listeners for expanding
 	}
 
+	/**
+	 * display
+	 * @param {*} request 
+	 * @returns {Promise} displayed promise
+	 */
 	display(request) {
 		var displayed = new defer();
 
@@ -533,6 +613,9 @@ class IframeView {
 		return displayed.promise;
 	}
 
+	/**
+	 * show
+	 */
 	show() {
 
 		this.element.style.visibility = "visible";
@@ -549,6 +632,9 @@ class IframeView {
 		this.emit(EVENTS.VIEWS.SHOWN, this);
 	}
 
+	/**
+	 * hide
+	 */
 	hide() {
 		// this.iframe.style.display = "none";
 		this.element.style.visibility = "hidden";
@@ -558,6 +644,10 @@ class IframeView {
 		this.emit(EVENTS.VIEWS.HIDDEN, this);
 	}
 
+	/**
+	 * offset
+	 * @returns {object}
+	 */
 	offset() {
 		return {
 			top: this.element.offsetTop,
@@ -565,18 +655,35 @@ class IframeView {
 		}
 	}
 
+	/**
+	 * width
+	 * @returns {number}
+	 */
 	width() {
 		return this._width;
 	}
 
+	/**
+	 * height
+	 * @returns {number}
+	 */
 	height() {
 		return this._height;
 	}
 
+	/**
+	 * position
+	 * @returns {DOMRect}
+	 */
 	position() {
 		return this.element.getBoundingClientRect();
 	}
 
+	/**
+	 * locationOf
+	 * @param {*} target 
+	 * @returns {object}
+	 */
 	locationOf(target) {
 		var parentPos = this.iframe.getBoundingClientRect();
 		var targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
@@ -595,6 +702,11 @@ class IframeView {
 		// Stub, override with a custom functions
 	}
 
+	/**
+	 * bounds
+	 * @param {*} force 
+	 * @returns {Element}
+	 */
 	bounds(force) {
 		if(force || !this.elementBounds) {
 			this.elementBounds = bounds(this.element);
@@ -603,7 +715,16 @@ class IframeView {
 		return this.elementBounds;
 	}
 
-	highlight(cfiRange, data={}, cb, className = "epubjs-hl", styles = {}) {
+	/**
+	 * highlight
+	 * @param {*} cfiRange 
+	 * @param {*} [data={}] 
+	 * @param {*} cb 
+	 * @param {*} [className='epubjs-hl'] 
+	 * @param {*} [styles={}] 
+	 * @returns {object}
+	 */
+	highlight(cfiRange, data = {}, cb, className = "epubjs-hl", styles = {}) {
 		if (!this.contents) {
 			return;
 		}
@@ -636,7 +757,16 @@ class IframeView {
 		return h;
 	}
 
-	underline(cfiRange, data={}, cb, className = "epubjs-ul", styles = {}) {
+	/**
+	 * underline
+	 * @param {*} cfiRange 
+	 * @param {*} [data={}] 
+	 * @param {*} cb 
+	 * @param {*} [className='epubjs-ul'] 
+	 * @param {*} [styles={}] 
+	 * @returns {object}
+	 */
+	underline(cfiRange, data = {}, cb, className = "epubjs-ul", styles = {}) {
 		if (!this.contents) {
 			return;
 		}
@@ -668,7 +798,14 @@ class IframeView {
 		return h;
 	}
 
-	mark(cfiRange, data={}, cb) {
+	/**
+	 * mark
+	 * @param {*} cfiRange 
+	 * @param {*} [data={}] 
+	 * @param {*} cb 
+	 * @returns {object}
+	 */
+	mark(cfiRange, data = {}, cb) {
 		if (!this.contents) {
 			return;
 		}
@@ -726,6 +863,11 @@ class IframeView {
 		return parent;
 	}
 
+	/**
+	 * placeMark
+	 * @param {*} element 
+	 * @param {*} range 
+	 */
 	placeMark(element, range) {
 		let top, right, left;
 
@@ -754,6 +896,10 @@ class IframeView {
 		element.style.left = `${right}px`;
 	}
 
+	/**
+	 * unhighlight
+	 * @param {*} cfiRange 
+	 */
 	unhighlight(cfiRange) {
 		let item;
 		if (cfiRange in this.highlights) {
@@ -770,6 +916,10 @@ class IframeView {
 		}
 	}
 
+	/**
+	 * ununderline
+	 * @param {*} cfiRange 
+	 */
 	ununderline(cfiRange) {
 		let item;
 		if (cfiRange in this.underlines) {
@@ -785,6 +935,10 @@ class IframeView {
 		}
 	}
 
+	/**
+	 * unmark
+	 * @param {*} cfiRange 
+	 */
 	unmark(cfiRange) {
 		let item;
 		if (cfiRange in this.marks) {
@@ -800,6 +954,9 @@ class IframeView {
 		}
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
 
 		for (let cfiRange in this.highlights) {

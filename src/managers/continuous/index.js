@@ -4,6 +4,11 @@ import Snap from "../helpers/snap";
 import { EVENTS } from "../../utils/constants";
 import debounce from "lodash/debounce";
 
+/**
+ * ContinuousViewManager
+ * @param {object} options
+ * @extends {DefaultViewManager}
+ */
 class ContinuousViewManager extends DefaultViewManager {
 	constructor(options) {
 		super(options);

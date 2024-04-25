@@ -6,22 +6,19 @@ const COMMENT_NODE = 8;
 const DOCUMENT_NODE = 9;
 
 /**
-	* Parsing and creation of EpubCFIs: http://www.idpf.org/epub/linking/cfi/epub-cfi.html
-
-	* Implements:
-	* - Character Offset: epubcfi(/6/4[chap01ref]!/4[body01]/10[para05]/2/1:3)
-	* - Simple Ranges : epubcfi(/6/4[chap01ref]!/4[body01]/10[para05],/2/1:1,/3:4)
-
-	* Does Not Implement:
-	* - Temporal Offset (~)
-	* - Spatial Offset (@)
-	* - Temporal-Spatial Offset (~ + @)
-	* - Text Location Assertion ([)
-	* @class
-	@param {string | Range | Node } [cfiFrom]
-	@param {string | object} [base]
-	@param {string} [ignoreClass] class to ignore when parsing DOM
-*/
+ * Parsing and creation of EpubCFIs: http://www.idpf.org/epub/linking/cfi/epub-cfi.html
+ * Implements:
+ * - Character Offset: epubcfi(/6/4[chap01ref]!/4[body01]/10[para05]/2/1:3)
+ * - Simple Ranges : epubcfi(/6/4[chap01ref]!/4[body01]/10[para05],/2/1:1,/3:4)
+ * Does Not Implement:
+ * - Temporal Offset (~)
+ * - Spatial Offset (@)
+ * - Temporal-Spatial Offset (~ + @)
+ * - Text Location Assertion ([)
+ * @param {string|Range|Node} [cfiFrom]
+ * @param {string|object} [base]
+ * @param {string} [ignoreClass] class to ignore when parsing DOM
+ */
 class EpubCFI {
 	constructor(cfiFrom, base, ignoreClass){
 		var type;

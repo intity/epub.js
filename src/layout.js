@@ -4,7 +4,6 @@ import EventEmitter from "event-emitter";
 
 /**
  * Figures out the CSS values to apply for a layout
- * @class
  * @param {object} settings
  * @param {string} [settings.layout='reflowable']
  * @param {string} [settings.spread]

@@ -7,6 +7,10 @@ import Stage from "../helpers/stage";
 import Views from "../helpers/views";
 import { EVENTS } from "../../utils/constants";
 
+/**
+ * DefaultViewManager
+ * @param {object} options
+ */
 class DefaultViewManager {
 	constructor(options) {
 
@@ -50,6 +54,11 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * render
+	 * @param {Element} element 
+	 * @param {object} size 
+	 */
 	render(element, size){
 		let tag = element.tagName;
 
@@ -114,6 +123,9 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * addEventListeners
+	 */
 	addEventListeners(){
 		var scroller;
 
@@ -131,6 +143,9 @@ class DefaultViewManager {
 		scroller.addEventListener("scroll", this._onScroll);
 	}
 
+	/**
+	 * removeEventListeners
+	 */
 	removeEventListeners(){
 		var scroller;
 
@@ -144,6 +159,9 @@ class DefaultViewManager {
 		this._onScroll = undefined;
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy(){
 		clearTimeout(this.orientationTimeout);
 		clearTimeout(this.resizeTimeout);
@@ -168,6 +186,10 @@ class DefaultViewManager {
 		*/
 	}
 
+	/**
+	 * onOrientationChange
+	 * @param {*} e 
+	 */
 	onOrientationChange(e) {
 		let {orientation} = window;
 
@@ -193,10 +215,20 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * onResized
+	 * @param {*} e 
+	 */
 	onResized(e) {
 		this.resize();
 	}
 
+	/**
+	 * resize
+	 * @param {*} width 
+	 * @param {*} height 
+	 * @param {*} epubcfi 
+	 */
 	resize(width, height, epubcfi){
 		let stageSize = this.stage.size(width, height);
 
@@ -236,10 +268,23 @@ class DefaultViewManager {
 		}, epubcfi);
 	}
 
+	/**
+	 * createView
+	 * @param {*} section 
+	 * @param {*} forceRight 
+	 * @returns {object} view
+	 */
 	createView(section, forceRight) {
 		return new this.View(section, extend(this.viewSettings, { forceRight }) );
 	}
 
+	/**
+	 * handleNextPrePaginated
+	 * @param {*} forceRight 
+	 * @param {*} section 
+	 * @param {*} action 
+	 * @returns {*}
+	 */
 	handleNextPrePaginated(forceRight, section, action) {
 		let next;
 
@@ -255,6 +300,12 @@ class DefaultViewManager {
 		}
 	}
 
+	/**
+	 * display
+	 * @param {*} section 
+	 * @param {*} target 
+	 * @returns {Promise} displaying promise
+	 */
 	display(section, target){
 
 		var displaying = new defer();
@@ -329,14 +380,27 @@ class DefaultViewManager {
 		return displayed;
 	}
 
+	/**
+	 * afterDisplayed
+	 * @param {*} view 
+	 */
 	afterDisplayed(view){
 		this.emit(EVENTS.MANAGERS.ADDED, view);
 	}
 
+	/**
+	 * afterResized
+	 * @param {*} view 
+	 */
 	afterResized(view){
 		this.emit(EVENTS.MANAGERS.RESIZE, view.section);
 	}
 
+	/**
+	 * moveTo
+	 * @param {*} offset 
+	 * @param {*} width 
+	 */
 	moveTo(offset, width){
 		var distX = 0,
 				distY = 0;
@@ -368,6 +432,12 @@ class DefaultViewManager {
 		this.scrollTo(distX, distY, true);
 	}
 
+	/**
+	 * add
+	 * @param {*} section 
+	 * @param {*} forceRight 
+	 * @returns {*}
+	 */
 	add(section, forceRight){
 		var view = this.createView(section, forceRight);
 
@@ -388,6 +458,12 @@ class DefaultViewManager {
 		return view.display(this.request);
 	}
 
+	/**
+	 * append
+	 * @param {*} section 
+	 * @param {*} forceRight 
+	 * @returns {*}
+	 */
 	append(section, forceRight){
 		var view = this.createView(section, forceRight);
 		this.views.append(view);
@@ -406,6 +482,12 @@ class DefaultViewManager {
 		return view.display(this.request);
 	}
 
+	/**
+	 * prepend
+	 * @param {*} section 
+	 * @param {*} forceRight 
+	 * @returns {*}
+	 */
 	prepend(section, forceRight){
 		var view = this.createView(section, forceRight);
 
@@ -429,6 +511,10 @@ class DefaultViewManager {
 		return view.display(this.request);
 	}
 
+	/**
+	 * counter
+	 * @param {*} bounds 
+	 */
 	counter(bounds){
 		if(this.settings.axis === "vertical") {
 			this.scrollBy(0, bounds.heightDelta, true);
@@ -448,6 +534,10 @@ class DefaultViewManager {
 	//
 	// };
 
+	/**
+	 * next
+	 * @returns {*}
+	 */
 	next(){
 		var next;
 		var left;
@@ -538,6 +628,10 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * prev
+	 * @returns {*}
+	 */
 	prev(){
 		var prev;
 		var left;
@@ -638,6 +732,10 @@ class DefaultViewManager {
 		}
 	}
 
+	/**
+	 * current
+	 * @returns {*}
+	 */
 	current(){
 		var visible = this.visible();
 		if(visible.length){
@@ -647,6 +745,9 @@ class DefaultViewManager {
 		return null;
 	}
 
+	/**
+	 * clear
+	 */
 	clear () {
 
 		// this.q.clear();
@@ -658,6 +759,10 @@ class DefaultViewManager {
 		}
 	}
 
+	/**
+	 * currentLocation
+	 * @returns {*} location
+	 */
 	currentLocation(){
 		this.updateLayout();
 		if (this.isPaginated && this.settings.axis === "horizontal") {
@@ -668,6 +773,10 @@ class DefaultViewManager {
 		return this.location;
 	}
 
+	/**
+	 * scrolledLocation
+	 * @returns {*} location
+	 */
 	scrolledLocation() {
 		let visible = this.visible();
 		let container = this.container.getBoundingClientRect();
@@ -737,6 +846,10 @@ class DefaultViewManager {
 		return sections;
 	}
 
+	/**
+	 * paginatedLocation
+	 * @returns {*} location
+	 */
 	paginatedLocation(){
 		let visible = this.visible();
 		let container = this.container.getBoundingClientRect();
@@ -811,6 +924,14 @@ class DefaultViewManager {
 		return sections;
 	}
 
+	/**
+	 * isVisible
+	 * @param {*} view 
+	 * @param {*} offsetPrev 
+	 * @param {*} offsetNext 
+	 * @param {*} _container 
+	 * @returns {boolean}
+	 */
 	isVisible(view, offsetPrev, offsetNext, _container){
 		var position = view.position();
 		var container = _container || this.bounds();
@@ -832,6 +953,10 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * visible
+	 * @returns {object[]} visible
+	 */
 	visible(){
 		var container = this.bounds();
 		var views = this.views.displayed();
@@ -852,6 +977,12 @@ class DefaultViewManager {
 		return visible;
 	}
 
+	/**
+	 * scrollBy
+	 * @param {*} x 
+	 * @param {*} y 
+	 * @param {*} silent 
+	 */
 	scrollBy(x, y, silent){
 		let dir = this.settings.direction === "rtl" ? -1 : 1;
 
@@ -868,6 +999,12 @@ class DefaultViewManager {
 		this.scrolled = true;
 	}
 
+	/**
+	 * scrollTo
+	 * @param {*} x 
+	 * @param {*} y 
+	 * @param {*} silent 
+	 */
 	scrollTo(x, y, silent){
 		if(silent) {
 			this.ignore = true;
@@ -882,6 +1019,9 @@ class DefaultViewManager {
 		this.scrolled = true;
 	}
 
+	/**
+	 * onScroll
+	 */
 	onScroll(){
 		let scrollTop;
 		let scrollLeft;
@@ -919,6 +1059,10 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * bounds
+	 * @returns {*}
+	 */
 	bounds() {
 		var bounds;
 
@@ -927,6 +1071,10 @@ class DefaultViewManager {
 		return bounds;
 	}
 
+	/**
+	 * applyLayout
+	 * @param {*} layout 
+	 */
 	applyLayout(layout) {
 
 		this.layout = layout;
@@ -937,6 +1085,9 @@ class DefaultViewManager {
 		 // this.manager.layout(this.layout.format);
 	}
 
+	/**
+	 * updateLayout
+	 */
 	updateLayout() {
 
 		if (!this.stage) {
@@ -968,6 +1119,10 @@ class DefaultViewManager {
 		this.setLayout(this.layout);
 	}
 
+	/**
+	 * setLayout
+	 * @param {*} layout 
+	 */
 	setLayout(layout){
 
 		this.viewSettings.layout = layout;
@@ -986,10 +1141,19 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * updateWritingMode
+	 * @param {*} mode 
+	 */
 	updateWritingMode(mode) {
 		this.writingMode = mode;
 	}
 
+	/**
+	 * updateAxis
+	 * @param {*} axis 
+	 * @param {*} forceUpdate  
+	 */
 	updateAxis(axis, forceUpdate){
 
 		if (!forceUpdate && axis === this.settings.axis) {
@@ -1015,6 +1179,11 @@ class DefaultViewManager {
 		}
 	}
 
+	/**
+	 * updateFlow
+	 * @param {*} flow 
+	 * @param {*} defaultScrolledOverflow 
+	 */
 	updateFlow(flow, defaultScrolledOverflow="auto"){
 		let isPaginated = (flow === "paginated" || flow === "auto");
 
@@ -1042,6 +1211,10 @@ class DefaultViewManager {
 
 	}
 
+	/**
+	 * getContents
+	 * @returns {object[]}
+	 */
 	getContents(){
 		var contents = [];
 		if (!this.views) {
@@ -1056,6 +1229,10 @@ class DefaultViewManager {
 		return contents;
 	}
 
+	/**
+	 * direction
+	 * @param {string} [dir='ltr'] 
+	 */
 	direction(dir="ltr") {
 		this.settings.direction = dir;
 
@@ -1066,6 +1243,10 @@ class DefaultViewManager {
 		this.updateLayout();
 	}
 
+	/**
+	 * isRendered
+	 * @returns {boolean}
+	 */
 	isRendered() {
 		return this.rendered;
 	}

@@ -1,3 +1,7 @@
+/**
+ * @module constants
+ */
+
 export const EPUBJS_VERSION = "0.3";
 
 // Dom events to listen for

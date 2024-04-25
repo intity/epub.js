@@ -1,13 +1,12 @@
 /**
- * Core Utilities and Helpers
- * @module Core
-*/
+ * @module core
+ */
+
 import { DOMParser as XMLDOMParser } from "@xmldom/xmldom";
 
 /**
  * Vendor prefixed requestAnimationFrame
  * @returns {function} requestAnimationFrame
- * @memberof Core
  */
 export const requestAnimationFrame = (typeof window != "undefined") ? (window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame) : false;
 const ELEMENT_NODE = 1;
@@ -20,7 +19,6 @@ const _URL = typeof URL != "undefined" ? URL : (typeof window != "undefined" ? (
  * Generates a UUID
  * based on: http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
  * @returns {string} uuid
- * @memberof Core
  */
 export function uuid() {
 	var d = new Date().getTime();
@@ -35,7 +33,6 @@ export function uuid() {
 /**
  * Gets the height of a document
  * @returns {number} height
- * @memberof Core
  */
 export function documentHeight() {
 	return Math.max(
@@ -51,7 +48,6 @@ export function documentHeight() {
  * Checks if a node is an element
  * @param {object} obj
  * @returns {boolean}
- * @memberof Core
  */
 export function isElement(obj) {
 	return !!(obj && obj.nodeType == 1);
@@ -60,7 +56,6 @@ export function isElement(obj) {
 /**
  * @param {any} n
  * @returns {boolean}
- * @memberof Core
  */
 export function isNumber(n) {
 	return !isNaN(parseFloat(n)) && isFinite(n);
@@ -69,7 +64,6 @@ export function isNumber(n) {
 /**
  * @param {any} n
  * @returns {boolean}
- * @memberof Core
  */
 export function isFloat(n) {
 	let f = parseFloat(n);
@@ -89,7 +83,6 @@ export function isFloat(n) {
  * Get a prefixed css property
  * @param {string} unprefixed
  * @returns {string}
- * @memberof Core
  */
 export function prefixed(unprefixed) {
 	var vendors = ["Webkit", "webkit", "Moz", "O", "ms" ];
@@ -114,7 +107,6 @@ export function prefixed(unprefixed) {
  * Apply defaults to an object
  * @param {object} obj
  * @returns {object}
- * @memberof Core
  */
 export function defaults(obj) {
 	for (var i = 1, length = arguments.length; i < length; i++) {
@@ -130,7 +122,6 @@ export function defaults(obj) {
  * Extend properties of an object
  * @param {object} target
  * @returns {object}
- * @memberof Core
  */
 export function extend(target) {
 	var sources = [].slice.call(arguments, 1);
@@ -150,7 +141,6 @@ export function extend(target) {
  * @param {array} array
  * @param {function} [compareFunction]
  * @returns {number} location (in array)
- * @memberof Core
  */
 export function insert(item, array, compareFunction) {
 	var location = locationOf(item, array, compareFunction);
@@ -167,7 +157,6 @@ export function insert(item, array, compareFunction) {
  * @param {function} [_start]
  * @param {function} [_end]
  * @returns {number} location (in array)
- * @memberof Core
  */
 export function locationOf(item, array, compareFunction, _start, _end) {
 	var start = _start || 0;
@@ -208,7 +197,6 @@ export function locationOf(item, array, compareFunction, _start, _end) {
  * @param {function} [_start]
  * @param {function} [_end]
  * @returns {number} index (in array) or -1
- * @memberof Core
  */
 export function indexOfSorted(item, array, compareFunction, _start, _end) {
 	var start = _start || 0;
@@ -244,7 +232,6 @@ export function indexOfSorted(item, array, compareFunction, _start, _end) {
  * taking padding and margin into account
  * @param {element} el
  * @returns {{ width: Number, height: Number}}
- * @memberof Core
  */
 export function bounds(el) {
 
@@ -275,7 +262,6 @@ export function bounds(el) {
  * taking padding, margin and borders into account
  * @param {element} el
  * @returns {{ width: Number, height: Number}}
- * @memberof Core
  */
 export function borders(el) {
 
@@ -306,7 +292,6 @@ export function borders(el) {
  * allows for getting bounds of text nodes by wrapping them in a range
  * @param {node} node
  * @returns {BoundingClientRect}
- * @memberof Core
  */
 export function nodeBounds(node) {
 	let elPos;
@@ -324,7 +309,6 @@ export function nodeBounds(node) {
 /**
  * Find the equivalent of getBoundingClientRect of a browser window
  * @returns {{ width: Number, height: Number, top: Number, left: Number, right: Number, bottom: Number }}
- * @memberof Core
  */
 export function windowBounds() {
 
@@ -347,7 +331,6 @@ export function windowBounds() {
  * @param {Node} node
  * @param {string} typeId
  * @return {number} index
- * @memberof Core
  */
 export function indexOfNode(node, typeId) {
 	var parent = node.parentNode;
@@ -369,7 +352,6 @@ export function indexOfNode(node, typeId) {
  * Gets the index of a text node in its parent
  * @param {node} textNode
  * @returns {number} index
- * @memberof Core
  */
 export function indexOfTextNode(textNode) {
 	return indexOfNode(textNode, TEXT_NODE);
@@ -379,7 +361,6 @@ export function indexOfTextNode(textNode) {
  * Gets the index of an element node in its parent
  * @param {element} elementNode
  * @returns {number} index
- * @memberof Core
  */
 export function indexOfElementNode(elementNode) {
 	return indexOfNode(elementNode, ELEMENT_NODE);
@@ -389,7 +370,6 @@ export function indexOfElementNode(elementNode) {
  * Check if extension is xml
  * @param {string} ext
  * @returns {boolean}
- * @memberof Core
  */
 export function isXml(ext) {
 	return ["xml", "opf", "ncx"].indexOf(ext) > -1;
@@ -400,7 +380,6 @@ export function isXml(ext) {
  * @param {any} content
  * @param {string} mime
  * @returns {Blob}
- * @memberof Core
  */
 export function createBlob(content, mime){
 	return new Blob([content], {type : mime });
@@ -411,7 +390,6 @@ export function createBlob(content, mime){
  * @param {any} content
  * @param {string} mime
  * @returns {string} url
- * @memberof Core
  */
 export function createBlobUrl(content, mime){
 	var tempUrl;
@@ -425,7 +403,6 @@ export function createBlobUrl(content, mime){
 /**
  * Remove a blob url
  * @param {string} url
- * @memberof Core
  */
 export function revokeBlobUrl(url){
 	return _URL.revokeObjectURL(url);
@@ -436,7 +413,6 @@ export function revokeBlobUrl(url){
  * @param {any} content
  * @param {string} mime
  * @returns {string} url
- * @memberof Core
  */
 export function createBase64Url(content, mime){
 	var data;
@@ -458,7 +434,6 @@ export function createBase64Url(content, mime){
  * Get type of an object
  * @param {object} obj
  * @returns {string} type
- * @memberof Core
  */
 export function type(obj){
 	return Object.prototype.toString.call(obj).slice(8, -1);
@@ -470,7 +445,6 @@ export function type(obj){
  * @param {string} mime
  * @param {boolean} forceXMLDom force using xmlDom to parse instead of native parser
  * @returns {document} document
- * @memberof Core
  */
 export function parse(markup, mime, forceXMLDom) {
 	var doc;
@@ -498,7 +472,6 @@ export function parse(markup, mime, forceXMLDom) {
  * @param {element} el
  * @param {string} sel selector string
  * @returns {element} element
- * @memberof Core
  */
 export function qs(el, sel) {
 	var elements;
@@ -521,7 +494,6 @@ export function qs(el, sel) {
  * @param {element} el
  * @param {string} sel selector string
  * @returns {element[]} elements
- * @memberof Core
  */
 export function qsa(el, sel) {
 
@@ -538,7 +510,6 @@ export function qsa(el, sel) {
  * @param {string} sel selector string
  * @param {object[]} props
  * @returns {element[]} elements
- * @memberof Core
  */
 export function qsp(el, sel, props) {
 	var q, filtered;
@@ -625,7 +596,6 @@ export function walk(node,callback){
  * Convert a blob to a base64 encoded string
  * @param {Blog} blob
  * @returns {string}
- * @memberof Core
  */
 export function blob2base64(blob) {
 	return new Promise(function(resolve, reject) {
@@ -641,7 +611,7 @@ export function blob2base64(blob) {
 /**
  * Creates a new pending promise and provides methods to resolve or reject it.
  * From: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred#backwards_forwards_compatible
- * @memberof Core
+ * @returns {object}
  */
 export function defer() {
 	/* A method to resolve the associated Promise with the value passed.
@@ -680,7 +650,6 @@ export function defer() {
  * @param {string} element element type to find
  * @param {string} type epub type to find
  * @returns {element[]} elements
- * @memberof Core
  */
 export function querySelectorByType(html, element, type){
 	var query;
@@ -705,7 +674,6 @@ export function querySelectorByType(html, element, type){
  * Find direct descendents of an element
  * @param {element} el
  * @returns {element[]} children
- * @memberof Core
  */
 export function findChildren(el) {
 	var result = [];
@@ -723,7 +691,6 @@ export function findChildren(el) {
  * Find all parents (ancestors) of an element
  * @param {element} node
  * @returns {element[]} parents
- * @memberof Core
  */
 export function parents(node) {
 	var nodes = [node];
@@ -739,7 +706,6 @@ export function parents(node) {
  * @param {string} nodeName
  * @param {boolean} [single]
  * @returns {element[]} children
- * @memberof Core
  */
 export function filterChildren(el, nodeName, single) {
 	var result = [];
@@ -764,7 +730,6 @@ export function filterChildren(el, nodeName, single) {
  * @param {element} node
  * @param {string} tagname
  * @returns {element[]} parents
- * @memberof Core
  */
 export function getParentByTagName(node, tagname) {
 	let parent;
@@ -781,7 +746,6 @@ export function getParentByTagName(node, tagname) {
 /**
  * Lightweight Polyfill for DOM Range
  * @class
- * @memberof Core
  */
 export class RangeObject {
 	constructor() {

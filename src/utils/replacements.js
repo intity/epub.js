@@ -1,7 +1,15 @@
+/**
+ * @module replacements
+ */
+
 import { qs, qsa } from "./core";
 import Url from "./url";
-import Path from "./path";
 
+/**
+ * replaceBase
+ * @param {*} doc 
+ * @param {*} section 
+ */
 export function replaceBase(doc, section){
 	var base;
 	var head;
@@ -28,6 +36,11 @@ export function replaceBase(doc, section){
 	base.setAttribute("href", url);
 }
 
+/**
+ * replaceCanonical
+ * @param {*} doc 
+ * @param {*} section 
+ */
 export function replaceCanonical(doc, section){
 	var head;
 	var link;
@@ -50,6 +63,11 @@ export function replaceCanonical(doc, section){
 	}
 }
 
+/**
+ * replaceMeta
+ * @param {*} doc 
+ * @param {*} section 
+ */
 export function replaceMeta(doc, section){
 	var head;
 	var meta;
@@ -71,7 +89,12 @@ export function replaceMeta(doc, section){
 	}
 }
 
-// TODO: move me to Contents
+/**
+ * replaceLinks
+ * TODO: move me to Contents
+ * @param {*} contents 
+ * @param {*} fn 
+ */
 export function replaceLinks(contents, fn) {
 
 	var links = contents.querySelectorAll("a[href]");
@@ -125,6 +148,12 @@ export function replaceLinks(contents, fn) {
 
 }
 
+/**
+ * substitute
+ * @param {*} content 
+ * @param {*} urls 
+ * @param {*} replacements s
+ */
 export function substitute(content, urls, replacements) {
 	urls.forEach(function(url, i){
 		if (url && replacements[i]) {
