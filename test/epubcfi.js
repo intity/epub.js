@@ -302,4 +302,10 @@ describe("EpubCFI", () => {
 			// assert.equal(newRange.startOffset, 5)
 		})
 	})
+	describe("#isCfiString()", () => {
+		it("checking if a string is wrapped with \"epubcfi()\"", () => {
+			const cfi = new EpubCFI()
+			assert.equal(cfi.isCfiString("epubcfi(/6/4[chap01ref]!/4/2,/10/2[c001p0004]/1:6,/16/2[c001p0007]/1:27)"), true)
+		})
+	})
 })
