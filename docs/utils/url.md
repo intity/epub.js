@@ -1,6 +1,6 @@
 <a name="Url"></a>
 
-## Url
+# Url
 creates a Url object for parsing and manipulation of a url string
 
 **Kind**: global class  
@@ -14,7 +14,7 @@ creates a Url object for parsing and manipulation of a url string
 
 <a name="new_Url_new"></a>
 
-### new Url(urlString, [baseString])
+## new Url(urlString, [baseString])
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -23,11 +23,11 @@ creates a Url object for parsing and manipulation of a url string
 
 <a name="Url+path"></a>
 
-### url.path() ⇒ <code>Path</code>
+## url.path() ⇒ <code>Path</code>
 **Kind**: instance method of [<code>Url</code>](#Url)  
 <a name="Url+resolve"></a>
 
-### url.resolve(what) ⇒ <code>string</code>
+## url.resolve(what) ⇒ <code>string</code>
 Resolves a relative path to a absolute url
 
 **Kind**: instance method of [<code>Url</code>](#Url)  
@@ -39,7 +39,7 @@ Resolves a relative path to a absolute url
 
 <a name="Url+relative"></a>
 
-### url.relative(what) ⇒ <code>string</code>
+## url.relative(what) ⇒ <code>string</code>
 Resolve a path relative to the url
 
 **Kind**: instance method of [<code>Url</code>](#Url)  
@@ -51,5 +51,5 @@ Resolve a path relative to the url
 
 <a name="Url+toString"></a>
 
-### url.toString() ⇒ <code>string</code>
+## url.toString() ⇒ <code>string</code>
 **Kind**: instance method of [<code>Url</code>](#Url)  

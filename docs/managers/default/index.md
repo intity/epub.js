@@ -1,6 +1,6 @@
 <a name="DefaultViewManager"></a>
 
-## DefaultViewManager
+# DefaultViewManager
 DefaultViewManager
 
 **Kind**: global class  
@@ -49,7 +49,7 @@ DefaultViewManager
 
 <a name="new_DefaultViewManager_new"></a>
 
-### new DefaultViewManager(options)
+## new DefaultViewManager(options)
 
 | Param | Type |
 | --- | --- |
@@ -57,7 +57,7 @@ DefaultViewManager
 
 <a name="DefaultViewManager+render"></a>
 
-### defaultViewManager.render(element, size)
+## defaultViewManager.render(element, size)
 render
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -69,25 +69,25 @@ render
 
 <a name="DefaultViewManager+addEventListeners"></a>
 
-### defaultViewManager.addEventListeners()
+## defaultViewManager.addEventListeners()
 addEventListeners
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+removeEventListeners"></a>
 
-### defaultViewManager.removeEventListeners()
+## defaultViewManager.removeEventListeners()
 removeEventListeners
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+destroy"></a>
 
-### defaultViewManager.destroy()
+## defaultViewManager.destroy()
 destroy
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+onOrientationChange"></a>
 
-### defaultViewManager.onOrientationChange(e)
+## defaultViewManager.onOrientationChange(e)
 onOrientationChange
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -98,7 +98,7 @@ onOrientationChange
 
 <a name="DefaultViewManager+onResized"></a>
 
-### defaultViewManager.onResized(e)
+## defaultViewManager.onResized(e)
 onResized
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -109,7 +109,7 @@ onResized
 
 <a name="DefaultViewManager+resize"></a>
 
-### defaultViewManager.resize(width, height, epubcfi)
+## defaultViewManager.resize(width, height, epubcfi)
 resize
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -122,7 +122,7 @@ resize
 
 <a name="DefaultViewManager+createView"></a>
 
-### defaultViewManager.createView(section, forceRight) ⇒ <code>object</code>
+## defaultViewManager.createView(section, forceRight) ⇒ <code>object</code>
 createView
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -135,7 +135,7 @@ createView
 
 <a name="DefaultViewManager+handleNextPrePaginated"></a>
 
-### defaultViewManager.handleNextPrePaginated(forceRight, section, action) ⇒ <code>\*</code>
+## defaultViewManager.handleNextPrePaginated(forceRight, section, action) ⇒ <code>\*</code>
 handleNextPrePaginated
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -148,7 +148,7 @@ handleNextPrePaginated
 
 <a name="DefaultViewManager+display"></a>
 
-### defaultViewManager.display(section, target) ⇒ <code>Promise</code>
+## defaultViewManager.display(section, target) ⇒ <code>Promise</code>
 display
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -161,7 +161,7 @@ display
 
 <a name="DefaultViewManager+afterDisplayed"></a>
 
-### defaultViewManager.afterDisplayed(view)
+## defaultViewManager.afterDisplayed(view)
 afterDisplayed
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -172,7 +172,7 @@ afterDisplayed
 
 <a name="DefaultViewManager+afterResized"></a>
 
-### defaultViewManager.afterResized(view)
+## defaultViewManager.afterResized(view)
 afterResized
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -183,7 +183,7 @@ afterResized
 
 <a name="DefaultViewManager+moveTo"></a>
 
-### defaultViewManager.moveTo(offset, width)
+## defaultViewManager.moveTo(offset, width)
 moveTo
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -195,7 +195,7 @@ moveTo
 
 <a name="DefaultViewManager+add"></a>
 
-### defaultViewManager.add(section, forceRight) ⇒ <code>\*</code>
+## defaultViewManager.add(section, forceRight) ⇒ <code>\*</code>
 add
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -207,7 +207,7 @@ add
 
 <a name="DefaultViewManager+append"></a>
 
-### defaultViewManager.append(section, forceRight) ⇒ <code>\*</code>
+## defaultViewManager.append(section, forceRight) ⇒ <code>\*</code>
 append
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -219,7 +219,7 @@ append
 
 <a name="DefaultViewManager+prepend"></a>
 
-### defaultViewManager.prepend(section, forceRight) ⇒ <code>\*</code>
+## defaultViewManager.prepend(section, forceRight) ⇒ <code>\*</code>
 prepend
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -231,7 +231,7 @@ prepend
 
 <a name="DefaultViewManager+counter"></a>
 
-### defaultViewManager.counter(bounds)
+## defaultViewManager.counter(bounds)
 counter
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -242,52 +242,52 @@ counter
 
 <a name="DefaultViewManager+next"></a>
 
-### defaultViewManager.next() ⇒ <code>\*</code>
+## defaultViewManager.next() ⇒ <code>\*</code>
 next
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+prev"></a>
 
-### defaultViewManager.prev() ⇒ <code>\*</code>
+## defaultViewManager.prev() ⇒ <code>\*</code>
 prev
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+current"></a>
 
-### defaultViewManager.current() ⇒ <code>\*</code>
+## defaultViewManager.current() ⇒ <code>\*</code>
 current
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+clear"></a>
 
-### defaultViewManager.clear()
+## defaultViewManager.clear()
 clear
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+currentLocation"></a>
 
-### defaultViewManager.currentLocation() ⇒ <code>\*</code>
+## defaultViewManager.currentLocation() ⇒ <code>\*</code>
 currentLocation
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Returns**: <code>\*</code> - location  
 <a name="DefaultViewManager+scrolledLocation"></a>
 
-### defaultViewManager.scrolledLocation() ⇒ <code>\*</code>
+## defaultViewManager.scrolledLocation() ⇒ <code>\*</code>
 scrolledLocation
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Returns**: <code>\*</code> - location  
 <a name="DefaultViewManager+paginatedLocation"></a>
 
-### defaultViewManager.paginatedLocation() ⇒ <code>\*</code>
+## defaultViewManager.paginatedLocation() ⇒ <code>\*</code>
 paginatedLocation
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Returns**: <code>\*</code> - location  
 <a name="DefaultViewManager+isVisible"></a>
 
-### defaultViewManager.isVisible(view, offsetPrev, offsetNext, _container) ⇒ <code>boolean</code>
+## defaultViewManager.isVisible(view, offsetPrev, offsetNext, _container) ⇒ <code>boolean</code>
 isVisible
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -301,14 +301,14 @@ isVisible
 
 <a name="DefaultViewManager+visible"></a>
 
-### defaultViewManager.visible() ⇒ <code>Array.&lt;object&gt;</code>
+## defaultViewManager.visible() ⇒ <code>Array.&lt;object&gt;</code>
 visible
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Returns**: <code>Array.&lt;object&gt;</code> - visible  
 <a name="DefaultViewManager+scrollBy"></a>
 
-### defaultViewManager.scrollBy(x, y, silent)
+## defaultViewManager.scrollBy(x, y, silent)
 scrollBy
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -321,7 +321,7 @@ scrollBy
 
 <a name="DefaultViewManager+scrollTo"></a>
 
-### defaultViewManager.scrollTo(x, y, silent)
+## defaultViewManager.scrollTo(x, y, silent)
 scrollTo
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -334,19 +334,19 @@ scrollTo
 
 <a name="DefaultViewManager+onScroll"></a>
 
-### defaultViewManager.onScroll()
+## defaultViewManager.onScroll()
 onScroll
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+bounds"></a>
 
-### defaultViewManager.bounds() ⇒ <code>\*</code>
+## defaultViewManager.bounds() ⇒ <code>\*</code>
 bounds
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+applyLayout"></a>
 
-### defaultViewManager.applyLayout(layout)
+## defaultViewManager.applyLayout(layout)
 applyLayout
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -357,13 +357,13 @@ applyLayout
 
 <a name="DefaultViewManager+updateLayout"></a>
 
-### defaultViewManager.updateLayout()
+## defaultViewManager.updateLayout()
 updateLayout
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+setLayout"></a>
 
-### defaultViewManager.setLayout(layout)
+## defaultViewManager.setLayout(layout)
 setLayout
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -374,7 +374,7 @@ setLayout
 
 <a name="DefaultViewManager+updateWritingMode"></a>
 
-### defaultViewManager.updateWritingMode(mode)
+## defaultViewManager.updateWritingMode(mode)
 updateWritingMode
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -385,7 +385,7 @@ updateWritingMode
 
 <a name="DefaultViewManager+updateAxis"></a>
 
-### defaultViewManager.updateAxis(axis, forceUpdate)
+## defaultViewManager.updateAxis(axis, forceUpdate)
 updateAxis
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -397,7 +397,7 @@ updateAxis
 
 <a name="DefaultViewManager+updateFlow"></a>
 
-### defaultViewManager.updateFlow(flow, defaultScrolledOverflow)
+## defaultViewManager.updateFlow(flow, defaultScrolledOverflow)
 updateFlow
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -409,13 +409,13 @@ updateFlow
 
 <a name="DefaultViewManager+getContents"></a>
 
-### defaultViewManager.getContents() ⇒ <code>Array.&lt;object&gt;</code>
+## defaultViewManager.getContents() ⇒ <code>Array.&lt;object&gt;</code>
 getContents
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 <a name="DefaultViewManager+direction"></a>
 
-### defaultViewManager.direction([dir])
+## defaultViewManager.direction([dir])
 direction
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -426,7 +426,7 @@ direction
 
 <a name="DefaultViewManager+isRendered"></a>
 
-### defaultViewManager.isRendered() ⇒ <code>boolean</code>
+## defaultViewManager.isRendered() ⇒ <code>boolean</code>
 isRendered
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  

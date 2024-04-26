@@ -1,6 +1,6 @@
 <a name="IframeView"></a>
 
-## IframeView
+# IframeView
 IframeView
 
 **Kind**: global class  
@@ -40,7 +40,7 @@ IframeView
 
 <a name="new_IframeView_new"></a>
 
-### new IframeView(section, [options])
+## new IframeView(section, [options])
 
 | Param | Type | Default |
 | --- | --- | --- |
@@ -60,7 +60,7 @@ IframeView
 
 <a name="IframeView+container"></a>
 
-### iframeView.container(axis) ⇒ <code>Element</code>
+## iframeView.container(axis) ⇒ <code>Element</code>
 container
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -72,14 +72,14 @@ container
 
 <a name="IframeView+create"></a>
 
-### iframeView.create() ⇒ <code>Element</code>
+## iframeView.create() ⇒ <code>Element</code>
 create
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 **Returns**: <code>Element</code> - iframe  
 <a name="IframeView+render"></a>
 
-### iframeView.render(request, show) ⇒ <code>object</code>
+## iframeView.render(request, show) ⇒ <code>object</code>
 render
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -92,13 +92,13 @@ render
 
 <a name="IframeView+reset"></a>
 
-### iframeView.reset()
+## iframeView.reset()
 reset
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+size"></a>
 
-### iframeView.size(_width, _height)
+## iframeView.size(_width, _height)
 size
 Determine locks base on settings
 
@@ -111,7 +111,7 @@ Determine locks base on settings
 
 <a name="IframeView+lock"></a>
 
-### iframeView.lock(what, width, height)
+## iframeView.lock(what, width, height)
 lock
 Lock an axis to element dimensions, taking borders into account
 
@@ -125,7 +125,7 @@ Lock an axis to element dimensions, taking borders into account
 
 <a name="IframeView+expand"></a>
 
-### iframeView.expand(force)
+## iframeView.expand(force)
 expand
 Resize a single axis based on content dimensions
 
@@ -137,7 +137,7 @@ Resize a single axis based on content dimensions
 
 <a name="IframeView+reframe"></a>
 
-### iframeView.reframe(width, height)
+## iframeView.reframe(width, height)
 reframe
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -149,7 +149,7 @@ reframe
 
 <a name="IframeView+load"></a>
 
-### iframeView.load(contents) ⇒ <code>Promise</code>
+## iframeView.load(contents) ⇒ <code>Promise</code>
 load
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -161,7 +161,7 @@ load
 
 <a name="IframeView+onLoad"></a>
 
-### iframeView.onLoad(event, promise)
+## iframeView.onLoad(event, promise)
 onLoad
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -173,7 +173,7 @@ onLoad
 
 <a name="IframeView+setLayout"></a>
 
-### iframeView.setLayout(layout)
+## iframeView.setLayout(layout)
 setLayout
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -184,7 +184,7 @@ setLayout
 
 <a name="IframeView+setAxis"></a>
 
-### iframeView.setAxis(axis)
+## iframeView.setAxis(axis)
 setAxis
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -195,7 +195,7 @@ setAxis
 
 <a name="IframeView+setWritingMode"></a>
 
-### iframeView.setWritingMode(mode)
+## iframeView.setWritingMode(mode)
 setWritingMode
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -206,7 +206,7 @@ setWritingMode
 
 <a name="IframeView+display"></a>
 
-### iframeView.display(request) ⇒ <code>Promise</code>
+## iframeView.display(request) ⇒ <code>Promise</code>
 display
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -218,43 +218,43 @@ display
 
 <a name="IframeView+show"></a>
 
-### iframeView.show()
+## iframeView.show()
 show
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+hide"></a>
 
-### iframeView.hide()
+## iframeView.hide()
 hide
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+offset"></a>
 
-### iframeView.offset() ⇒ <code>object</code>
+## iframeView.offset() ⇒ <code>object</code>
 offset
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+width"></a>
 
-### iframeView.width() ⇒ <code>number</code>
+## iframeView.width() ⇒ <code>number</code>
 width
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+height"></a>
 
-### iframeView.height() ⇒ <code>number</code>
+## iframeView.height() ⇒ <code>number</code>
 height
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+position"></a>
 
-### iframeView.position() ⇒ <code>DOMRect</code>
+## iframeView.position() ⇒ <code>DOMRect</code>
 position
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+locationOf"></a>
 
-### iframeView.locationOf(target) ⇒ <code>object</code>
+## iframeView.locationOf(target) ⇒ <code>object</code>
 locationOf
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -265,7 +265,7 @@ locationOf
 
 <a name="IframeView+bounds"></a>
 
-### iframeView.bounds(force) ⇒ <code>Element</code>
+## iframeView.bounds(force) ⇒ <code>Element</code>
 bounds
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -276,7 +276,7 @@ bounds
 
 <a name="IframeView+highlight"></a>
 
-### iframeView.highlight(cfiRange, [data], cb, [className], [styles]) ⇒ <code>object</code>
+## iframeView.highlight(cfiRange, [data], cb, [className], [styles]) ⇒ <code>object</code>
 highlight
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -291,7 +291,7 @@ highlight
 
 <a name="IframeView+underline"></a>
 
-### iframeView.underline(cfiRange, [data], cb, [className], [styles]) ⇒ <code>object</code>
+## iframeView.underline(cfiRange, [data], cb, [className], [styles]) ⇒ <code>object</code>
 underline
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -306,7 +306,7 @@ underline
 
 <a name="IframeView+mark"></a>
 
-### iframeView.mark(cfiRange, [data], cb) ⇒ <code>object</code>
+## iframeView.mark(cfiRange, [data], cb) ⇒ <code>object</code>
 mark
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -319,7 +319,7 @@ mark
 
 <a name="IframeView+placeMark"></a>
 
-### iframeView.placeMark(element, range)
+## iframeView.placeMark(element, range)
 placeMark
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -331,7 +331,7 @@ placeMark
 
 <a name="IframeView+unhighlight"></a>
 
-### iframeView.unhighlight(cfiRange)
+## iframeView.unhighlight(cfiRange)
 unhighlight
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -342,7 +342,7 @@ unhighlight
 
 <a name="IframeView+ununderline"></a>
 
-### iframeView.ununderline(cfiRange)
+## iframeView.ununderline(cfiRange)
 ununderline
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -353,7 +353,7 @@ ununderline
 
 <a name="IframeView+unmark"></a>
 
-### iframeView.unmark(cfiRange)
+## iframeView.unmark(cfiRange)
 unmark
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -364,7 +364,7 @@ unmark
 
 <a name="IframeView+destroy"></a>
 
-### iframeView.destroy()
+## iframeView.destroy()
 destroy
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  

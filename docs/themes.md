@@ -1,6 +1,6 @@
 <a name="Themes"></a>
 
-## Themes
+# Themes
 Themes to apply to displayed content
 
 **Kind**: global class  
@@ -24,7 +24,7 @@ Themes to apply to displayed content
 
 <a name="new_Themes_new"></a>
 
-### new Themes(rendition)
+## new Themes(rendition)
 
 | Param | Type |
 | --- | --- |
@@ -32,7 +32,7 @@ Themes to apply to displayed content
 
 <a name="Themes+register"></a>
 
-### themes.register()
+## themes.register()
 Add themes to be used by a rendition
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -55,7 +55,7 @@ themes.register({ "light" : {...}, "dark" : {...}})
 ```
 <a name="Themes+default"></a>
 
-### themes.default(theme)
+## themes.default(theme)
 Add a default theme to be used by a rendition
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -74,7 +74,7 @@ themes.register({ "body": { "color": "purple"}})
 ```
 <a name="Themes+registerThemes"></a>
 
-### themes.registerThemes(themes)
+## themes.registerThemes(themes)
 Register themes object
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -85,7 +85,7 @@ Register themes object
 
 <a name="Themes+registerCss"></a>
 
-### themes.registerCss(name, css)
+## themes.registerCss(name, css)
 Register a theme by passing its css as string
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -97,7 +97,7 @@ Register a theme by passing its css as string
 
 <a name="Themes+registerUrl"></a>
 
-### themes.registerUrl(name, input)
+## themes.registerUrl(name, input)
 Register a url
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -109,7 +109,7 @@ Register a url
 
 <a name="Themes+registerRules"></a>
 
-### themes.registerRules(name, rules)
+## themes.registerRules(name, rules)
 Register rule
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -121,7 +121,7 @@ Register rule
 
 <a name="Themes+select"></a>
 
-### themes.select(name)
+## themes.select(name)
 Select a theme
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -132,7 +132,7 @@ Select a theme
 
 <a name="Themes+update"></a>
 
-### themes.update(name)
+## themes.update(name)
 Update a theme
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -143,7 +143,7 @@ Update a theme
 
 <a name="Themes+inject"></a>
 
-### themes.inject(contents)
+## themes.inject(contents)
 Inject all themes into contents
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -154,7 +154,7 @@ Inject all themes into contents
 
 <a name="Themes+add"></a>
 
-### themes.add(name, contents)
+## themes.add(name, contents)
 Add Theme to contents
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -166,7 +166,7 @@ Add Theme to contents
 
 <a name="Themes+override"></a>
 
-### themes.override(name, value, priority)
+## themes.override(name, value, priority)
 Add override
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -179,7 +179,7 @@ Add override
 
 <a name="Themes+overrides"></a>
 
-### themes.overrides(content)
+## themes.overrides(content)
 Add all overrides
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -190,7 +190,7 @@ Add all overrides
 
 <a name="Themes+fontSize"></a>
 
-### themes.fontSize(size)
+## themes.fontSize(size)
 Adjust the font size of a rendition
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
@@ -201,7 +201,7 @@ Adjust the font size of a rendition
 
 <a name="Themes+font"></a>
 
-### themes.font(f)
+## themes.font(f)
 Adjust the font-family of a rendition
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  

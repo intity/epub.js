@@ -1,6 +1,6 @@
 <a name="Queue"></a>
 
-## Queue
+# Queue
 Queue for handling tasks one at a time
 
 **Kind**: global class  
@@ -18,7 +18,7 @@ Queue for handling tasks one at a time
 
 <a name="new_Queue_new"></a>
 
-### new Queue(context)
+## new Queue(context)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -26,50 +26,50 @@ Queue for handling tasks one at a time
 
 <a name="Queue+enqueue"></a>
 
-### queue.enqueue() ⇒ <code>Promise</code>
+## queue.enqueue() ⇒ <code>Promise</code>
 Add an item to the queue
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+dequeue"></a>
 
-### queue.dequeue() ⇒ <code>Promise</code>
+## queue.dequeue() ⇒ <code>Promise</code>
 Run one item
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+run"></a>
 
-### queue.run() ⇒ <code>Promise</code>
+## queue.run() ⇒ <code>Promise</code>
 Run all tasks sequentially, at convince
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+flush"></a>
 
-### queue.flush() ⇒ <code>Promise</code>
+## queue.flush() ⇒ <code>Promise</code>
 Flush all, as quickly as possible
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+clear"></a>
 
-### queue.clear()
+## queue.clear()
 Clear all items in wait
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+length"></a>
 
-### queue.length() ⇒ <code>number</code>
+## queue.length() ⇒ <code>number</code>
 Get the number of tasks in the queue
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 **Returns**: <code>number</code> - tasks  
 <a name="Queue+pause"></a>
 
-### queue.pause()
+## queue.pause()
 Pause a running queue
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+stop"></a>
 
-### queue.stop()
+## queue.stop()
 End the queue
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  

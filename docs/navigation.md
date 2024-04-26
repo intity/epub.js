@@ -1,6 +1,6 @@
 <a name="Navigation"></a>
 
-## Navigation
+# Navigation
 Navigation Parser
 
 **Kind**: global class  
@@ -17,7 +17,7 @@ Navigation Parser
 
 <a name="new_Navigation_new"></a>
 
-### new Navigation(xml)
+## new Navigation(xml)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Navigation Parser
 
 <a name="Navigation+parse"></a>
 
-### navigation.parse(xml)
+## navigation.parse(xml)
 Parse out the navigation items
 
 **Kind**: instance method of [<code>Navigation</code>](#Navigation)  
@@ -36,7 +36,7 @@ Parse out the navigation items
 
 <a name="Navigation+get"></a>
 
-### navigation.get(target) ⇒ <code>object</code>
+## navigation.get(target) ⇒ <code>object</code>
 Get an item from the navigation
 
 **Kind**: instance method of [<code>Navigation</code>](#Navigation)  
@@ -48,7 +48,7 @@ Get an item from the navigation
 
 <a name="Navigation+getByIndex"></a>
 
-### navigation.getByIndex(target, index, navItems) ⇒ <code>object</code>
+## navigation.getByIndex(target, index, navItems) ⇒ <code>object</code>
 Get an item from navigation subitems recursively by index
 
 **Kind**: instance method of [<code>Navigation</code>](#Navigation)  
@@ -62,7 +62,7 @@ Get an item from navigation subitems recursively by index
 
 <a name="Navigation+landmark"></a>
 
-### navigation.landmark(type) ⇒ <code>object</code>
+## navigation.landmark(type) ⇒ <code>object</code>
 Get a landmark by type
 List of types: https://idpf.github.io/epub-vocabs/structure/
 
@@ -75,7 +75,7 @@ List of types: https://idpf.github.io/epub-vocabs/structure/
 
 <a name="Navigation+parseNavList"></a>
 
-### navigation.parseNavList(navListHtml, parent) ⇒ <code>array</code>
+## navigation.parseNavList(navListHtml, parent) ⇒ <code>array</code>
 Parses lists in the toc
 
 **Kind**: instance method of [<code>Navigation</code>](#Navigation)  
@@ -88,7 +88,7 @@ Parses lists in the toc
 
 <a name="Navigation+load"></a>
 
-### navigation.load(json) ⇒ <code>Array</code>
+## navigation.load(json) ⇒ <code>Array</code>
 Load Spine Items
 
 **Kind**: instance method of [<code>Navigation</code>](#Navigation)  
@@ -100,7 +100,7 @@ Load Spine Items
 
 <a name="Navigation+forEach"></a>
 
-### navigation.forEach(fn) ⇒ <code>method</code>
+## navigation.forEach(fn) ⇒ <code>method</code>
 forEach pass through
 
 **Kind**: instance method of [<code>Navigation</code>](#Navigation)  

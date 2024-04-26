@@ -1,6 +1,6 @@
 <a name="module_replacements"></a>
 
-## replacements
+# replacements
 
 * [replacements](#module_replacements)
     * [.replaceBase(doc, section)](#module_replacements.replaceBase)
@@ -11,7 +11,7 @@
 
 <a name="module_replacements.replaceBase"></a>
 
-### replacements.replaceBase(doc, section)
+## replacements.replaceBase(doc, section)
 replaceBase
 
 **Kind**: static method of [<code>replacements</code>](#module_replacements)  
@@ -23,7 +23,7 @@ replaceBase
 
 <a name="module_replacements.replaceCanonical"></a>
 
-### replacements.replaceCanonical(doc, section)
+## replacements.replaceCanonical(doc, section)
 replaceCanonical
 
 **Kind**: static method of [<code>replacements</code>](#module_replacements)  
@@ -35,7 +35,7 @@ replaceCanonical
 
 <a name="module_replacements.replaceMeta"></a>
 
-### replacements.replaceMeta(doc, section)
+## replacements.replaceMeta(doc, section)
 replaceMeta
 
 **Kind**: static method of [<code>replacements</code>](#module_replacements)  
@@ -47,7 +47,7 @@ replaceMeta
 
 <a name="module_replacements.replaceLinks"></a>
 
-### replacements.replaceLinks(contents, fn)
+## replacements.replaceLinks(contents, fn)
 replaceLinks
 TODO: move me to Contents
 
@@ -60,7 +60,7 @@ TODO: move me to Contents
 
 <a name="module_replacements.substitute"></a>
 
-### replacements.substitute(content, urls, replacements)
+## replacements.substitute(content, urls, replacements)
 substitute
 
 **Kind**: static method of [<code>replacements</code>](#module_replacements)  

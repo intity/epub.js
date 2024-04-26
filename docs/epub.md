@@ -1,6 +1,6 @@
 <a name="ePub"></a>
 
-## ePub(url, options) ⇒ <code>Book</code>
+# ePub(url, options) ⇒ <code>Book</code>
 Creates a new Book
 
 **Kind**: global function  

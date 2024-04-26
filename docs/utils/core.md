@@ -1,6 +1,6 @@
 <a name="module_core"></a>
 
-## core
+# core
 
 * [core](#module_core)
     * [.RangeObject](#module_core.RangeObject)
@@ -43,20 +43,20 @@
 
 <a name="module_core.RangeObject"></a>
 
-### core.RangeObject
+## core.RangeObject
 Lightweight Polyfill for DOM Range
 
 **Kind**: static class of [<code>core</code>](#module_core)  
 <a name="module_core.requestAnimationFrame"></a>
 
-### core.requestAnimationFrame ⇒ <code>function</code>
+## core.requestAnimationFrame ⇒ <code>function</code>
 Vendor prefixed requestAnimationFrame
 
 **Kind**: static constant of [<code>core</code>](#module_core)  
 **Returns**: <code>function</code> - requestAnimationFrame  
 <a name="module_core.uuid"></a>
 
-### core.uuid() ⇒ <code>string</code>
+## core.uuid() ⇒ <code>string</code>
 Generates a UUID
 based on: http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
 
@@ -64,14 +64,14 @@ based on: http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in
 **Returns**: <code>string</code> - uuid  
 <a name="module_core.documentHeight"></a>
 
-### core.documentHeight() ⇒ <code>number</code>
+## core.documentHeight() ⇒ <code>number</code>
 Gets the height of a document
 
 **Kind**: static method of [<code>core</code>](#module_core)  
 **Returns**: <code>number</code> - height  
 <a name="module_core.isElement"></a>
 
-### core.isElement(obj) ⇒ <code>boolean</code>
+## core.isElement(obj) ⇒ <code>boolean</code>
 Checks if a node is an element
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -82,7 +82,7 @@ Checks if a node is an element
 
 <a name="module_core.isNumber"></a>
 
-### core.isNumber(n) ⇒ <code>boolean</code>
+## core.isNumber(n) ⇒ <code>boolean</code>
 **Kind**: static method of [<code>core</code>](#module_core)  
 
 | Param | Type |
@@ -91,7 +91,7 @@ Checks if a node is an element
 
 <a name="module_core.isFloat"></a>
 
-### core.isFloat(n) ⇒ <code>boolean</code>
+## core.isFloat(n) ⇒ <code>boolean</code>
 **Kind**: static method of [<code>core</code>](#module_core)  
 
 | Param | Type |
@@ -100,7 +100,7 @@ Checks if a node is an element
 
 <a name="module_core.prefixed"></a>
 
-### core.prefixed(unprefixed) ⇒ <code>string</code>
+## core.prefixed(unprefixed) ⇒ <code>string</code>
 Get a prefixed css property
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -111,7 +111,7 @@ Get a prefixed css property
 
 <a name="module_core.defaults"></a>
 
-### core.defaults(obj) ⇒ <code>object</code>
+## core.defaults(obj) ⇒ <code>object</code>
 Apply defaults to an object
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -122,7 +122,7 @@ Apply defaults to an object
 
 <a name="module_core.extend"></a>
 
-### core.extend(target) ⇒ <code>object</code>
+## core.extend(target) ⇒ <code>object</code>
 Extend properties of an object
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -133,7 +133,7 @@ Extend properties of an object
 
 <a name="module_core.insert"></a>
 
-### core.insert(item, array, [compareFunction]) ⇒ <code>number</code>
+## core.insert(item, array, [compareFunction]) ⇒ <code>number</code>
 Fast quicksort insert for sorted array -- based on:
  http://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
 
@@ -148,7 +148,7 @@ Fast quicksort insert for sorted array -- based on:
 
 <a name="module_core.locationOf"></a>
 
-### core.locationOf(item, array, [compareFunction], [_start], [_end]) ⇒ <code>number</code>
+## core.locationOf(item, array, [compareFunction], [_start], [_end]) ⇒ <code>number</code>
 Finds where something would fit into a sorted array
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -164,7 +164,7 @@ Finds where something would fit into a sorted array
 
 <a name="module_core.indexOfSorted"></a>
 
-### core.indexOfSorted(item, array, [compareFunction], [_start], [_end]) ⇒ <code>number</code>
+## core.indexOfSorted(item, array, [compareFunction], [_start], [_end]) ⇒ <code>number</code>
 Finds index of something in a sorted array
 Returns -1 if not found
 
@@ -181,7 +181,7 @@ Returns -1 if not found
 
 <a name="module_core.bounds"></a>
 
-### core.bounds(el) ⇒ <code>Object</code>
+## core.bounds(el) ⇒ <code>Object</code>
 Find the bounds of an element
 taking padding and margin into account
 
@@ -193,7 +193,7 @@ taking padding and margin into account
 
 <a name="module_core.borders"></a>
 
-### core.borders(el) ⇒ <code>Object</code>
+## core.borders(el) ⇒ <code>Object</code>
 Find the bounds of an element
 taking padding, margin and borders into account
 
@@ -205,7 +205,7 @@ taking padding, margin and borders into account
 
 <a name="module_core.nodeBounds"></a>
 
-### core.nodeBounds(node) ⇒ <code>BoundingClientRect</code>
+## core.nodeBounds(node) ⇒ <code>BoundingClientRect</code>
 Find the bounds of any node
 allows for getting bounds of text nodes by wrapping them in a range
 
@@ -217,13 +217,13 @@ allows for getting bounds of text nodes by wrapping them in a range
 
 <a name="module_core.windowBounds"></a>
 
-### core.windowBounds() ⇒ <code>Object</code>
+## core.windowBounds() ⇒ <code>Object</code>
 Find the equivalent of getBoundingClientRect of a browser window
 
 **Kind**: static method of [<code>core</code>](#module_core)  
 <a name="module_core.indexOfNode"></a>
 
-### core.indexOfNode(node, typeId) ⇒ <code>number</code>
+## core.indexOfNode(node, typeId) ⇒ <code>number</code>
 Gets the index of a node in its parent
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -236,7 +236,7 @@ Gets the index of a node in its parent
 
 <a name="module_core.indexOfTextNode"></a>
 
-### core.indexOfTextNode(textNode) ⇒ <code>number</code>
+## core.indexOfTextNode(textNode) ⇒ <code>number</code>
 Gets the index of a text node in its parent
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -248,7 +248,7 @@ Gets the index of a text node in its parent
 
 <a name="module_core.indexOfElementNode"></a>
 
-### core.indexOfElementNode(elementNode) ⇒ <code>number</code>
+## core.indexOfElementNode(elementNode) ⇒ <code>number</code>
 Gets the index of an element node in its parent
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -260,7 +260,7 @@ Gets the index of an element node in its parent
 
 <a name="module_core.isXml"></a>
 
-### core.isXml(ext) ⇒ <code>boolean</code>
+## core.isXml(ext) ⇒ <code>boolean</code>
 Check if extension is xml
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -271,7 +271,7 @@ Check if extension is xml
 
 <a name="module_core.createBlob"></a>
 
-### core.createBlob(content, mime) ⇒ <code>Blob</code>
+## core.createBlob(content, mime) ⇒ <code>Blob</code>
 Create a new blob
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -283,7 +283,7 @@ Create a new blob
 
 <a name="module_core.createBlobUrl"></a>
 
-### core.createBlobUrl(content, mime) ⇒ <code>string</code>
+## core.createBlobUrl(content, mime) ⇒ <code>string</code>
 Create a new blob url
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -296,7 +296,7 @@ Create a new blob url
 
 <a name="module_core.revokeBlobUrl"></a>
 
-### core.revokeBlobUrl(url)
+## core.revokeBlobUrl(url)
 Remove a blob url
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -307,7 +307,7 @@ Remove a blob url
 
 <a name="module_core.createBase64Url"></a>
 
-### core.createBase64Url(content, mime) ⇒ <code>string</code>
+## core.createBase64Url(content, mime) ⇒ <code>string</code>
 Create a new base64 encoded url
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -320,7 +320,7 @@ Create a new base64 encoded url
 
 <a name="module_core.type"></a>
 
-### core.type(obj) ⇒ <code>string</code>
+## core.type(obj) ⇒ <code>string</code>
 Get type of an object
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -332,7 +332,7 @@ Get type of an object
 
 <a name="module_core.parse"></a>
 
-### core.parse(markup, mime, forceXMLDom) ⇒ <code>document</code>
+## core.parse(markup, mime, forceXMLDom) ⇒ <code>document</code>
 Parse xml (or html) markup
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -346,7 +346,7 @@ Parse xml (or html) markup
 
 <a name="module_core.qs"></a>
 
-### core.qs(el, sel) ⇒ <code>element</code>
+## core.qs(el, sel) ⇒ <code>element</code>
 querySelector polyfill
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -359,7 +359,7 @@ querySelector polyfill
 
 <a name="module_core.qsa"></a>
 
-### core.qsa(el, sel) ⇒ <code>Array.&lt;element&gt;</code>
+## core.qsa(el, sel) ⇒ <code>Array.&lt;element&gt;</code>
 querySelectorAll polyfill
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -372,7 +372,7 @@ querySelectorAll polyfill
 
 <a name="module_core.qsp"></a>
 
-### core.qsp(el, sel, props) ⇒ <code>Array.&lt;element&gt;</code>
+## core.qsp(el, sel, props) ⇒ <code>Array.&lt;element&gt;</code>
 querySelector by property
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -386,7 +386,7 @@ querySelector by property
 
 <a name="module_core.blob2base64"></a>
 
-### core.blob2base64(blob) ⇒ <code>string</code>
+## core.blob2base64(blob) ⇒ <code>string</code>
 Convert a blob to a base64 encoded string
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -397,14 +397,14 @@ Convert a blob to a base64 encoded string
 
 <a name="module_core.defer"></a>
 
-### core.defer() ⇒ <code>object</code>
+## core.defer() ⇒ <code>object</code>
 Creates a new pending promise and provides methods to resolve or reject it.
 From: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred#backwards_forwards_compatible
 
 **Kind**: static method of [<code>core</code>](#module_core)  
 <a name="module_core.querySelectorByType"></a>
 
-### core.querySelectorByType(html, element, type) ⇒ <code>Array.&lt;element&gt;</code>
+## core.querySelectorByType(html, element, type) ⇒ <code>Array.&lt;element&gt;</code>
 querySelector with filter by epub type
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -418,7 +418,7 @@ querySelector with filter by epub type
 
 <a name="module_core.findChildren"></a>
 
-### core.findChildren(el) ⇒ <code>Array.&lt;element&gt;</code>
+## core.findChildren(el) ⇒ <code>Array.&lt;element&gt;</code>
 Find direct descendents of an element
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -430,7 +430,7 @@ Find direct descendents of an element
 
 <a name="module_core.parents"></a>
 
-### core.parents(node) ⇒ <code>Array.&lt;element&gt;</code>
+## core.parents(node) ⇒ <code>Array.&lt;element&gt;</code>
 Find all parents (ancestors) of an element
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -442,7 +442,7 @@ Find all parents (ancestors) of an element
 
 <a name="module_core.filterChildren"></a>
 
-### core.filterChildren(el, nodeName, [single]) ⇒ <code>Array.&lt;element&gt;</code>
+## core.filterChildren(el, nodeName, [single]) ⇒ <code>Array.&lt;element&gt;</code>
 Find all direct descendents of a specific type
 
 **Kind**: static method of [<code>core</code>](#module_core)  
@@ -456,7 +456,7 @@ Find all direct descendents of a specific type
 
 <a name="module_core.getParentByTagName"></a>
 
-### core.getParentByTagName(node, tagname) ⇒ <code>Array.&lt;element&gt;</code>
+## core.getParentByTagName(node, tagname) ⇒ <code>Array.&lt;element&gt;</code>
 Filter all parents (ancestors) with tag name
 
 **Kind**: static method of [<code>core</code>](#module_core)  

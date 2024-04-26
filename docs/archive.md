@@ -1,6 +1,6 @@
 <a name="Archive"></a>
 
-## Archive
+# Archive
 Handles Unzipping a requesting files from an Epub Archive
 
 **Kind**: global class  
@@ -17,7 +17,7 @@ Handles Unzipping a requesting files from an Epub Archive
 
 <a name="Archive+open"></a>
 
-### archive.open(input, [isBase64]) ⇒ <code>Promise</code>
+## archive.open(input, [isBase64]) ⇒ <code>Promise</code>
 Open an archive
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -30,7 +30,7 @@ Open an archive
 
 <a name="Archive+openUrl"></a>
 
-### archive.openUrl(zipUrl, [isBase64]) ⇒ <code>Promise</code>
+## archive.openUrl(zipUrl, [isBase64]) ⇒ <code>Promise</code>
 Load and Open an archive
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -43,7 +43,7 @@ Load and Open an archive
 
 <a name="Archive+request"></a>
 
-### archive.request(url, [type]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
+## archive.request(url, [type]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
 Request a url from the archive
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -55,7 +55,7 @@ Request a url from the archive
 
 <a name="Archive+getBlob"></a>
 
-### archive.getBlob(url, [mimeType]) ⇒ <code>Blob</code>
+## archive.getBlob(url, [mimeType]) ⇒ <code>Blob</code>
 Get a Blob from Archive by Url
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -67,7 +67,7 @@ Get a Blob from Archive by Url
 
 <a name="Archive+getText"></a>
 
-### archive.getText(url, [encoding]) ⇒ <code>string</code>
+## archive.getText(url, [encoding]) ⇒ <code>string</code>
 Get Text from Archive by Url
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -79,7 +79,7 @@ Get Text from Archive by Url
 
 <a name="Archive+getBase64"></a>
 
-### archive.getBase64(url, [mimeType]) ⇒ <code>string</code>
+## archive.getBase64(url, [mimeType]) ⇒ <code>string</code>
 Get a base64 encoded result from Archive by Url
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -92,7 +92,7 @@ Get a base64 encoded result from Archive by Url
 
 <a name="Archive+createUrl"></a>
 
-### archive.createUrl(url) ⇒ <code>Promise</code>
+## archive.createUrl(url) ⇒ <code>Promise</code>
 Create a Url from an unarchived item
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -105,7 +105,7 @@ Create a Url from an unarchived item
 
 <a name="Archive+revokeUrl"></a>
 
-### archive.revokeUrl(url)
+## archive.revokeUrl(url)
 Revoke Temp Url for a archive item
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  

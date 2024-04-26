@@ -1,6 +1,6 @@
 <a name="Snap"></a>
 
-## Snap
+# Snap
 Snap
 
 **Kind**: global class  
@@ -30,7 +30,7 @@ Snap
 
 <a name="new_Snap_new"></a>
 
-### new Snap(manager, options)
+## new Snap(manager, options)
 
 | Param | Type |
 | --- | --- |
@@ -39,7 +39,7 @@ Snap
 
 <a name="Snap+setup"></a>
 
-### snap.setup(manager)
+## snap.setup(manager)
 setup
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -50,37 +50,37 @@ setup
 
 <a name="Snap+supportsTouch"></a>
 
-### snap.supportsTouch() ⇒ <code>boolean</code>
+## snap.supportsTouch() ⇒ <code>boolean</code>
 supportsTouch
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+disableScroll"></a>
 
-### snap.disableScroll()
+## snap.disableScroll()
 disableScroll
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+enableScroll"></a>
 
-### snap.enableScroll()
+## snap.enableScroll()
 enableScroll
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+addListeners"></a>
 
-### snap.addListeners()
+## snap.addListeners()
 addListeners
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+removeListeners"></a>
 
-### snap.removeListeners()
+## snap.removeListeners()
 removeListeners
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+afterDisplayed"></a>
 
-### snap.afterDisplayed(view)
+## snap.afterDisplayed(view)
 afterDisplayed
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -91,7 +91,7 @@ afterDisplayed
 
 <a name="Snap+triggerViewEvent"></a>
 
-### snap.triggerViewEvent(e, contents)
+## snap.triggerViewEvent(e, contents)
 triggerViewEvent
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -103,7 +103,7 @@ triggerViewEvent
 
 <a name="Snap+onScroll"></a>
 
-### snap.onScroll(e)
+## snap.onScroll(e)
 onScroll
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -114,7 +114,7 @@ onScroll
 
 <a name="Snap+onResize"></a>
 
-### snap.onResize(e)
+## snap.onResize(e)
 onResize
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -125,7 +125,7 @@ onResize
 
 <a name="Snap+onTouchStart"></a>
 
-### snap.onTouchStart(e)
+## snap.onTouchStart(e)
 onTouchStart
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -136,7 +136,7 @@ onTouchStart
 
 <a name="Snap+onTouchMove"></a>
 
-### snap.onTouchMove(e)
+## snap.onTouchMove(e)
 onTouchMove
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -147,7 +147,7 @@ onTouchMove
 
 <a name="Snap+onTouchEnd"></a>
 
-### snap.onTouchEnd(e)
+## snap.onTouchEnd(e)
 onTouchEnd
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -158,19 +158,19 @@ onTouchEnd
 
 <a name="Snap+wasSwiped"></a>
 
-### snap.wasSwiped() ⇒ <code>number</code>
+## snap.wasSwiped() ⇒ <code>number</code>
 wasSwiped
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+needsSnap"></a>
 
-### snap.needsSnap() ⇒ <code>boolean</code>
+## snap.needsSnap() ⇒ <code>boolean</code>
 needsSnap
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+snap"></a>
 
-### snap.snap([howMany]) ⇒ <code>Promise</code>
+## snap.snap([howMany]) ⇒ <code>Promise</code>
 snap
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -181,7 +181,7 @@ snap
 
 <a name="Snap+smoothScrollTo"></a>
 
-### snap.smoothScrollTo(destination) ⇒ <code>Promise</code>
+## snap.smoothScrollTo(destination) ⇒ <code>Promise</code>
 smoothScrollTo
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -192,7 +192,7 @@ smoothScrollTo
 
 <a name="Snap+scrollTo"></a>
 
-### snap.scrollTo([left], [top])
+## snap.scrollTo([left], [top])
 scrollTo
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
@@ -204,13 +204,13 @@ scrollTo
 
 <a name="Snap+now"></a>
 
-### snap.now() ⇒ <code>number</code>
+## snap.now() ⇒ <code>number</code>
 now
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  
 <a name="Snap+destroy"></a>
 
-### snap.destroy() ⇒ <code>void</code>
+## snap.destroy() ⇒ <code>void</code>
 destroy
 
 **Kind**: instance method of [<code>Snap</code>](#Snap)  

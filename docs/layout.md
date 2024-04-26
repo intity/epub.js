@@ -1,6 +1,6 @@
 <a name="Layout"></a>
 
-## Layout
+# Layout
 Figures out the CSS values to apply for a layout
 
 **Kind**: global class  
@@ -15,7 +15,7 @@ Figures out the CSS values to apply for a layout
 
 <a name="new_Layout_new"></a>
 
-### new Layout(settings)
+## new Layout(settings)
 
 | Param | Type | Default |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Figures out the CSS values to apply for a layout
 
 <a name="Layout+flow"></a>
 
-### layout.flow(flow) ⇒ <code>string</code>
+## layout.flow(flow) ⇒ <code>string</code>
 Switch the flow between paginated and scrolled
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
@@ -39,7 +39,7 @@ Switch the flow between paginated and scrolled
 
 <a name="Layout+spread"></a>
 
-### layout.spread(spread, min) ⇒ <code>boolean</code>
+## layout.spread(spread, min) ⇒ <code>boolean</code>
 Switch between using spreads or not, and set the
 width at which they switch to single.
 
@@ -53,7 +53,7 @@ width at which they switch to single.
 
 <a name="Layout+calculate"></a>
 
-### layout.calculate(_width, _height, _gap)
+## layout.calculate(_width, _height, _gap)
 Calculate the dimensions of the pagination
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
@@ -66,7 +66,7 @@ Calculate the dimensions of the pagination
 
 <a name="Layout+format"></a>
 
-### layout.format(contents) ⇒ <code>Promise</code>
+## layout.format(contents) ⇒ <code>Promise</code>
 Apply Css to a Document
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
@@ -77,7 +77,7 @@ Apply Css to a Document
 
 <a name="Layout+count"></a>
 
-### layout.count(totalLength, pageLength) ⇒ <code>Object</code>
+## layout.count(totalLength, pageLength) ⇒ <code>Object</code>
 Count number of pages
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  

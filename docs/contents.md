@@ -1,6 +1,6 @@
 <a name="Contents"></a>
 
-## Contents
+# Contents
 Handles DOM manipulation, queries and events for View contents
 
 **Kind**: global class  
@@ -43,7 +43,7 @@ Handles DOM manipulation, queries and events for View contents
 
 <a name="new_Contents_new"></a>
 
-### new Contents(doc, content, cfiBase, sectionIndex)
+## new Contents(doc, content, cfiBase, sectionIndex)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ Handles DOM manipulation, queries and events for View contents
 
 <a name="Contents+width"></a>
 
-### contents.width([w]) ⇒ <code>number</code>
+## contents.width([w]) ⇒ <code>number</code>
 Get or Set width
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -66,7 +66,7 @@ Get or Set width
 
 <a name="Contents+height"></a>
 
-### contents.height([h]) ⇒ <code>number</code>
+## contents.height([h]) ⇒ <code>number</code>
 Get or Set height
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -78,7 +78,7 @@ Get or Set height
 
 <a name="Contents+contentWidth"></a>
 
-### contents.contentWidth([w]) ⇒ <code>number</code>
+## contents.contentWidth([w]) ⇒ <code>number</code>
 Get or Set width of the contents
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -90,7 +90,7 @@ Get or Set width of the contents
 
 <a name="Contents+contentHeight"></a>
 
-### contents.contentHeight([h]) ⇒ <code>number</code>
+## contents.contentHeight([h]) ⇒ <code>number</code>
 Get or Set height of the contents
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -102,35 +102,35 @@ Get or Set height of the contents
 
 <a name="Contents+textWidth"></a>
 
-### contents.textWidth() ⇒ <code>number</code>
+## contents.textWidth() ⇒ <code>number</code>
 Get the width of the text using Range
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 **Returns**: <code>number</code> - width  
 <a name="Contents+textHeight"></a>
 
-### contents.textHeight() ⇒ <code>number</code>
+## contents.textHeight() ⇒ <code>number</code>
 Get the height of the text using Range
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 **Returns**: <code>number</code> - height  
 <a name="Contents+scrollWidth"></a>
 
-### contents.scrollWidth() ⇒ <code>number</code>
+## contents.scrollWidth() ⇒ <code>number</code>
 Get documentElement scrollWidth
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 **Returns**: <code>number</code> - width  
 <a name="Contents+scrollHeight"></a>
 
-### contents.scrollHeight() ⇒ <code>number</code>
+## contents.scrollHeight() ⇒ <code>number</code>
 Get documentElement scrollHeight
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 **Returns**: <code>number</code> - height  
 <a name="Contents+overflow"></a>
 
-### contents.overflow([overflow])
+## contents.overflow([overflow])
 Set overflow css style of the contents
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -141,7 +141,7 @@ Set overflow css style of the contents
 
 <a name="Contents+overflowX"></a>
 
-### contents.overflowX([overflow])
+## contents.overflowX([overflow])
 Set overflowX css style of the documentElement
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -152,7 +152,7 @@ Set overflowX css style of the documentElement
 
 <a name="Contents+overflowY"></a>
 
-### contents.overflowY([overflow])
+## contents.overflowY([overflow])
 Set overflowY css style of the documentElement
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -163,7 +163,7 @@ Set overflowY css style of the documentElement
 
 <a name="Contents+css"></a>
 
-### contents.css(property, value, [priority])
+## contents.css(property, value, [priority])
 Set Css styles on the contents element (typically Body)
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -176,7 +176,7 @@ Set Css styles on the contents element (typically Body)
 
 <a name="Contents+viewport"></a>
 
-### contents.viewport([options])
+## contents.viewport([options])
 Get or Set the viewport element
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -193,14 +193,14 @@ Get or Set the viewport element
 
 <a name="Contents+root"></a>
 
-### contents.root() ⇒ <code>element</code>
+## contents.root() ⇒ <code>element</code>
 Get the documentElement
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 **Returns**: <code>element</code> - documentElement  
 <a name="Contents+locationOf"></a>
 
-### contents.locationOf(target, [ignoreClass]) ⇒ <code>object</code>
+## contents.locationOf(target, [ignoreClass]) ⇒ <code>object</code>
 Get the location offset of a EpubCFI or an #id
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -213,7 +213,7 @@ Get the location offset of a EpubCFI or an #id
 
 <a name="Contents+addStylesheet"></a>
 
-### contents.addStylesheet(src)
+## contents.addStylesheet(src)
 Append a stylesheet link to the document head
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -224,7 +224,7 @@ Append a stylesheet link to the document head
 
 <a name="Contents+addStylesheetCss"></a>
 
-### contents.addStylesheetCss(serializedCss, key)
+## contents.addStylesheetCss(serializedCss, key)
 Append stylesheet css
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -236,7 +236,7 @@ Append stylesheet css
 
 <a name="Contents+addStylesheetRules"></a>
 
-### contents.addStylesheetRules(rules, key)
+## contents.addStylesheetRules(rules, key)
 Append stylesheet rules to a generate stylesheet
 Array: https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
 Object: https://github.com/desirable-objects/json-to-css
@@ -250,7 +250,7 @@ Object: https://github.com/desirable-objects/json-to-css
 
 <a name="Contents+addScript"></a>
 
-### contents.addScript(src) ⇒ <code>Promise</code>
+## contents.addScript(src) ⇒ <code>Promise</code>
 Append a script tag to the document head
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -262,7 +262,7 @@ Append a script tag to the document head
 
 <a name="Contents+addClass"></a>
 
-### contents.addClass(className)
+## contents.addClass(className)
 Add a class to the contents container
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -273,7 +273,7 @@ Add a class to the contents container
 
 <a name="Contents+removeClass"></a>
 
-### contents.removeClass(removeClass)
+## contents.removeClass(removeClass)
 Remove a class from the contents container
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -284,7 +284,7 @@ Remove a class from the contents container
 
 <a name="Contents+range"></a>
 
-### contents.range(_cfi, [ignoreClass]) ⇒ <code>Range</code>
+## contents.range(_cfi, [ignoreClass]) ⇒ <code>Range</code>
 Get a Dom Range from EpubCFI
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -297,7 +297,7 @@ Get a Dom Range from EpubCFI
 
 <a name="Contents+cfiFromRange"></a>
 
-### contents.cfiFromRange(range, [ignoreClass]) ⇒ <code>EpubCFI</code>
+## contents.cfiFromRange(range, [ignoreClass]) ⇒ <code>EpubCFI</code>
 Get an EpubCFI from a Dom Range
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -310,7 +310,7 @@ Get an EpubCFI from a Dom Range
 
 <a name="Contents+cfiFromNode"></a>
 
-### contents.cfiFromNode(node, [ignoreClass]) ⇒ <code>EpubCFI</code>
+## contents.cfiFromNode(node, [ignoreClass]) ⇒ <code>EpubCFI</code>
 Get an EpubCFI from a Dom node
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -323,7 +323,7 @@ Get an EpubCFI from a Dom node
 
 <a name="Contents+size"></a>
 
-### contents.size([width], [height])
+## contents.size([width], [height])
 Size the contents to a given width and height
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -335,7 +335,7 @@ Size the contents to a given width and height
 
 <a name="Contents+columns"></a>
 
-### contents.columns(width, height, columnWidth, gap)
+## contents.columns(width, height, columnWidth, gap)
 Apply columns to the contents for pagination
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -349,7 +349,7 @@ Apply columns to the contents for pagination
 
 <a name="Contents+scaler"></a>
 
-### contents.scaler(scale, offsetX, offsetY)
+## contents.scaler(scale, offsetX, offsetY)
 Scale contents from center
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -362,7 +362,7 @@ Scale contents from center
 
 <a name="Contents+fit"></a>
 
-### contents.fit(width, height)
+## contents.fit(width, height)
 Fit contents into a fixed width and height
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -374,7 +374,7 @@ Fit contents into a fixed width and height
 
 <a name="Contents+direction"></a>
 
-### contents.direction([dir])
+## contents.direction([dir])
 Set the direction of the text
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -385,7 +385,7 @@ Set the direction of the text
 
 <a name="Contents+writingMode"></a>
 
-### contents.writingMode([mode])
+## contents.writingMode([mode])
 Set the writingMode of the text
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -396,7 +396,7 @@ Set the writingMode of the text
 
 <a name="Contents.listenedEvents"></a>
 
-### Contents.listenedEvents
+## Contents.listenedEvents
 Get DOM events that are listened for and passed along
 
 **Kind**: static property of [<code>Contents</code>](#Contents)  

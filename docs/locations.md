@@ -1,6 +1,6 @@
 <a name="Locations"></a>
 
-## Locations
+# Locations
 Find Locations for a Book
 
 **Kind**: global class  
@@ -22,7 +22,7 @@ Find Locations for a Book
 
 <a name="new_Locations_new"></a>
 
-### new Locations(spine, request, [pause])
+## new Locations(spine, request, [pause])
 
 | Param | Type | Default |
 | --- | --- | --- |
@@ -32,19 +32,19 @@ Find Locations for a Book
 
 <a name="Locations+currentLocation"></a>
 
-### locations.currentLocation
+## locations.currentLocation
 Get the current location
 
 **Kind**: instance property of [<code>Locations</code>](#Locations)  
 <a name="Locations+currentLocation"></a>
 
-### locations.currentLocation
+## locations.currentLocation
 Set the current location
 
 **Kind**: instance property of [<code>Locations</code>](#Locations)  
 <a name="Locations+generate"></a>
 
-### locations.generate(chars) ⇒ <code>Promise.&lt;Array.&lt;string&gt;&gt;</code>
+## locations.generate(chars) ⇒ <code>Promise.&lt;Array.&lt;string&gt;&gt;</code>
 Load all of sections in the book to generate locations
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -56,7 +56,7 @@ Load all of sections in the book to generate locations
 
 <a name="Locations+generateFromWords"></a>
 
-### locations.generateFromWords(startCfi, wordCount, count) ⇒ <code>object</code>
+## locations.generateFromWords(startCfi, wordCount, count) ⇒ <code>object</code>
 Load all of sections in the book to generate locations
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -70,7 +70,7 @@ Load all of sections in the book to generate locations
 
 <a name="Locations+locationFromCfi"></a>
 
-### locations.locationFromCfi(cfi) ⇒ <code>number</code>
+## locations.locationFromCfi(cfi) ⇒ <code>number</code>
 Get a location from an EpubCFI
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -81,7 +81,7 @@ Get a location from an EpubCFI
 
 <a name="Locations+percentageFromCfi"></a>
 
-### locations.percentageFromCfi(cfi) ⇒ <code>number</code>
+## locations.percentageFromCfi(cfi) ⇒ <code>number</code>
 Get a percentage position in locations from an EpubCFI
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -92,7 +92,7 @@ Get a percentage position in locations from an EpubCFI
 
 <a name="Locations+percentageFromLocation"></a>
 
-### locations.percentageFromLocation(location) ⇒ <code>number</code>
+## locations.percentageFromLocation(location) ⇒ <code>number</code>
 Get a percentage position from a location index
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -103,7 +103,7 @@ Get a percentage position from a location index
 
 <a name="Locations+cfiFromLocation"></a>
 
-### locations.cfiFromLocation(loc) ⇒ <code>EpubCFI</code>
+## locations.cfiFromLocation(loc) ⇒ <code>EpubCFI</code>
 Get an EpubCFI from location index
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -115,7 +115,7 @@ Get an EpubCFI from location index
 
 <a name="Locations+cfiFromPercentage"></a>
 
-### locations.cfiFromPercentage(percentage) ⇒ <code>EpubCFI</code>
+## locations.cfiFromPercentage(percentage) ⇒ <code>EpubCFI</code>
 Get an EpubCFI from location percentage
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -127,7 +127,7 @@ Get an EpubCFI from location percentage
 
 <a name="Locations+load"></a>
 
-### locations.load(locations)
+## locations.load(locations)
 Load locations from JSON
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
@@ -138,13 +138,13 @@ Load locations from JSON
 
 <a name="Locations+save"></a>
 
-### locations.save() ⇒ <code>json</code>
+## locations.save() ⇒ <code>json</code>
 Save locations to JSON
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  
 <a name="Locations+length"></a>
 
-### locations.length()
+## locations.length()
 Locations length
 
 **Kind**: instance method of [<code>Locations</code>](#Locations)  

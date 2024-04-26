@@ -1,6 +1,6 @@
 <a name="Stage"></a>
 
-## Stage
+# Stage
 Stage
 
 **Kind**: global class  
@@ -25,7 +25,7 @@ Stage
 
 <a name="new_Stage_new"></a>
 
-### new Stage(options)
+## new Stage(options)
 
 | Param | Type |
 | --- | --- |
@@ -38,7 +38,7 @@ Stage
 
 <a name="Stage+create"></a>
 
-### stage.create(options) ⇒ <code>Element</code>
+## stage.create(options) ⇒ <code>Element</code>
 Creates an element to render to.
 Resizes to passed width and height or to the elements size
 
@@ -51,7 +51,7 @@ Resizes to passed width and height or to the elements size
 
 <a name="Stage+wrap"></a>
 
-### stage.wrap(container) ⇒ <code>Element</code>
+## stage.wrap(container) ⇒ <code>Element</code>
 wrap
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -63,7 +63,7 @@ wrap
 
 <a name="Stage+getElement"></a>
 
-### stage.getElement(element) ⇒ <code>Element</code>
+## stage.getElement(element) ⇒ <code>Element</code>
 getElement
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -74,7 +74,7 @@ getElement
 
 <a name="Stage+attachTo"></a>
 
-### stage.attachTo(what) ⇒ <code>Element</code>
+## stage.attachTo(what) ⇒ <code>Element</code>
 attachTo
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -85,14 +85,14 @@ attachTo
 
 <a name="Stage+getContainer"></a>
 
-### stage.getContainer() ⇒ <code>Element</code>
+## stage.getContainer() ⇒ <code>Element</code>
 getContainer
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: <code>Element</code> - container  
 <a name="Stage+onResize"></a>
 
-### stage.onResize(func)
+## stage.onResize(func)
 onResize
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -103,7 +103,7 @@ onResize
 
 <a name="Stage+onOrientationChange"></a>
 
-### stage.onOrientationChange(func)
+## stage.onOrientationChange(func)
 onOrientationChange
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -114,7 +114,7 @@ onOrientationChange
 
 <a name="Stage+size"></a>
 
-### stage.size(width, height) ⇒ <code>object</code>
+## stage.size(width, height) ⇒ <code>object</code>
 size
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -126,19 +126,19 @@ size
 
 <a name="Stage+bounds"></a>
 
-### stage.bounds() ⇒ <code>object</code>
+## stage.bounds() ⇒ <code>object</code>
 bounds
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+getSheet"></a>
 
-### stage.getSheet() ⇒ <code>CSSStyleSheet</code>
+## stage.getSheet() ⇒ <code>CSSStyleSheet</code>
 getSheet
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+addStyleRules"></a>
 
-### stage.addStyleRules(selector, rulesArray)
+## stage.addStyleRules(selector, rulesArray)
 addStyleRules
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -150,7 +150,7 @@ addStyleRules
 
 <a name="Stage+axis"></a>
 
-### stage.axis(axis)
+## stage.axis(axis)
 axis
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -161,7 +161,7 @@ axis
 
 <a name="Stage+direction"></a>
 
-### stage.direction(dir)
+## stage.direction(dir)
 direction
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -172,7 +172,7 @@ direction
 
 <a name="Stage+overflow"></a>
 
-### stage.overflow(overflow)
+## stage.overflow(overflow)
 overflow
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -183,7 +183,7 @@ overflow
 
 <a name="Stage+destroy"></a>
 
-### stage.destroy()
+## stage.destroy()
 destroy
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  

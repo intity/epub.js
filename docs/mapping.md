@@ -1,6 +1,6 @@
 <a name="Mapping"></a>
 
-## Mapping
+# Mapping
 Map text locations to CFI ranges
 
 **Kind**: global class  
@@ -13,7 +13,7 @@ Map text locations to CFI ranges
 
 <a name="new_Mapping_new"></a>
 
-### new Mapping(layout, [direction], [axis], [dev])
+## new Mapping(layout, [direction], [axis], [dev])
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -24,13 +24,13 @@ Map text locations to CFI ranges
 
 <a name="Mapping+section"></a>
 
-### mapping.section()
+## mapping.section()
 Find CFI pairs for entire section at once
 
 **Kind**: instance method of [<code>Mapping</code>](#Mapping)  
 <a name="Mapping+page"></a>
 
-### mapping.page(contents, cfiBase, start, end)
+## mapping.page(contents, cfiBase, start, end)
 Find CFI pairs for a page
 
 **Kind**: instance method of [<code>Mapping</code>](#Mapping)  
@@ -44,7 +44,7 @@ Find CFI pairs for a page
 
 <a name="Mapping+axis"></a>
 
-### mapping.axis(axis) ⇒ <code>boolean</code>
+## mapping.axis(axis) ⇒ <code>boolean</code>
 Set the axis for mapping
 
 **Kind**: instance method of [<code>Mapping</code>](#Mapping)  

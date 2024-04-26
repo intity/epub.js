@@ -1,6 +1,6 @@
 <a name="DisplayOptions"></a>
 
-## DisplayOptions
+# DisplayOptions
 Open DisplayOptions Format Parser
 
 **Kind**: global class  
@@ -11,7 +11,7 @@ Open DisplayOptions Format Parser
 
 <a name="new_DisplayOptions_new"></a>
 
-### new DisplayOptions(displayOptionsDocument)
+## new DisplayOptions(displayOptionsDocument)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ Open DisplayOptions Format Parser
 
 <a name="DisplayOptions+parse"></a>
 
-### displayOptions.parse(displayOptionsDocument) ⇒ [<code>DisplayOptions</code>](#DisplayOptions)
+## displayOptions.parse(displayOptionsDocument) ⇒ [<code>DisplayOptions</code>](#DisplayOptions)
 Parse XML
 
 **Kind**: instance method of [<code>DisplayOptions</code>](#DisplayOptions)  

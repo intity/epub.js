@@ -1,6 +1,6 @@
 <a name="Rendition"></a>
 
-## Rendition
+# Rendition
 Displays an Epub as a series of Views for each Section.
 Requires Manager and View class to handle specifics of rendering
 the section content.
@@ -52,7 +52,7 @@ the section content.
 
 <a name="new_Rendition_new"></a>
 
-### new Rendition(book, [options])
+## new Rendition(book, [options])
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -76,7 +76,7 @@ the section content.
 
 <a name="Rendition+setManager"></a>
 
-### rendition.setManager(manager)
+## rendition.setManager(manager)
 Set the manager function
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -87,7 +87,7 @@ Set the manager function
 
 <a name="Rendition+requireManager"></a>
 
-### rendition.requireManager(manager) ⇒ <code>method</code>
+## rendition.requireManager(manager) ⇒ <code>method</code>
 Require the manager from passed string, or as a class function
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -98,7 +98,7 @@ Require the manager from passed string, or as a class function
 
 <a name="Rendition+requireView"></a>
 
-### rendition.requireView(view) ⇒ <code>view</code>
+## rendition.requireView(view) ⇒ <code>view</code>
 Require the view from passed string, or as a class function
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -109,14 +109,14 @@ Require the view from passed string, or as a class function
 
 <a name="Rendition+start"></a>
 
-### rendition.start() ⇒ <code>Promise</code>
+## rendition.start() ⇒ <code>Promise</code>
 Start the rendering
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 **Returns**: <code>Promise</code> - rendering has started  
 <a name="Rendition+attachTo"></a>
 
-### rendition.attachTo(element) ⇒ <code>Promise</code>
+## rendition.attachTo(element) ⇒ <code>Promise</code>
 Call to attach the container to an element in the dom
 Container must be attached before rendering can begin
 
@@ -128,7 +128,7 @@ Container must be attached before rendering can begin
 
 <a name="Rendition+display"></a>
 
-### rendition.display(target) ⇒ <code>Promise</code>
+## rendition.display(target) ⇒ <code>Promise</code>
 Display a point in the book
 The request will be added to the rendering Queue,
 so it will wait until book is opened, rendering started
@@ -142,7 +142,7 @@ and all other rendering tasks have finished to be called.
 
 <a name="Rendition+moveTo"></a>
 
-### rendition.moveTo(offset)
+## rendition.moveTo(offset)
 Move the Rendition to a specific offset
 Usually you would be better off calling display()
 
@@ -154,7 +154,7 @@ Usually you would be better off calling display()
 
 <a name="Rendition+resize"></a>
 
-### rendition.resize([width], [height], [epubcfi])
+## rendition.resize([width], [height], [epubcfi])
 Trigger a resize of the views
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -167,25 +167,25 @@ Trigger a resize of the views
 
 <a name="Rendition+clear"></a>
 
-### rendition.clear()
+## rendition.clear()
 Clear all rendered views
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+next"></a>
 
-### rendition.next() ⇒ <code>Promise</code>
+## rendition.next() ⇒ <code>Promise</code>
 Go to the next "page" in the rendition
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+prev"></a>
 
-### rendition.prev() ⇒ <code>Promise</code>
+## rendition.prev() ⇒ <code>Promise</code>
 Go to the previous "page" in the rendition
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+flow"></a>
 
-### rendition.flow(flow)
+## rendition.flow(flow)
 Adjust the flow of the rendition to paginated or scrolled
 (scrolled-continuous vs scrolled-doc are handled by different view managers)
 
@@ -197,7 +197,7 @@ Adjust the flow of the rendition to paginated or scrolled
 
 <a name="Rendition+layout"></a>
 
-### rendition.layout(settings)
+## rendition.layout(settings)
 Adjust the layout of the rendition to reflowable or pre-paginated
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -208,7 +208,7 @@ Adjust the layout of the rendition to reflowable or pre-paginated
 
 <a name="Rendition+spread"></a>
 
-### rendition.spread(spread, [min])
+## rendition.spread(spread, [min])
 Adjust if the rendition uses spreads
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -220,7 +220,7 @@ Adjust if the rendition uses spreads
 
 <a name="Rendition+direction"></a>
 
-### rendition.direction(dir)
+## rendition.direction(dir)
 Adjust the direction of the rendition
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -231,27 +231,27 @@ Adjust the direction of the rendition
 
 <a name="Rendition+reportLocation"></a>
 
-### rendition.reportLocation()
+## rendition.reportLocation()
 Report the current location
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 **Emits**: <code>event:relocated</code>, <code>event:locationChanged</code>  
 <a name="Rendition+currentLocation"></a>
 
-### rendition.currentLocation() ⇒ <code>displayedLocation</code> \| <code>promise</code>
+## rendition.currentLocation() ⇒ <code>displayedLocation</code> \| <code>promise</code>
 Get the Current Location object
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 **Returns**: <code>displayedLocation</code> \| <code>promise</code> - location (may be a promise)  
 <a name="Rendition+destroy"></a>
 
-### rendition.destroy()
+## rendition.destroy()
 Remove and Clean Up the Rendition
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+getRange"></a>
 
-### rendition.getRange(cfi, ignoreClass) ⇒ <code>range</code>
+## rendition.getRange(cfi, ignoreClass) ⇒ <code>range</code>
 Get a Range from a Visible CFI
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -263,19 +263,19 @@ Get a Range from a Visible CFI
 
 <a name="Rendition+getContents"></a>
 
-### rendition.getContents() ⇒ <code>Array.&lt;Contents&gt;</code>
+## rendition.getContents() ⇒ <code>Array.&lt;Contents&gt;</code>
 Get the Contents object of each rendered view
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+views"></a>
 
-### rendition.views() ⇒ <code>Views</code>
+## rendition.views() ⇒ <code>Views</code>
 Get the views member from the manager
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.hooks"></a>
 
-### Rendition.hooks : <code>object</code>
+## Rendition.hooks : <code>object</code>
 Adds Hook methods to the Rendition prototype
 
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
@@ -287,33 +287,33 @@ Adds Hook methods to the Rendition prototype
 
 <a name="Rendition.themes"></a>
 
-### Rendition.themes : <code>Themes</code>
+## Rendition.themes : <code>Themes</code>
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.annotations"></a>
 
-### Rendition.annotations : <code>Annotations</code>
+## Rendition.annotations : <code>Annotations</code>
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.started"></a>
 
-### Rendition.started : <code>promise</code>
+## Rendition.started : <code>promise</code>
 returns after the rendition has started
 
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.event_started"></a>
 
-### "started"
+## "started"
 Emit that rendering has started
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.event_attached"></a>
 
-### "attached"
+## "attached"
 Emit that rendering has attached to an element
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.event_displayed"></a>
 
-### "displayed" (section)
+## "displayed" (section)
 Emit that a section has been displayed
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -324,7 +324,7 @@ Emit that a section has been displayed
 
 <a name="Rendition.event_displayError"></a>
 
-### "displayError" (section)
+## "displayError" (section)
 Emit that has been an error displaying
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -335,7 +335,7 @@ Emit that has been an error displaying
 
 <a name="Rendition.event_rendered"></a>
 
-### "rendered" (section, view)
+## "rendered" (section, view)
 Emit that a section has been rendered
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -347,7 +347,7 @@ Emit that a section has been rendered
 
 <a name="Rendition.event_removed"></a>
 
-### "removed" (section, view)
+## "removed" (section, view)
 Emit that a section has been removed
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -359,7 +359,7 @@ Emit that a section has been removed
 
 <a name="Rendition.event_resized"></a>
 
-### "resized" (width, height, epubcfi)
+## "resized" (width, height, epubcfi)
 Emit that the rendition has been resized
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -372,7 +372,7 @@ Emit that the rendition has been resized
 
 <a name="Rendition.event_orientationchange"></a>
 
-### "orientationchange" (orientation)
+## "orientationchange" (orientation)
 Emit that the rendition has been rotated
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -383,7 +383,7 @@ Emit that the rendition has been rotated
 
 <a name="Rendition.event_locationChanged"></a>
 
-### ~~"locationChanged"~~
+## ~~"locationChanged"~~
 ***Deprecated***
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -399,11 +399,11 @@ Emit that the rendition has been rotated
 
 <a name="Rendition.event_relocated"></a>
 
-### "relocated"
+## "relocated"
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.event_selected"></a>
 
-### "selected" (cfirange, contents)
+## "selected" (cfirange, contents)
 Emit that a text selection has occurred
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -415,7 +415,7 @@ Emit that a text selection has occurred
 
 <a name="Rendition.event_markClicked"></a>
 
-### "markClicked" (cfirange, data, contents)
+## "markClicked" (cfirange, data, contents)
 Emit that a mark was clicked
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
@@ -428,7 +428,7 @@ Emit that a mark was clicked
 
 <a name="Rendition.location"></a>
 
-### Rendition.location : <code>Object</code>
+## Rendition.location : <code>Object</code>
 A Rendered Location Range
 
 **Kind**: static typedef of [<code>Rendition</code>](#Rendition)  

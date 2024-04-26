@@ -1,6 +1,6 @@
 <a name="Container"></a>
 
-## Container
+# Container
 Handles Parsing and Accessing an Epub Container
 
 **Kind**: global class  
@@ -11,7 +11,7 @@ Handles Parsing and Accessing an Epub Container
 
 <a name="new_Container_new"></a>
 
-### new Container([containerDocument])
+## new Container([containerDocument])
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ Handles Parsing and Accessing an Epub Container
 
 <a name="Container+parse"></a>
 
-### container.parse(containerDocument)
+## container.parse(containerDocument)
 Parse the Container XML
 
 **Kind**: instance method of [<code>Container</code>](#Container)  

@@ -1,6 +1,6 @@
 <a name="Section"></a>
 
-## Section
+# Section
 Represents a Section of the Book
 
 In most books this is equivalent to a Chapter
@@ -20,7 +20,7 @@ In most books this is equivalent to a Chapter
 
 <a name="new_Section_new"></a>
 
-### new Section(item, hooks)
+## new Section(item, hooks)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ In most books this is equivalent to a Chapter
 
 <a name="Section+load"></a>
 
-### section.load([_request]) ⇒ <code>document</code>
+## section.load([_request]) ⇒ <code>document</code>
 Load the section from its url
 
 **Kind**: instance method of [<code>Section</code>](#Section)  
@@ -41,7 +41,7 @@ Load the section from its url
 
 <a name="Section+render"></a>
 
-### section.render([_request]) ⇒ <code>string</code>
+## section.render([_request]) ⇒ <code>string</code>
 Render the contents of a section
 
 **Kind**: instance method of [<code>Section</code>](#Section)  
@@ -53,7 +53,7 @@ Render the contents of a section
 
 <a name="Section+find"></a>
 
-### section.find(_query) ⇒ <code>Array.&lt;object&gt;</code>
+## section.find(_query) ⇒ <code>Array.&lt;object&gt;</code>
 Find a string in a section
 
 **Kind**: instance method of [<code>Section</code>](#Section)  
@@ -65,7 +65,7 @@ Find a string in a section
 
 <a name="Section+search"></a>
 
-### section.search(_query, maxSeqEle) ⇒ <code>Array.&lt;object&gt;</code>
+## section.search(_query, maxSeqEle) ⇒ <code>Array.&lt;object&gt;</code>
 Search a string in multiple sequential Element of the section. If the document.createTreeWalker api is missed(eg: IE8), use `find` as a fallback.
 
 **Kind**: instance method of [<code>Section</code>](#Section)  
@@ -78,7 +78,7 @@ Search a string in multiple sequential Element of the section. If the document.c
 
 <a name="Section+reconcileLayoutSettings"></a>
 
-### section.reconcileLayoutSettings(globalLayout) ⇒ <code>object</code>
+## section.reconcileLayoutSettings(globalLayout) ⇒ <code>object</code>
 Reconciles the current chapters layout properties with
 the global layout properties.
 
@@ -91,7 +91,7 @@ the global layout properties.
 
 <a name="Section+cfiFromRange"></a>
 
-### section.cfiFromRange(_range) ⇒ <code>string</code>
+## section.cfiFromRange(_range) ⇒ <code>string</code>
 Get a CFI from a Range in the Section
 
 **Kind**: instance method of [<code>Section</code>](#Section)  
@@ -103,7 +103,7 @@ Get a CFI from a Range in the Section
 
 <a name="Section+cfiFromElement"></a>
 
-### section.cfiFromElement(el) ⇒ <code>string</code>
+## section.cfiFromElement(el) ⇒ <code>string</code>
 Get a CFI from an Element in the Section
 
 **Kind**: instance method of [<code>Section</code>](#Section)  
@@ -115,7 +115,7 @@ Get a CFI from an Element in the Section
 
 <a name="Section+unload"></a>
 
-### section.unload()
+## section.unload()
 Unload the section document
 
 **Kind**: instance method of [<code>Section</code>](#Section)  

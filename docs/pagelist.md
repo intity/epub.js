@@ -1,6 +1,6 @@
 <a name="PageList"></a>
 
-## PageList
+# PageList
 Page List Parser
 
 **Kind**: global class  
@@ -17,7 +17,7 @@ Page List Parser
 
 <a name="new_PageList_new"></a>
 
-### new PageList([xml])
+## new PageList([xml])
 
 | Param | Type |
 | --- | --- |
@@ -25,7 +25,7 @@ Page List Parser
 
 <a name="PageList+parse"></a>
 
-### pageList.parse(xml)
+## pageList.parse(xml)
 Parse PageList Xml
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
@@ -36,7 +36,7 @@ Parse PageList Xml
 
 <a name="PageList+pageFromCfi"></a>
 
-### pageList.pageFromCfi(cfi) ⇒ <code>number</code>
+## pageList.pageFromCfi(cfi) ⇒ <code>number</code>
 Get a PageList result from a EpubCFI
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
@@ -48,7 +48,7 @@ Get a PageList result from a EpubCFI
 
 <a name="PageList+cfiFromPage"></a>
 
-### pageList.cfiFromPage(pg) ⇒ <code>string</code>
+## pageList.cfiFromPage(pg) ⇒ <code>string</code>
 Get an EpubCFI from a Page List Item
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
@@ -60,7 +60,7 @@ Get an EpubCFI from a Page List Item
 
 <a name="PageList+pageFromPercentage"></a>
 
-### pageList.pageFromPercentage(percent) ⇒ <code>number</code>
+## pageList.pageFromPercentage(percent) ⇒ <code>number</code>
 Get a Page from Book percentage
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
@@ -72,7 +72,7 @@ Get a Page from Book percentage
 
 <a name="PageList+percentageFromPage"></a>
 
-### pageList.percentageFromPage(pg) ⇒ <code>number</code>
+## pageList.percentageFromPage(pg) ⇒ <code>number</code>
 Returns a value between 0 - 1 corresponding to the location of a page
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
@@ -84,7 +84,7 @@ Returns a value between 0 - 1 corresponding to the location of a page
 
 <a name="PageList+percentageFromCfi"></a>
 
-### pageList.percentageFromCfi(cfi) ⇒ <code>number</code>
+## pageList.percentageFromCfi(cfi) ⇒ <code>number</code>
 Returns a value between 0 - 1 corresponding to the location of a cfi
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
@@ -96,7 +96,7 @@ Returns a value between 0 - 1 corresponding to the location of a cfi
 
 <a name="PageList+destroy"></a>
 
-### pageList.destroy()
+## pageList.destroy()
 Destroy
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  

@@ -1,6 +1,6 @@
 <a name="Store"></a>
 
-## Store
+# Store
 Handles saving and requesting files from local storage
 
 **Kind**: global class  
@@ -19,7 +19,7 @@ Handles saving and requesting files from local storage
 
 <a name="new_Store_new"></a>
 
-### new Store(name, [requester], [resolver])
+## new Store(name, [requester], [resolver])
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Handles saving and requesting files from local storage
 
 <a name="Store+add"></a>
 
-### store.add(resources, [force]) ⇒ <code>Promise.&lt;object&gt;</code>
+## store.add(resources, [force]) ⇒ <code>Promise.&lt;object&gt;</code>
 Add all of a book resources to the store
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -42,7 +42,7 @@ Add all of a book resources to the store
 
 <a name="Store+put"></a>
 
-### store.put(url, [withCredentials], [headers]) ⇒ <code>Promise.&lt;Blob&gt;</code>
+## store.put(url, [withCredentials], [headers]) ⇒ <code>Promise.&lt;Blob&gt;</code>
 Put binary data from a url to storage
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -55,7 +55,7 @@ Put binary data from a url to storage
 
 <a name="Store+request"></a>
 
-### store.request(url, [type], [withCredentials], [headers]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
+## store.request(url, [type], [withCredentials], [headers]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
 Request a url
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -69,7 +69,7 @@ Request a url
 
 <a name="Store+retrieve"></a>
 
-### store.retrieve(url, [type]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
+## store.retrieve(url, [type]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
 Request a url from storage
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -81,7 +81,7 @@ Request a url from storage
 
 <a name="Store+getBlob"></a>
 
-### store.getBlob(url, [mimeType]) ⇒ <code>Blob</code>
+## store.getBlob(url, [mimeType]) ⇒ <code>Blob</code>
 Get a Blob from Storage by Url
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -93,7 +93,7 @@ Get a Blob from Storage by Url
 
 <a name="Store+getText"></a>
 
-### store.getText(url, [mimeType]) ⇒ <code>string</code>
+## store.getText(url, [mimeType]) ⇒ <code>string</code>
 Get Text from Storage by Url
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -105,7 +105,7 @@ Get Text from Storage by Url
 
 <a name="Store+getBase64"></a>
 
-### store.getBase64(url, [mimeType]) ⇒ <code>string</code>
+## store.getBase64(url, [mimeType]) ⇒ <code>string</code>
 Get a base64 encoded result from Storage by Url
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -118,7 +118,7 @@ Get a base64 encoded result from Storage by Url
 
 <a name="Store+createUrl"></a>
 
-### store.createUrl(url) ⇒ <code>Promise</code>
+## store.createUrl(url) ⇒ <code>Promise</code>
 Create a Url from a stored item
 
 **Kind**: instance method of [<code>Store</code>](#Store)  
@@ -131,7 +131,7 @@ Create a Url from a stored item
 
 <a name="Store+revokeUrl"></a>
 
-### store.revokeUrl(url)
+## store.revokeUrl(url)
 Revoke Temp Url for a archive item
 
 **Kind**: instance method of [<code>Store</code>](#Store)  

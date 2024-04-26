@@ -1,6 +1,6 @@
 <a name="Resources"></a>
 
-## Resources
+# Resources
 Handle Package Resources
 
 **Kind**: global class  
@@ -16,7 +16,7 @@ Handle Package Resources
 
 <a name="new_Resources_new"></a>
 
-### new Resources(manifest, [options])
+## new Resources(manifest, [options])
 
 | Param | Type | Default |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Handle Package Resources
 
 <a name="Resources+process"></a>
 
-### resources.process(manifest)
+## resources.process(manifest)
 Process resources
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
@@ -39,7 +39,7 @@ Process resources
 
 <a name="Resources+createUrl"></a>
 
-### resources.createUrl(url) ⇒ <code>Promise.&lt;string&gt;</code>
+## resources.createUrl(url) ⇒ <code>Promise.&lt;string&gt;</code>
 Create a url to a resource
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
@@ -51,14 +51,14 @@ Create a url to a resource
 
 <a name="Resources+replacements"></a>
 
-### resources.replacements() ⇒ <code>Promise</code>
+## resources.replacements() ⇒ <code>Promise</code>
 Create blob urls for all the assets
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
 **Returns**: <code>Promise</code> - returns replacement urls  
 <a name="Resources+relativeTo"></a>
 
-### resources.relativeTo(absolute, [resolver]) ⇒ <code>Array.&lt;string&gt;</code>
+## resources.relativeTo(absolute, [resolver]) ⇒ <code>Array.&lt;string&gt;</code>
 Resolve all resources URLs relative to an absolute URL
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
@@ -71,7 +71,7 @@ Resolve all resources URLs relative to an absolute URL
 
 <a name="Resources+get"></a>
 
-### resources.get(path) ⇒ <code>string</code>
+## resources.get(path) ⇒ <code>string</code>
 Get a URL for a resource
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
@@ -83,7 +83,7 @@ Get a URL for a resource
 
 <a name="Resources+substitute"></a>
 
-### resources.substitute(content, [url]) ⇒ <code>string</code>
+## resources.substitute(content, [url]) ⇒ <code>string</code>
 Substitute urls in content, with replacements,
 relative to a url if provided
 

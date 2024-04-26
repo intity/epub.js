@@ -1,6 +1,6 @@
 <a name="Packaging"></a>
 
-## Packaging
+# Packaging
 Open Packaging Format Parser
 
 **Kind**: global class  
@@ -12,7 +12,7 @@ Open Packaging Format Parser
 
 <a name="new_Packaging_new"></a>
 
-### new Packaging(packageDocument)
+## new Packaging(packageDocument)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ Open Packaging Format Parser
 
 <a name="Packaging+parse"></a>
 
-### packaging.parse(packageDocument) ⇒ <code>object</code>
+## packaging.parse(packageDocument) ⇒ <code>object</code>
 Parse OPF XML
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
@@ -32,7 +32,7 @@ Parse OPF XML
 
 <a name="Packaging+load"></a>
 
-### packaging.load(packageDocument) ⇒ <code>object</code>
+## packaging.load(packageDocument) ⇒ <code>object</code>
 Load JSON Manifest
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  

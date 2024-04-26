@@ -1,6 +1,6 @@
 <a name="Book"></a>
 
-## Book
+# Book
 An Epub representation with methods for the loading, parsing and manipulation
 of its contents.
 
@@ -30,7 +30,7 @@ of its contents.
 
 <a name="new_Book_new"></a>
 
-### new Book([url], [options])
+## new Book([url], [options])
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ new Book({ replacements: "blobUrl" })
 ```
 <a name="Book+open"></a>
 
-### book.open(input, [what]) ⇒ <code>Promise</code>
+## book.open(input, [what]) ⇒ <code>Promise</code>
 Open a epub or url
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -72,7 +72,7 @@ book.open("/path/to/book.epub")
 ```
 <a name="Book+load"></a>
 
-### book.load(path) ⇒ <code>Promise</code>
+## book.load(path) ⇒ <code>Promise</code>
 Load a resource from the Book
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -84,7 +84,7 @@ Load a resource from the Book
 
 <a name="Book+resolve"></a>
 
-### book.resolve(path, [absolute]) ⇒ <code>string</code>
+## book.resolve(path, [absolute]) ⇒ <code>string</code>
 Resolve a path to it's absolute position in the Book
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -97,7 +97,7 @@ Resolve a path to it's absolute position in the Book
 
 <a name="Book+canonical"></a>
 
-### book.canonical(path) ⇒ <code>string</code>
+## book.canonical(path) ⇒ <code>string</code>
 Get a canonical link to a path
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -109,7 +109,7 @@ Get a canonical link to a path
 
 <a name="Book+section"></a>
 
-### book.section(target) ⇒ <code>Section</code>
+## book.section(target) ⇒ <code>Section</code>
 Gets a Section of the Book from the Spine
 Alias for `book.spine.get`
 
@@ -121,7 +121,7 @@ Alias for `book.spine.get`
 
 <a name="Book+renderTo"></a>
 
-### book.renderTo(element, [options]) ⇒ <code>Rendition</code>
+## book.renderTo(element, [options]) ⇒ <code>Rendition</code>
 Sugar to render a book to an element
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -133,7 +133,7 @@ Sugar to render a book to an element
 
 <a name="Book+setRequestCredentials"></a>
 
-### book.setRequestCredentials(credentials)
+## book.setRequestCredentials(credentials)
 Set if request should use withCredentials
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -144,7 +144,7 @@ Set if request should use withCredentials
 
 <a name="Book+setRequestHeaders"></a>
 
-### book.setRequestHeaders(headers)
+## book.setRequestHeaders(headers)
 Set headers request should use
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -155,14 +155,14 @@ Set headers request should use
 
 <a name="Book+coverUrl"></a>
 
-### book.coverUrl() ⇒ <code>Promise.&lt;?string&gt;</code>
+## book.coverUrl() ⇒ <code>Promise.&lt;?string&gt;</code>
 Get the cover url
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
 **Returns**: <code>Promise.&lt;?string&gt;</code> - coverUrl  
 <a name="Book+getRange"></a>
 
-### book.getRange(cfiRange) ⇒ <code>Promise</code>
+## book.getRange(cfiRange) ⇒ <code>Promise</code>
 Find a DOM Range for a given CFI Range
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -173,7 +173,7 @@ Find a DOM Range for a given CFI Range
 
 <a name="Book+key"></a>
 
-### book.key([identifier]) ⇒ <code>string</code>
+## book.key([identifier]) ⇒ <code>string</code>
 Generates the Book Key using the identifier in the manifest or other string provided
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
@@ -185,29 +185,29 @@ Generates the Book Key using the identifier in the manifest or other string prov
 
 <a name="Book+destroy"></a>
 
-### book.destroy()
+## book.destroy()
 Destroy the Book and all associated objects
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
 <a name="Book.opened"></a>
 
-### Book.opened : <code>promise</code>
+## Book.opened : <code>promise</code>
 returns after the book is loaded
 
 **Kind**: static property of [<code>Book</code>](#Book)  
 <a name="Book.spine"></a>
 
-### Book.spine : <code>Spine</code>
+## Book.spine : <code>Spine</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 <a name="Book.locations"></a>
 
-### Book.locations : <code>Locations</code>
+## Book.locations : <code>Locations</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 <a name="Book.navigation"></a>
 
-### Book.navigation : <code>Navigation</code>
+## Book.navigation : <code>Navigation</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 <a name="Book.pagelist"></a>
 
-### Book.pagelist : <code>PageList</code>
+## Book.pagelist : <code>PageList</code>
 **Kind**: static property of [<code>Book</code>](#Book)  

@@ -1,4 +1,4 @@
-## Classes
+# Classes
 
 <dl>
 <dt><a href="#Annotations">Annotations</a></dt>
@@ -11,7 +11,7 @@
 
 <a name="Annotations"></a>
 
-## Annotations
+# Annotations
 Handles managing adding & removing Annotations
 
 **Kind**: global class  
@@ -29,7 +29,7 @@ Handles managing adding & removing Annotations
 
 <a name="new_Annotations_new"></a>
 
-### new Annotations(rendition)
+## new Annotations(rendition)
 
 | Param | Type |
 | --- | --- |
@@ -37,7 +37,7 @@ Handles managing adding & removing Annotations
 
 <a name="Annotations+add"></a>
 
-### annotations.add(type, cfiRange, data, [cb], className, styles) ⇒ [<code>Annotation</code>](#Annotation)
+## annotations.add(type, cfiRange, data, [cb], className, styles) ⇒ [<code>Annotation</code>](#Annotation)
 Add an annotation to store
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
@@ -54,7 +54,7 @@ Add an annotation to store
 
 <a name="Annotations+remove"></a>
 
-### annotations.remove(cfiRange, type)
+## annotations.remove(cfiRange, type)
 Remove an annotation from store
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
@@ -66,7 +66,7 @@ Remove an annotation from store
 
 <a name="Annotations+highlight"></a>
 
-### annotations.highlight(cfiRange, data, cb, className, styles)
+## annotations.highlight(cfiRange, data, cb, className, styles)
 Add a highlight to the store
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
@@ -81,7 +81,7 @@ Add a highlight to the store
 
 <a name="Annotations+underline"></a>
 
-### annotations.underline(cfiRange, data, cb, className, styles)
+## annotations.underline(cfiRange, data, cb, className, styles)
 Add a underline to the store
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
@@ -96,7 +96,7 @@ Add a underline to the store
 
 <a name="Annotations+mark"></a>
 
-### annotations.mark(cfiRange, data, cb)
+## annotations.mark(cfiRange, data, cb)
 Add a mark to the store
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
@@ -109,27 +109,27 @@ Add a mark to the store
 
 <a name="Annotations+each"></a>
 
-### annotations.each()
+## annotations.each()
 iterate over annotations in the store
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
 <a name="Annotations+show"></a>
 
-### annotations.show()
+## annotations.show()
 [Not Implemented] Show annotations
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
 **Todo:**: needs implementation in View  
 <a name="Annotations+hide"></a>
 
-### annotations.hide()
+## annotations.hide()
 [Not Implemented] Hide annotations
 
 **Kind**: instance method of [<code>Annotations</code>](#Annotations)  
 **Todo:**: needs implementation in View  
 <a name="Annotation"></a>
 
-## Annotation
+# Annotation
 Annotation object
 
 **Kind**: global class  
@@ -143,7 +143,7 @@ Annotation object
 
 <a name="new_Annotation_new"></a>
 
-### new Annotation(options, className, styles)
+## new Annotation(options, className, styles)
 **Returns**: [<code>Annotation</code>](#Annotation) - annotation  
 
 | Param | Type | Description |
@@ -159,7 +159,7 @@ Annotation object
 
 <a name="Annotation+update"></a>
 
-### annotation.update(data)
+## annotation.update(data)
 Update stored data
 
 **Kind**: instance method of [<code>Annotation</code>](#Annotation)  
@@ -170,7 +170,7 @@ Update stored data
 
 <a name="Annotation+attach"></a>
 
-### annotation.attach(view)
+## annotation.attach(view)
 Add to a view
 
 **Kind**: instance method of [<code>Annotation</code>](#Annotation)  
@@ -181,7 +181,7 @@ Add to a view
 
 <a name="Annotation+detach"></a>
 
-### annotation.detach(view)
+## annotation.detach(view)
 Remove from a view
 
 **Kind**: instance method of [<code>Annotation</code>](#Annotation)  
@@ -192,7 +192,7 @@ Remove from a view
 
 <a name="Annotation+text"></a>
 
-### annotation.text()
+## annotation.text()
 [Not Implemented] Get text of an annotation
 
 **Kind**: instance method of [<code>Annotation</code>](#Annotation)  

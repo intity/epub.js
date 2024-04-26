@@ -1,6 +1,6 @@
 <a name="request"></a>
 
-## request(url, type, withCredentials, headers) ⇒ <code>defer</code>
+# request(url, type, withCredentials, headers) ⇒ <code>defer</code>
 request
 
 **Kind**: global function  
