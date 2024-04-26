@@ -67,7 +67,7 @@ for (const doc of docs) {
             ofile = path.join(ofile, item[i])
         }
     }
-    jsdoc2md.render({ files: ifile }).then(data => {
+    jsdoc2md.render({ files: ifile, "heading-depth": 1 }).then(data => {
         output(opath, ofile, data)
         const t = (Date.now() - time).toString().padStart(3)
         console.log("output [time:%s ms, path:%s]", t, ofile)
