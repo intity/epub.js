@@ -129,9 +129,7 @@ class DefaultViewManager {
 	addEventListeners(){
 		var scroller;
 
-		window.addEventListener("unload", function(e){
-			this.destroy();
-		}.bind(this));
+		window.onpagehide = (e) => this.destroy();
 
 		if(!this.settings.fullsize) {
 			scroller = this.container;
