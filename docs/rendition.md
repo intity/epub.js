@@ -70,7 +70,7 @@ the section content.
 | [options.resizeOnOrientationChange] | <code>boolean</code> |  | false to disable orientation events |
 | [options.script] | <code>string</code> |  | url of script to be injected |
 | [options.snap] | <code>boolean</code> \| <code>object</code> | <code>false</code> | use snap scrolling |
-| [options.defaultDirection] | <code>string</code> | <code>&quot;&#x27;ltr&#x27;&quot;</code> | default text direction |
+| [options.direction] | <code>string</code> | <code>&quot;&#x27;ltr&#x27;&quot;</code> | direction `"ltr"` OR `"rtl"` (TODO: implement to `"auto"` detection) |
 | [options.allowScriptedContent] | <code>boolean</code> | <code>false</code> | enable running scripts in content |
 | [options.allowPopups] | <code>boolean</code> | <code>false</code> | enable opening popup in content |
 
