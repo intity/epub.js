@@ -11,9 +11,9 @@ the section content.
     * [new Rendition(book, [options])](#new_Rendition_new)
     * _instance_
         * [.setManager(manager)](#Rendition+setManager)
-        * [.requireManager(manager)](#Rendition+requireManager) ⇒ <code>method</code>
-        * [.requireView(view)](#Rendition+requireView) ⇒ <code>view</code>
-        * [.start()](#Rendition+start) ⇒ <code>Promise</code>
+        * [.requireView(view)](#Rendition+requireView) ⇒ <code>any</code>
+        * [.requireManager(manager)](#Rendition+requireManager) ⇒ <code>any</code>
+        * [.start()](#Rendition+start)
         * [.attachTo(element)](#Rendition+attachTo) ⇒ <code>Promise</code>
         * [.display(target)](#Rendition+display) ⇒ <code>Promise</code>
         * [.moveTo(offset)](#Rendition+moveTo)
@@ -22,32 +22,32 @@ the section content.
         * [.next()](#Rendition+next) ⇒ <code>Promise</code>
         * [.prev()](#Rendition+prev) ⇒ <code>Promise</code>
         * [.flow(flow)](#Rendition+flow)
-        * [.layout(settings)](#Rendition+layout)
+        * [.layout(settings)](#Rendition+layout) ⇒ <code>Layout</code>
         * [.spread(spread, [min])](#Rendition+spread)
         * [.direction(dir)](#Rendition+direction)
         * [.reportLocation()](#Rendition+reportLocation)
-        * [.currentLocation()](#Rendition+currentLocation) ⇒ <code>displayedLocation</code> \| <code>promise</code>
+        * [.currentLocation()](#Rendition+currentLocation) ⇒ <code>displayedLocation</code> \| <code>Promise</code>
         * [.destroy()](#Rendition+destroy)
-        * [.getRange(cfi, ignoreClass)](#Rendition+getRange) ⇒ <code>range</code>
-        * [.getContents()](#Rendition+getContents) ⇒ <code>Array.&lt;Contents&gt;</code>
-        * [.views()](#Rendition+views) ⇒ <code>Views</code>
+        * [.getRange(epubcfi, ignoreClass)](#Rendition+getRange) ⇒ <code>Range</code>
+        * [.getContents()](#Rendition+getContents) ⇒ <code>Array.&lt;object&gt;</code>
+        * [.views()](#Rendition+views) ⇒ <code>Array.&lt;object&gt;</code>
     * _static_
         * [.hooks](#Rendition.hooks) : <code>object</code>
-        * [.themes](#Rendition.themes) : <code>Themes</code>
         * [.annotations](#Rendition.annotations) : <code>Annotations</code>
-        * [.started](#Rendition.started) : <code>promise</code>
+        * [.themes](#Rendition.themes) : <code>Themes</code>
+        * [.started](#Rendition.started) : <code>Promise</code>
         * ["started"](#Rendition.event_started)
         * ["attached"](#Rendition.event_attached)
         * ["displayed" (section)](#Rendition.event_displayed)
-        * ["displayError" (section)](#Rendition.event_displayError)
+        * ["displayError" (err)](#Rendition.event_displayError)
         * ["rendered" (section, view)](#Rendition.event_rendered)
         * ["removed" (section, view)](#Rendition.event_removed)
-        * ["resized" (width, height, epubcfi)](#Rendition.event_resized)
+        * ["resized" (width, height, [epubcfi])](#Rendition.event_resized)
         * ["orientationchange" (orientation)](#Rendition.event_orientationchange)
         * ~~["locationChanged"](#Rendition.event_locationChanged)~~
         * ["relocated"](#Rendition.event_relocated)
         * ["selected" (cfirange, contents)](#Rendition.event_selected)
-        * ["markClicked" (cfirange, data, contents)](#Rendition.event_markClicked)
+        * ["markClicked" (cfiRange, data, contents)](#Rendition.event_markClicked)
         * [.location](#Rendition.location) : <code>Object</code>
 
 <a name="new_Rendition_new"></a>
@@ -85,20 +85,9 @@ Set the manager function
 | --- | --- |
 | manager | <code>function</code> | 
 
-<a name="Rendition+requireManager"></a>
-
-## rendition.requireManager(manager) ⇒ <code>method</code>
-Require the manager from passed string, or as a class function
-
-**Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| manager | <code>string</code> \| <code>object</code> | [description] |
-
 <a name="Rendition+requireView"></a>
 
-## rendition.requireView(view) ⇒ <code>view</code>
+## rendition.requireView(view) ⇒ <code>any</code>
 Require the view from passed string, or as a class function
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -107,13 +96,23 @@ Require the view from passed string, or as a class function
 | --- | --- |
 | view | <code>string</code> \| <code>object</code> | 
 
+<a name="Rendition+requireManager"></a>
+
+## rendition.requireManager(manager) ⇒ <code>any</code>
+Require the manager from passed string, or as a class function
+
+**Kind**: instance method of [<code>Rendition</code>](#Rendition)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| manager | <code>string</code> \| <code>object</code> | [description] |
+
 <a name="Rendition+start"></a>
 
-## rendition.start() ⇒ <code>Promise</code>
+## rendition.start()
 Start the rendering
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-**Returns**: <code>Promise</code> - rendering has started  
 <a name="Rendition+attachTo"></a>
 
 ## rendition.attachTo(element) ⇒ <code>Promise</code>
@@ -124,7 +123,7 @@ Container must be attached before rendering can begin
 
 | Param | Type | Description |
 | --- | --- | --- |
-| element | <code>element</code> | to attach to |
+| element | <code>Element</code> | to attach to |
 
 <a name="Rendition+display"></a>
 
@@ -159,11 +158,11 @@ Trigger a resize of the views
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [width] | <code>number</code> |  |
-| [height] | <code>number</code> |  |
-| [epubcfi] | <code>string</code> | (optional) |
+| Param | Type |
+| --- | --- |
+| [width] | <code>number</code> | 
+| [height] | <code>number</code> | 
+| [epubcfi] | <code>string</code> | 
 
 <a name="Rendition+clear"></a>
 
@@ -191,16 +190,17 @@ Adjust the flow of the rendition to paginated or scrolled
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 
-| Param | Type |
-| --- | --- |
-| flow | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| flow | <code>string</code> | values: `"paginated"` OR `"scrolled"` |
 
 <a name="Rendition+layout"></a>
 
-## rendition.layout(settings)
+## rendition.layout(settings) ⇒ <code>Layout</code>
 Adjust the layout of the rendition to reflowable or pre-paginated
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
+**Returns**: <code>Layout</code> - Layout object  
 
 | Param | Type |
 | --- | --- |
@@ -238,11 +238,11 @@ Report the current location
 **Emits**: <code>event:relocated</code>, <code>event:locationChanged</code>  
 <a name="Rendition+currentLocation"></a>
 
-## rendition.currentLocation() ⇒ <code>displayedLocation</code> \| <code>promise</code>
+## rendition.currentLocation() ⇒ <code>displayedLocation</code> \| <code>Promise</code>
 Get the Current Location object
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-**Returns**: <code>displayedLocation</code> \| <code>promise</code> - location (may be a promise)  
+**Returns**: <code>displayedLocation</code> \| <code>Promise</code> - location (may be a promise)  
 <a name="Rendition+destroy"></a>
 
 ## rendition.destroy()
@@ -251,25 +251,25 @@ Remove and Clean Up the Rendition
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+getRange"></a>
 
-## rendition.getRange(cfi, ignoreClass) ⇒ <code>range</code>
+## rendition.getRange(epubcfi, ignoreClass) ⇒ <code>Range</code>
 Get a Range from a Visible CFI
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| cfi | <code>string</code> | EpubCfi String |
+| epubcfi | <code>string</code> | EpubCfi string |
 | ignoreClass | <code>string</code> |  |
 
 <a name="Rendition+getContents"></a>
 
-## rendition.getContents() ⇒ <code>Array.&lt;Contents&gt;</code>
+## rendition.getContents() ⇒ <code>Array.&lt;object&gt;</code>
 Get the Contents object of each rendered view
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition+views"></a>
 
-## rendition.views() ⇒ <code>Views</code>
+## rendition.views() ⇒ <code>Array.&lt;object&gt;</code>
 Get the views member from the manager
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
@@ -284,18 +284,25 @@ Adds Hook methods to the Rendition prototype
 | Name | Type |
 | --- | --- |
 | hooks.content | <code>Hook</code> | 
+| hooks.display | <code>Hook</code> | 
+| hooks.layout | <code>Hook</code> | 
+| hooks.render | <code>Hook</code> | 
+| hooks.show | <code>Hook</code> | 
+| hooks.unloaded | <code>Hook</code> | 
 
-<a name="Rendition.themes"></a>
-
-## Rendition.themes : <code>Themes</code>
-**Kind**: static property of [<code>Rendition</code>](#Rendition)  
 <a name="Rendition.annotations"></a>
 
 ## Rendition.annotations : <code>Annotations</code>
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
+**Read only**: true  
+<a name="Rendition.themes"></a>
+
+## Rendition.themes : <code>Themes</code>
+**Kind**: static property of [<code>Rendition</code>](#Rendition)  
+**Read only**: true  
 <a name="Rendition.started"></a>
 
-## Rendition.started : <code>promise</code>
+## Rendition.started : <code>Promise</code>
 returns after the rendition has started
 
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
@@ -324,14 +331,14 @@ Emit that a section has been displayed
 
 <a name="Rendition.event_displayError"></a>
 
-## "displayError" (section)
+## "displayError" (err)
 Emit that has been an error displaying
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 
 | Param | Type |
 | --- | --- |
-| section | <code>Section</code> | 
+| err | <code>\*</code> | 
 
 <a name="Rendition.event_rendered"></a>
 
@@ -359,16 +366,16 @@ Emit that a section has been removed
 
 <a name="Rendition.event_resized"></a>
 
-## "resized" (width, height, epubcfi)
+## "resized" (width, height, [epubcfi])
 Emit that the rendition has been resized
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| width | <code>number</code> |  |
-| height | <code>height</code> |  |
-| epubcfi | <code>string</code> | (optional) |
+| Param | Type |
+| --- | --- |
+| width | <code>number</code> | 
+| height | <code>height</code> | 
+| [epubcfi] | <code>string</code> | 
 
 <a name="Rendition.event_orientationchange"></a>
 
@@ -415,14 +422,14 @@ Emit that a text selection has occurred
 
 <a name="Rendition.event_markClicked"></a>
 
-## "markClicked" (cfirange, data, contents)
+## "markClicked" (cfiRange, data, contents)
 Emit that a mark was clicked
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 
 | Param | Type |
 | --- | --- |
-| cfirange | <code>EpubCFI</code> | 
+| cfiRange | <code>EpubCFI</code> | 
 | data | <code>object</code> | 
 | contents | <code>Contents</code> | 
 
@@ -434,26 +441,26 @@ A Rendered Location Range
 **Kind**: static typedef of [<code>Rendition</code>](#Rendition)  
 **Properties**
 
-| Name | Type |
-| --- | --- |
-| start | <code>object</code> | 
-| start.index | <code>string</code> | 
-| start.href | <code>string</code> | 
-| start.displayed | <code>object</code> | 
-| start.cfi | <code>EpubCFI</code> | 
-| start.location | <code>number</code> | 
-| start.percentage | <code>number</code> | 
-| start.displayed.page | <code>number</code> | 
-| start.displayed.total | <code>number</code> | 
-| end | <code>object</code> | 
-| end.index | <code>string</code> | 
-| end.href | <code>string</code> | 
-| end.displayed | <code>object</code> | 
-| end.cfi | <code>EpubCFI</code> | 
-| end.location | <code>number</code> | 
-| end.percentage | <code>number</code> | 
-| end.displayed.page | <code>number</code> | 
-| end.displayed.total | <code>number</code> | 
-| atStart | <code>boolean</code> | 
-| atEnd | <code>boolean</code> | 
+| Name | Type | Description |
+| --- | --- | --- |
+| start | <code>object</code> |  |
+| start.index | <code>string</code> |  |
+| start.href | <code>string</code> |  |
+| start.displayed | <code>object</code> |  |
+| start.displayed.page | <code>number</code> |  |
+| start.displayed.total | <code>number</code> |  |
+| start.cfi | <code>string</code> | EpubCFI string format |
+| start.location | <code>number</code> |  |
+| start.percentage | <code>number</code> |  |
+| end | <code>object</code> |  |
+| end.index | <code>string</code> |  |
+| end.href | <code>string</code> |  |
+| end.displayed | <code>object</code> |  |
+| end.displayed.page | <code>number</code> |  |
+| end.displayed.total | <code>number</code> |  |
+| end.cfi | <code>string</code> | EpubCFI string format |
+| end.location | <code>number</code> |  |
+| end.percentage | <code>number</code> |  |
+| atStart | <code>boolean</code> | Location at start position |
+| atEnd | <code>boolean</code> | Location at end position |
 
