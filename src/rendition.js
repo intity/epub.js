@@ -35,7 +35,7 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
  * @param {boolean|object} [options.snap=false] use snap scrolling
- * @param {string} [options.defaultDirection='ltr'] default text direction
+ * @param {string} [options.direction='ltr'] direction `"ltr"` OR `"rtl"` (TODO: implement to `"auto"` detection)
  * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
  * @param {boolean} [options.allowPopups=false] enable opening popup in content
  */
@@ -56,7 +56,7 @@ class Rendition {
 			resizeOnOrientationChange: true,
 			script: null,
 			snap: false,
-			defaultDirection: "ltr",
+			direction: "ltr",
 			allowScriptedContent: false,
 			allowPopups: false
 		});
@@ -244,7 +244,7 @@ class Rendition {
 			});
 		}
 
-		this.direction(metadata.direction || this.settings.defaultDirection);
+		this.direction(metadata.direction || this.settings.direction);
 
 		// Parse metadata to get layout props
 		this.settings.globalLayoutProperties = this.determineLayoutProperties(metadata);
