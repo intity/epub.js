@@ -5,7 +5,7 @@ Parsing and creation of EpubCFIs: https://idpf.org/epub/linking/cfi/epub-cfi.htm
 
 Implements:
 - Character Offset: `epubcfi(/6/4[chap01ref]!/4[body01]/10[para05]/2/1:3)`
-- Simple Ranges : `epubcfi(/6/4[chap01ref]!/4[body01]/10[para05],/2/1:1,/3:4)`
+- Simple Ranges: `epubcfi(/6/4[chap01ref]!/4[body01]/10[para05],/2/1:1,/3:4)`
 
 Does Not Implement:
 - Temporal Offset `(~)`
@@ -20,13 +20,11 @@ Does Not Implement:
     * _instance_
         * [.collapse([toStart])](#EpubCFI+collapse)
         * [.compare(cfiOne, cfiTwo)](#EpubCFI+compare) ⇒ <code>number</code>
-        * [.equalStep(stepA, stepB)](#EpubCFI+equalStep) ⇒ <code>boolean</code>
-        * [.filter(anchor, ignoreClass)](#EpubCFI+filter) ⇒ <code>Element</code> \| <code>false</code>
-        * [.fromNode(anchor, base, [ignoreClass])](#EpubCFI+fromNode) ⇒ [<code>EpubCFI</code>](#EpubCFI)
+        * [.fromNode(node, base, [ignoreClass])](#EpubCFI+fromNode) ⇒ [<code>EpubCFI</code>](#EpubCFI)
         * [.fromRange(range, base, [ignoreClass])](#EpubCFI+fromRange) ⇒ [<code>EpubCFI</code>](#EpubCFI)
         * [.isCfiString(str)](#EpubCFI+isCfiString) ⇒ <code>boolean</code>
         * [.parse(cfiStr)](#EpubCFI+parse) ⇒ [<code>EpubCFI</code>](#EpubCFI)
-        * [.toRange([_doc], [ignoreClass])](#EpubCFI+toRange) ⇒ <code>Range</code>
+        * [.toRange([doc], [ignoreClass])](#EpubCFI+toRange) ⇒ <code>Range</code>
         * [.toString()](#EpubCFI+toString) ⇒ <code>string</code>
     * _static_
         * [.base](#EpubCFI.base) : <code>object</code>
@@ -56,9 +54,9 @@ Collapse a CFI Range to a single CFI Position
 
 **Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
 
-| Param | Type | Default |
-| --- | --- | --- |
-| [toStart] | <code>boolean</code> | <code>false</code> | 
+| Param | Type |
+| --- | --- |
+| [toStart] | <code>boolean</code> | 
 
 <a name="EpubCFI+compare"></a>
 
@@ -73,40 +71,16 @@ Compare which of two CFIs is earlier in the text
 | cfiOne | <code>string</code> \| [<code>EpubCFI</code>](#EpubCFI) | 
 | cfiTwo | <code>string</code> \| [<code>EpubCFI</code>](#EpubCFI) | 
 
-<a name="EpubCFI+equalStep"></a>
-
-## epubCFI.equalStep(stepA, stepB) ⇒ <code>boolean</code>
-equalStep
-
-**Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
-
-| Param | Type |
-| --- | --- |
-| stepA | <code>object</code> | 
-| stepB | <code>object</code> | 
-
-<a name="EpubCFI+filter"></a>
-
-## epubCFI.filter(anchor, ignoreClass) ⇒ <code>Element</code> \| <code>false</code>
-filter
-
-**Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
-
-| Param | Type |
-| --- | --- |
-| anchor | <code>Element</code> | 
-| ignoreClass | <code>string</code> | 
-
 <a name="EpubCFI+fromNode"></a>
 
-## epubCFI.fromNode(anchor, base, [ignoreClass]) ⇒ [<code>EpubCFI</code>](#EpubCFI)
+## epubCFI.fromNode(node, base, [ignoreClass]) ⇒ [<code>EpubCFI</code>](#EpubCFI)
 Create a EpubCFI object from a Node
 
 **Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
 
 | Param | Type |
 | --- | --- |
-| anchor | <code>Node</code> | 
+| node | <code>Node</code> | 
 | base | <code>string</code> \| <code>object</code> | 
 | [ignoreClass] | <code>string</code> | 
 
@@ -129,10 +103,11 @@ Create a CFI object from a Range
 Check if a string is wrapped with "epubcfi()"
 
 **Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
+**Returns**: <code>boolean</code> - `true` if the string is valid, `false` otherwise  
 
-| Param | Type |
-| --- | --- |
-| str | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| str | <code>string</code> | EpubCFI string format |
 
 <a name="EpubCFI+parse"></a>
 
@@ -140,21 +115,22 @@ Check if a string is wrapped with "epubcfi()"
 Parse a cfi string to a EpubCFI object representation
 
 **Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
+**Returns**: [<code>EpubCFI</code>](#EpubCFI) - EpubCFI object  
 
-| Param | Type |
-| --- | --- |
-| cfiStr | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| cfiStr | <code>string</code> | EpubCFI string format |
 
 <a name="EpubCFI+toRange"></a>
 
-## epubCFI.toRange([_doc], [ignoreClass]) ⇒ <code>Range</code>
+## epubCFI.toRange([doc], [ignoreClass]) ⇒ <code>Range</code>
 Creates a DOM range representing a CFI
 
 **Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [_doc] | <code>Document</code> | document referenced in the base |
+| [doc] | <code>Document</code> | document referenced in the base |
 | [ignoreClass] | <code>string</code> |  |
 
 <a name="EpubCFI+toString"></a>
@@ -168,31 +144,38 @@ Convert CFI to a epubcfi(...) string
 
 ## EpubCFI.base : <code>object</code>
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
 <a name="EpubCFI.spinePos"></a>
 
 ## EpubCFI.spinePos : <code>number</code>
 spine position
 
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
 <a name="EpubCFI.path"></a>
 
 ## EpubCFI.path : <code>object</code>
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
 <a name="EpubCFI.range"></a>
 
 ## EpubCFI.range : <code>boolean</code>
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
 <a name="EpubCFI.start"></a>
 
 ## EpubCFI.start : <code>object</code>
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
 <a name="EpubCFI.end"></a>
 
 ## EpubCFI.end : <code>object</code>
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
 <a name="EpubCFI.str"></a>
 
 ## EpubCFI.str : <code>string</code>
 EpubCFI string format
 
 **Kind**: static property of [<code>EpubCFI</code>](#EpubCFI)  
+**Read only**: true  
