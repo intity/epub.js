@@ -52,7 +52,7 @@ describe("EpubCFI", () => {
 		it("determine the type of a cfi string", () => {
 			const cfi = new EpubCFI()
 			assert.equal(cfi.checkType("epubcfi(/6/2[cover]!/6)"), "string")
-			assert.equal(cfi.checkType("/6/2[cover]!/6"), false)
+			assert.equal(cfi.checkType("/6/2[cover]!/6"), undefined)
 		})
 		it("determine the type of a cfi", () => {
 			const ogcfi = new EpubCFI("epubcfi(/6/4[chap01ref]!/4[body01]/10[para05]/2/1:3)")
@@ -245,6 +245,7 @@ describe("EpubCFI", () => {
 	})
 	describe("#toRange()", () => {
 		const base = "/6/4[chap01ref]"
+		const ignoreClass = "annotator-hl"
 		it("get a range from a cfi", () => {
 			const t1 = doc2.getElementById("c001p0004").childNodes[0]
 			const ogRange = doc2.createRange()
@@ -279,13 +280,14 @@ describe("EpubCFI", () => {
 			const t1 = doc2.getElementById("highlight-1").childNodes[0]
 			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 6)
-			const cfi = new EpubCFI(ogRange, base, "annotator-hl")
+			const cfi = new EpubCFI(ogRange, base, ignoreClass)
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/32/2[c001p0017]/1:43)")
 			// Check the range
-			const newRange = cfi.toRange(doc2, "annotator-hl")
-			assert.ok(newRange.startContainer)
+			const newRange = cfi.toRange(doc2, ignoreClass)
 			assert.equal(newRange.startContainer, t1)
+			assert.equal(newRange.startContainer.textContent, t1.textContent)
 			assert.equal(newRange.startOffset, 6)
+			assert.equal(newRange.collapsed, true)
 		})
 		it("get a cfi from a range inside a highlight range", () => {
 			const t1 = doc2.getElementById("highlight-2").childNodes[0]
@@ -293,13 +295,17 @@ describe("EpubCFI", () => {
 			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 5)
 			ogRange.setEnd(t2, 25)
-			const cfi = new EpubCFI(ogRange, base, "annotator-hl")
+			const cfi = new EpubCFI(ogRange, base, ignoreClass)
 			assert.equal(cfi.toString(), "epubcfi(/6/4[chap01ref]!/4/2/4/2[c001s0001],/1:5,/1:41)")
 			// Check the range
-			const newRange = cfi.toRange(doc2, "annotator-hl")
-			assert.strictEqual(newRange.startContainer.textContent, t1.textContent)
-			// assert.strictEqual(newRange.startContainer, t1)
-			// assert.equal(newRange.startOffset, 5)
+			const newRange = cfi.toRange(doc2, ignoreClass)
+			assert.equal(newRange.startContainer, t1)
+			assert.equal(newRange.startContainer.textContent, t1.textContent)
+			assert.equal(newRange.startOffset, 5)
+			assert.equal(newRange.endContainer, t2)
+			assert.equal(newRange.endContainer.textContent, t2.textContent)
+			assert.equal(newRange.endOffset, 25)
+			assert.equal(newRange.collapsed, false)
 		})
 	})
 	describe("#isCfiString()", () => {
