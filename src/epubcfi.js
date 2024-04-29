@@ -497,7 +497,6 @@ class EpubCFI {
 		const children = container.childNodes;
 		const lastStepIndex = steps[steps.length - 1].index;
 		const map = this.normalizedMap(children, TEXT_NODE, ignoreClass);
-		console.log(map)
 
 		for (const childIndex in map) {
 
