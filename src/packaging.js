@@ -1,19 +1,56 @@
-import {qs, qsa, qsp, indexOfElementNode} from "./utils/core";
+import { qs, qsa, qsp, indexOfElementNode } from "./utils/core";
 
 /**
  * Open Packaging Format Parser
- * @class
- * @param {document} packageDocument OPF XML
  */
 class Packaging {
+	/**
+	 * Constructor
+	 * @param {*} packageDocument OPF XML
+	 */
 	constructor(packageDocument) {
+		/**
+		 * @member {object} manifest
+		 * @memberof Packaging
+		 * @readonly
+		 */
 		this.manifest = {};
-		this.navPath = '';
-		this.ncxPath = '';
-		this.coverPath = '';
-		this.spineNodeIndex = 0;
-		this.spine = [];
+		/**
+		 * @member {object} metadata
+		 * @memberof Packaging
+		 * @readonly
+		 */
 		this.metadata = {};
+		/**
+		 * @member {string} navPath
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.navPath = "";
+		/**
+		 * @member {string} ncxPath
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.ncxPath = "";
+		/**
+		 * @member {string} coverPath
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.coverPath = "";
+		/**
+		 * @member {object[]} spine
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.spine = [];
+		/**
+		 * @member {number} spineNodeIndex
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.spineNodeIndex = 0;
 
 		if (packageDocument) {
 			this.parse(packageDocument);
@@ -25,25 +62,24 @@ class Packaging {
 	 * @param  {document} packageDocument OPF XML
 	 * @return {object} parsed package parts
 	 */
-	parse(packageDocument){
-		var metadataNode, manifestNode, spineNode;
+	parse(packageDocument) {
 
-		if(!packageDocument) {
+		if (!packageDocument) {
 			throw new Error("Package File Not Found");
 		}
 
-		metadataNode = qs(packageDocument, "metadata");
-		if(!metadataNode) {
+		const metadataNode = qs(packageDocument, "metadata");
+		if (!metadataNode) {
 			throw new Error("No Metadata Found");
 		}
 
-		manifestNode = qs(packageDocument, "manifest");
-		if(!manifestNode) {
+		const manifestNode = qs(packageDocument, "manifest");
+		if (!manifestNode) {
 			throw new Error("No Manifest Found");
 		}
 
-		spineNode = qs(packageDocument, "spine");
-		if(!spineNode) {
+		const spineNode = qs(packageDocument, "spine");
+		if (!spineNode) {
 			throw new Error("No Spine Found");
 		}
 
@@ -51,25 +87,21 @@ class Packaging {
 		this.navPath = this.findNavPath(manifestNode);
 		this.ncxPath = this.findNcxPath(manifestNode, spineNode);
 		this.coverPath = this.findCoverPath(packageDocument);
-
 		this.spineNodeIndex = indexOfElementNode(spineNode);
-
 		this.spine = this.parseSpine(spineNode, this.manifest);
-
 		this.uniqueIdentifier = this.findUniqueIdentifier(packageDocument);
 		this.metadata = this.parseMetadata(metadataNode);
-
 		this.metadata.direction = spineNode.getAttribute("page-progression-direction");
 
 		return {
-			"metadata" : this.metadata,
-			"spine"    : this.spine,
-			"manifest" : this.manifest,
-			"navPath"  : this.navPath,
-			"ncxPath"  : this.ncxPath,
-			"coverPath": this.coverPath,
-			"spineNodeIndex" : this.spineNodeIndex
-		};
+			metadata: this.metadata,
+			spine: this.spine,
+			manifest: this.manifest,
+			navPath: this.navPath,
+			ncxPath: this.ncxPath,
+			coverPath: this.coverPath,
+			spineNodeIndex: this.spineNodeIndex
+		}
 	}
 
 	/**
@@ -78,68 +110,61 @@ class Packaging {
 	 * @param  {node} xml
 	 * @return {object} metadata
 	 */
-	parseMetadata(xml){
-		var metadata = {};
+	parseMetadata(xml) {
 
+		const metadata = {};
+		//-- dc:
 		metadata.title = this.getElementText(xml, "title");
 		metadata.creator = this.getElementText(xml, "creator");
 		metadata.description = this.getElementText(xml, "description");
-
-		metadata.pubdate = this.getElementText(xml, "date");
-
 		metadata.publisher = this.getElementText(xml, "publisher");
-
 		metadata.identifier = this.getElementText(xml, "identifier");
 		metadata.language = this.getElementText(xml, "language");
 		metadata.rights = this.getElementText(xml, "rights");
-
+		metadata.date = this.getElementText(xml, "date");
+		//-- dcterms:
 		metadata.modified_date = this.getPropertyText(xml, "dcterms:modified");
-
-		metadata.layout = this.getPropertyText(xml, "rendition:layout");
-		metadata.orientation = this.getPropertyText(xml, "rendition:orientation");
+		//-- rendition:
 		metadata.flow = this.getPropertyText(xml, "rendition:flow");
-		metadata.viewport = this.getPropertyText(xml, "rendition:viewport");
-		metadata.media_active_class = this.getPropertyText(xml, "media:active-class");
+		metadata.layout = this.getPropertyText(xml, "rendition:layout");
 		metadata.spread = this.getPropertyText(xml, "rendition:spread");
-		// metadata.page_prog_dir = packageXml.querySelector("spine").getAttribute("page-progression-direction");
+		metadata.viewport = this.getPropertyText(xml, "rendition:viewport");
+		metadata.orientation = this.getPropertyText(xml, "rendition:orientation");
+		//-- media:
+		metadata.media_active_class = this.getPropertyText(xml, "media:active-class");
 
 		return metadata;
 	}
 
 	/**
 	 * Parse Manifest
-	 * @private
-	 * @param  {node} manifestXml
+	 * @param {node} manifestXml
 	 * @return {object} manifest
+	 * @private
 	 */
-	parseManifest(manifestXml){
-		var manifest = {};
+	parseManifest(manifestXml) {
 
+		const manifest = {};
 		//-- Turn items into an array
-		// var selected = manifestXml.querySelectorAll("item");
-		var selected = qsa(manifestXml, "item");
-		var items = Array.prototype.slice.call(selected);
-
+		const selected = qsa(manifestXml, "item");
+		const items = Array.prototype.slice.call(selected);
 		//-- Create an object with the id as key
-		items.forEach(function(item){
-			var id = item.getAttribute("id"),
-					href = item.getAttribute("href") || "",
-					type = item.getAttribute("media-type") || "",
-					overlay = item.getAttribute("media-overlay") || "",
-					properties = item.getAttribute("properties") || "";
+		items.forEach((item) => {
+			const id = item.getAttribute("id"),
+				href = item.getAttribute("href") || "",
+				type = item.getAttribute("media-type") || "",
+				overlay = item.getAttribute("media-overlay") || "",
+				properties = item.getAttribute("properties") || "";
 
 			manifest[id] = {
-				"href" : href,
-				// "url" : href,
-				"type" : type,
-				"overlay" : overlay,
-				"properties" : properties.length ? properties.split(" ") : []
+				href: href,
+				type: type,
+				overlay: overlay,
+				properties: properties.length ? properties.split(" ") : []
 			};
-
 		});
 
 		return manifest;
-
 	}
 
 	/**
@@ -149,32 +174,21 @@ class Packaging {
 	 * @param  {Packaging.manifest} manifest
 	 * @return {object} spine
 	 */
-	parseSpine(spineXml, manifest){
-		var spine = [];
+	parseSpine(spineXml, manifest) {
 
-		var selected = qsa(spineXml, "itemref");
-		var items = Array.prototype.slice.call(selected);
-
-		// var epubcfi = new EpubCFI();
-
+		const spine = [];
+		const selected = qsa(spineXml, "itemref");
+		const items = Array.prototype.slice.call(selected);
 		//-- Add to array to maintain ordering and cross reference with manifest
-		items.forEach(function(item, index){
-			var idref = item.getAttribute("idref");
-			// var cfiBase = epubcfi.generateChapterComponent(spineNodeIndex, index, Id);
-			var props = item.getAttribute("properties") || "";
-			var propArray = props.length ? props.split(" ") : [];
-			// var manifestProps = manifest[Id].properties;
-			// var manifestPropArray = manifestProps.length ? manifestProps.split(" ") : [];
+		items.forEach((item, index) => {
 
-			var itemref = {
-				"id" : item.getAttribute("id"),
-				"idref" : idref,
-				"linear" : item.getAttribute("linear") || "yes",
-				"properties" : propArray,
-				// "href" : manifest[Id].href,
-				// "url" :  manifest[Id].url,
-				"index" : index
-				// "cfiBase" : cfiBase
+			const props = item.getAttribute("properties") || "";
+			const itemref = {
+				id: item.getAttribute("id"),
+				idref: item.getAttribute("idref"),
+				index: index,
+				linear: item.getAttribute("linear") || "yes",
+				properties: props.length ? props.split(" ") : []
 			};
 			spine.push(itemref);
 		});
@@ -188,13 +202,15 @@ class Packaging {
 	 * @param  {node} packageXml
 	 * @return {string} Unique Identifier text
 	 */
-	findUniqueIdentifier(packageXml){
-		var uniqueIdentifierId = packageXml.documentElement.getAttribute("unique-identifier");
-		if (! uniqueIdentifierId) {
+	findUniqueIdentifier(packageXml) {
+
+		const uniqueIdentifierId = packageXml.documentElement.getAttribute("unique-identifier");
+		if (!uniqueIdentifierId) {
 			return "";
 		}
-		var identifier = packageXml.getElementById(uniqueIdentifierId);
-		if (! identifier) {
+
+		const identifier = packageXml.getElementById(uniqueIdentifierId);
+		if (!identifier) {
 			return "";
 		}
 
@@ -211,34 +227,30 @@ class Packaging {
 	 * @param {element} manifestNode
 	 * @return {string}
 	 */
-	findNavPath(manifestNode){
+	findNavPath(manifestNode) {
 		// Find item with property "nav"
 		// Should catch nav regardless of order
-		// var node = manifestNode.querySelector("item[properties$='nav'], item[properties^='nav '], item[properties*=' nav ']");
-		var node = qsp(manifestNode, "item", {"properties":"nav"});
+		const node = qsp(manifestNode, "item", { properties: "nav" });
 		return node ? node.getAttribute("href") : false;
 	}
 
 	/**
 	 * Find TOC NCX
-	 * media-type="application/x-dtbncx+xml" href="toc.ncx"
+	 * - `media-type="application/x-dtbncx+xml" href="toc.ncx"`
 	 * @private
 	 * @param {element} manifestNode
 	 * @param {element} spineNode
 	 * @return {string}
 	 */
-	findNcxPath(manifestNode, spineNode){
-		// var node = manifestNode.querySelector("item[media-type='application/x-dtbncx+xml']");
-		var node = qsp(manifestNode, "item", {"media-type":"application/x-dtbncx+xml"});
-		var tocId;
+	findNcxPath(manifestNode, spineNode) {
 
+		const node = qsp(manifestNode, "item", { "media-type": "application/x-dtbncx+xml" });
 		// If we can't find the toc by media-type then try to look for id of the item in the spine attributes as
 		// according to http://www.idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#Section2.4.1.2,
 		// "The item that describes the NCX must be referenced by the spine toc attribute."
 		if (!node) {
-			tocId = spineNode.getAttribute("toc");
-			if(tocId) {
-				// node = manifestNode.querySelector("item[id='" + tocId + "']");
+			const tocId = spineNode.getAttribute("toc");
+			if (tocId) {
 				node = manifestNode.querySelector(`#${tocId}`);
 			}
 		}
@@ -248,32 +260,31 @@ class Packaging {
 
 	/**
 	 * Find the Cover Path
-	 * <item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />
+	 * - `<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml"/>`
+	 * 
 	 * Fallback for Epub 2.0
-	 * @private
 	 * @param  {node} packageXml
 	 * @return {string} href
+	 * @private
 	 */
-	findCoverPath(packageXml){
-		var pkg = qs(packageXml, "package");
-		var epubVersion = pkg.getAttribute("version");
-		
-		// Try parsing cover with epub 3.
-		// var node = packageXml.querySelector("item[properties='cover-image']");
-		var node = qsp(packageXml, "item", {"properties":"cover-image"});
-		if (node) return node.getAttribute("href");
-		
-		// Fallback to epub 2.
-		var metaCover = qsp(packageXml, "meta", {"name":"cover"});
+	findCoverPath(packageXml) {
 
+		const pkg = qs(packageXml, "package");
+		const epubVersion = pkg.getAttribute("version");
+
+		// Try parsing cover with epub 3.
+		const node = qsp(packageXml, "item", { properties: "cover-image" });
+		if (node) return node.getAttribute("href");
+
+		// Fallback to epub 2.
+		const metaCover = qsp(packageXml, "meta", { name: "cover" });
 		if (metaCover) {
-			var coverId = metaCover.getAttribute("content");
-			// var cover = packageXml.querySelector("item[id='" + coverId + "']");
-			var cover = packageXml.getElementById(coverId);
+			const coverId = metaCover.getAttribute("content");
+			const cover = packageXml.getElementById(coverId);
 			return cover ? cover.getAttribute("href") : "";
 		}
 		else {
-			return false;
+			return null;
 		}
 	}
 
@@ -284,20 +295,13 @@ class Packaging {
 	 * @param  {string} tag
 	 * @return {string} text
 	 */
-	getElementText(xml, tag){
-		var found = xml.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", tag);
-		var el;
+	getElementText(xml, tag) {
 
-		if(!found || found.length === 0) return "";
+		const found = xml.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", tag);
+		if (!found || found.length === 0) return "";
 
-		el = found[0];
-
-		if(el.childNodes.length){
-			return el.childNodes[0].nodeValue;
-		}
-
-		return "";
-
+		const el = found[0];
+		return el.childNodes.length ? el.childNodes[0].nodeValue : "";
 	}
 
 	/**
@@ -307,13 +311,12 @@ class Packaging {
 	 * @param  {string} property
 	 * @return {string} text
 	 */
-	getPropertyText(xml, property){
-		var el = qsp(xml, "meta", {"property":property});
+	getPropertyText(xml, property) {
 
-		if(el && el.childNodes.length){
+		const el = qsp(xml, "meta", { property: property });
+		if (el && el.childNodes.length) {
 			return el.childNodes[0].nodeValue;
 		}
-
 		return "";
 	}
 
@@ -323,10 +326,11 @@ class Packaging {
 	 * @return {object} parsed package parts
 	 */
 	load(json) {
+
 		this.metadata = json.metadata;
 
-		let spine = json.readingOrder || json.spine;
-		this.spine = spine.map((item, index) =>{
+		const spine = json.readingOrder || json.spine;
+		this.spine = spine.map((item, index) => {
 			item.index = index;
 			item.linear = item.linear || "yes";
 			return item;
@@ -334,32 +338,31 @@ class Packaging {
 
 		json.resources.forEach((item, index) => {
 			this.manifest[index] = item;
-
 			if (item.rel && item.rel[0] === "cover") {
 				this.coverPath = item.href;
 			}
 		});
 
 		this.spineNodeIndex = 0;
-
-		this.toc = json.toc.map((item, index) =>{
+		this.toc = json.toc.map((item, index) => {
 			item.label = item.title;
 			return item;
 		});
 
 		return {
-			"metadata" : this.metadata,
-			"spine"    : this.spine,
-			"manifest" : this.manifest,
-			"navPath"  : this.navPath,
-			"ncxPath"  : this.ncxPath,
-			"coverPath": this.coverPath,
-			"spineNodeIndex" : this.spineNodeIndex,
-			"toc" : this.toc
-		};
+			metadata: this.metadata,
+			spine: this.spine,
+			manifest: this.manifest,
+			navPath: this.navPath,
+			ncxPath: this.ncxPath,
+			coverPath: this.coverPath,
+			spineNodeIndex: this.spineNodeIndex,
+			toc: this.toc
+		}
 	}
 
 	destroy() {
+
 		this.manifest = undefined;
 		this.navPath = undefined;
 		this.ncxPath = undefined;
