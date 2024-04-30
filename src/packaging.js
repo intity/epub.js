@@ -361,6 +361,9 @@ class Packaging {
 		}
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
 
 		this.manifest = undefined;
