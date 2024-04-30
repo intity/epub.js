@@ -10,9 +10,6 @@ import Contents from "./contents";
 import Annotations from "./annotations";
 import { EVENTS, DOM_EVENTS } from "./utils/constants";
 
-// Default Views
-import IframeView from "./managers/views/iframe";
-
 // Default View Managers
 import DefaultViewManager from "./managers/default/index";
 import ContinuousViewManager from "./managers/continuous/index";
@@ -170,26 +167,6 @@ class Rendition {
 	}
 
 	/**
-	 * Require the view from passed string, or as a class function
-	 * @param  {string|object} view
-	 * @return {any}
-	 */
-	requireView(view) {
-
-		let ret;
-
-		// If view is a string, try to load from imported views,
-		if (typeof view == "string" && view === "iframe") {
-			ret = IframeView;
-		} else {
-			// otherwise, assume we were passed a class function
-			ret = view;
-		}
-
-		return ret;
-	}
-
-	/**
 	 * Require the manager from passed string, or as a class function
 	 * @param  {string|object} manager [description]
 	 * @return {any}
@@ -234,10 +211,9 @@ class Rendition {
 		}
 
 		if (this.manager === undefined) {
-			this.View = this.requireView(this.settings.view);
-			this.ViewManager = this.requireManager(this.settings.manager);
-			this.manager = new this.ViewManager({
-				view: this.View,
+			const viewManager = this.requireManager(this.settings.manager);
+			this.manager = new viewManager({
+				view: this.settings.view,
 				queue: this.q,
 				request: this.book.load.bind(this.book),
 				settings: this.settings

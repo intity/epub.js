@@ -6,6 +6,7 @@ import Queue from "../../utils/queue";
 import Stage from "../helpers/stage";
 import Views from "../helpers/views";
 import { EVENTS } from "../../utils/constants";
+import IframeView from "../views/iframe";
 
 /**
  * Default View Manager
@@ -13,7 +14,8 @@ import { EVENTS } from "../../utils/constants";
 class DefaultViewManager {
 	/**
 	 * Constructor
-	 * @param {object} options 
+	 * @param {object} options
+	 * @param {string|object} [options.view='iframe']
 	 */
 	constructor(options) {
 		/**
@@ -23,7 +25,6 @@ class DefaultViewManager {
 		 */
 		this.name = "default";
 		this.optsSettings = options.settings;
-		this.View = options.view;
 		this.request = options.request;
 		this.renditionQueue = options.queue;
 		this.q = new Queue(this);
@@ -36,6 +37,7 @@ class DefaultViewManager {
 			axis: undefined,
 			writingMode: undefined,
 			flow: "scrolled",
+			view: "iframe",
 			ignoreClass: "",
 			fullsize: undefined,
 			allowScriptedContent: false,
@@ -305,6 +307,27 @@ class DefaultViewManager {
 	}
 
 	/**
+	 * Require the view from passed string, or as a class function
+	 * @param  {string|object} view
+	 * @return {any}
+	 * @private
+	 */
+	requireView(view) {
+
+		let ret;
+
+		// If view is a string, try to load from imported views,
+		if (typeof view == "string" && view === "iframe") {
+			ret = IframeView;
+		} else {
+			// otherwise, assume we were passed a class function
+			ret = view;
+		}
+
+		return ret;
+	}
+
+	/**
 	 * createView
 	 * @param {Section} section 
 	 * @param {boolean} forceRight 
@@ -313,7 +336,8 @@ class DefaultViewManager {
 	 */
 	createView(section, forceRight) {
 
-		return new this.View(section, extend(this.viewSettings, { forceRight }));
+		const view = this.requireView(this.settings.view);
+		return new view(section, extend(this.viewSettings, { forceRight }));
 	}
 
 	/**
