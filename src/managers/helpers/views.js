@@ -1,72 +1,52 @@
 /**
  * Views
  */
-class Views {
+class Views extends Array {
 	/**
 	 * Constructor
 	 * @param {Element} container 
 	 */
 	constructor(container) {
 
+		super();
 		this.container = container;
-		this._views = [];
-		this.length = 0;
 		this.hidden = false;
-	}
-
-	all() {
-
-		return this._views;
 	}
 
 	first() {
 
-		return this._views[0];
+		return this[0];
 	}
 
 	last() {
 
-		return this._views[this._views.length - 1];
-	}
-
-	indexOf(view) {
-
-		return this._views.indexOf(view);
-	}
-
-	slice() {
-
-		return this._views.slice.apply(this._views, arguments);
+		return this[this.length - 1];
 	}
 
 	get(i) {
 
-		return this._views[i];
+		return this[i];
 	}
 
 	append(view) {
 
-		this._views.push(view);
 		if (this.container) {
 			this.container.appendChild(view.element);
 		}
-		this.length++;
+		this.push(view);
 		return view;
 	}
 
 	prepend(view) {
 
-		this._views.unshift(view);
 		if (this.container) {
 			this.container.insertBefore(view.element, this.container.firstChild);
 		}
-		this.length++;
+		this.unshift(view);
 		return view;
 	}
 
 	insert(view, index) {
-
-		this._views.splice(index, 0, view);
 
 		if (this.container) {
 			if (index < this.container.children.length) {
@@ -75,19 +55,17 @@ class Views {
 				this.container.appendChild(view.element);
 			}
 		}
-
-		this.length++;
+		this.splice(index, 0, view);
 		return view;
 	}
 
 	remove(view) {
 
-		const index = this._views.indexOf(view);
+		const index = this.indexOf(view);
 		if (index > -1) {
-			this._views.splice(index, 1);
+			this.splice(index, 1);
 		}
 		this.destroy(view);
-		this.length--;
 	}
 
 	destroy(view) {
@@ -102,31 +80,21 @@ class Views {
 		view = null;
 	}
 
-	// Iterators
-
-	forEach() {
-
-		return this._views.forEach.apply(this._views, arguments);
-	}
-
 	clear() {
 
-		// Remove all views
 		if (this.length === 0) return;
 
 		for (let i = 0; i < this.length; i++) {
-			const view = this._views[i];
+			const view = this[i];
 			this.destroy(view);
 		}
-
-		this._views = [];
-		this.length = 0;
+		this.splice(0);
 	}
 
 	find(section) {
 
 		for (let i = 0; i < this.length; i++) {
-			const view = this._views[i];
+			const view = this[i];
 			if (view.displayed && 
 				view.section.index == section.index) {
 				return view;
@@ -138,7 +106,7 @@ class Views {
 
 		const displayed = [];
 		for (let i = 0; i < this.length; i++) {
-			const view = this._views[i];
+			const view = this[i];
 			if (view.displayed) {
 				displayed.push(view);
 			}
@@ -149,7 +117,7 @@ class Views {
 	show() {
 
 		for (let i = 0; i < this.length; i++) {
-			const view = this._views[i];
+			const view = this[i];
 			if (view.displayed) {
 				view.show();
 			}
@@ -160,7 +128,7 @@ class Views {
 	hide() {
 
 		for (let i = 0; i < this.length; i++) {
-			const view = this._views[i];
+			const view = this[i];
 			if (view.displayed) {
 				view.hide();
 			}
