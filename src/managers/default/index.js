@@ -1,5 +1,5 @@
 import EventEmitter from "event-emitter";
-import {extend, defer, windowBounds, isNumber} from "../../utils/core";
+import { extend, defer, windowBounds, isNumber } from "../../utils/core";
 import scrollType from "../../utils/scrolltype";
 import Mapping from "../../mapping";
 import Queue from "../../utils/queue";
@@ -8,12 +8,19 @@ import Views from "../helpers/views";
 import { EVENTS } from "../../utils/constants";
 
 /**
- * DefaultViewManager
- * @param {object} options
+ * Default View Manager
  */
 class DefaultViewManager {
+	/**
+	 * Constructor
+	 * @param {object} options 
+	 */
 	constructor(options) {
-
+		/**
+		 * @member {string} name Manager name
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
 		this.name = "default";
 		this.optsSettings = options.settings;
 		this.View = options.view;
@@ -49,23 +56,37 @@ class DefaultViewManager {
 			allowScriptedContent: this.settings.allowScriptedContent,
 			allowPopups: this.settings.allowPopups
 		};
-
+		/**
+		 * @member {object[]} location
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
+		this.location = [];
+		/**
+		 * @member {boolean} rendered
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
 		this.rendered = false;
-
 	}
 
 	/**
 	 * render
 	 * @param {Element} element 
 	 * @param {object} size 
+	 * @param {number} size.width
+	 * @param {number} size.height
 	 */
-	render(element, size){
-		let tag = element.tagName;
+	render(element, size) {
 
-		if (typeof this.settings.fullsize === "undefined" &&
-				tag && (tag.toLowerCase() == "body" ||
-				tag.toLowerCase() == "html")) {
-				this.settings.fullsize = true;
+		let tag;
+		if (element.tagName) {
+			tag = element.tagName.toLowerCase();
+			tag = tag === "body" || tag === "html";
+		}
+
+		if (this.settings.fullsize === undefined && tag) {
+			this.settings.fullsize = true;
 		}
 
 		if (this.settings.fullsize) {
@@ -74,35 +95,59 @@ class DefaultViewManager {
 		}
 
 		this.settings.size = size;
-
 		this.settings.rtlScrollType = scrollType();
-
-		// Save the stage
+		/**
+		 * @member {Stage} stage
+		 * @memberof DefaultViewManager
+		 * @property {string} axis
+		 * @property {string} direction
+		 * @property {string|number} width
+		 * @property {string|number} height
+		 * @property {string} overflow
+		 * @property {boolean} hidden
+		 * @property {boolean} fullsize
+		 * @readonly
+		 */
 		this.stage = new Stage({
+			axis: this.settings.axis,
 			width: size.width,
 			height: size.height,
 			overflow: this.overflow,
 			hidden: this.settings.hidden,
-			axis: this.settings.axis,
 			fullsize: this.settings.fullsize,
 			direction: this.settings.direction
 		});
-
 		this.stage.attachTo(element);
-
-		// Get this stage container div
+		/**
+		 * Stage container
+		 * @member {Element} container div element
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
 		this.container = this.stage.getContainer();
-
-		// Views array methods
+		/**
+		 * @member {Views} views 
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
 		this.views = new Views(this.container);
-
-		// Calculate Stage Size
+		/**
+		 * Calculate Stage Size
+		 * @member {object} _bounds
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
 		this._bounds = this.bounds();
-		this._stageSize = this.stage.size();
+		/**
+		 * @member {object} stageSize
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
+		this.stageSize = this.stage.size();
 
 		// Set the dimensions for views
-		this.viewSettings.width = this._stageSize.width;
-		this.viewSettings.height = this._stageSize.height;
+		this.viewSettings.width = this.stageSize.width;
+		this.viewSettings.height = this.stageSize.height;
 
 		// Function to handle a resize event.
 		// Will only attach if width and height are both fixed.
@@ -120,18 +165,18 @@ class DefaultViewManager {
 		}
 
 		this.rendered = true;
-
 	}
 
 	/**
 	 * addEventListeners
+	 * @private
 	 */
-	addEventListeners(){
-		var scroller;
+	addEventListeners() {
 
 		window.onpagehide = (e) => this.destroy();
 
-		if(!this.settings.fullsize) {
+		let scroller;
+		if (!this.settings.fullsize) {
 			scroller = this.container;
 		} else {
 			scroller = window;
@@ -143,11 +188,12 @@ class DefaultViewManager {
 
 	/**
 	 * removeEventListeners
+	 * @private
 	 */
-	removeEventListeners(){
-		var scroller;
+	removeEventListeners() {
 
-		if(!this.settings.fullsize) {
+		let scroller;
+		if (!this.settings.fullsize) {
 			scroller = this.container;
 		} else {
 			scroller = window;
@@ -160,38 +206,28 @@ class DefaultViewManager {
 	/**
 	 * destroy
 	 */
-	destroy(){
+	destroy() {
+
 		clearTimeout(this.orientationTimeout);
 		clearTimeout(this.resizeTimeout);
 		clearTimeout(this.afterScrolled);
 
 		this.clear();
-
 		this.removeEventListeners();
-
 		this.stage.destroy();
-
 		this.rendered = false;
-
-		/*
-
-			clearTimeout(this.trimTimeout);
-			if(this.settings.hidden) {
-				this.element.removeChild(this.wrapper);
-			} else {
-				this.element.removeChild(this.container);
-			}
-		*/
 	}
 
 	/**
 	 * onOrientationChange
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onOrientationChange(e) {
-		let {orientation} = window;
 
-		if(this.optsSettings.resizeOnOrientationChange) {
+		let { orientation } = window.screen;
+
+		if (this.optsSettings.resizeOnOrientationChange) {
 			this.resize();
 		}
 
@@ -201,53 +237,55 @@ class DefaultViewManager {
 		// happens in window.resize event. Adding a timeout for correct
 		// measurement. See https://github.com/ampproject/amphtml/issues/8479
 		clearTimeout(this.orientationTimeout);
-		this.orientationTimeout = setTimeout(function(){
+		this.orientationTimeout = setTimeout(() => {
 			this.orientationTimeout = undefined;
 
-			if(this.optsSettings.resizeOnOrientationChange) {
+			if (this.optsSettings.resizeOnOrientationChange) {
 				this.resize();
 			}
 
 			this.emit(EVENTS.MANAGERS.ORIENTATION_CHANGE, orientation);
-		}.bind(this), 500);
-
+		}, 500);
 	}
 
 	/**
 	 * onResized
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onResized(e) {
+
 		this.resize();
 	}
 
 	/**
 	 * resize
-	 * @param {*} width 
-	 * @param {*} height 
-	 * @param {*} epubcfi 
+	 * @param {number} [width] 
+	 * @param {number} [height] 
+	 * @param {string} [epubcfi] 
 	 */
-	resize(width, height, epubcfi){
-		let stageSize = this.stage.size(width, height);
+	resize(width, height, epubcfi) {
+
+		const stageSize = this.stage.size(width, height);
 
 		// For Safari, wait for orientation to catch up
 		// if the window is a square
 		this.winBounds = windowBounds();
 		if (this.orientationTimeout &&
-				this.winBounds.width === this.winBounds.height) {
+			this.winBounds.width === this.winBounds.height) {
 			// reset the stage size for next resize
-			this._stageSize = undefined;
+			this.stageSize = undefined;
 			return;
 		}
 
-		if (this._stageSize &&
-				this._stageSize.width === stageSize.width &&
-				this._stageSize.height === stageSize.height ) {
+		if (this.stageSize &&
+			this.stageSize.width === stageSize.width &&
+			this.stageSize.height === stageSize.height) {
 			// Size is the same, no need to resize
 			return;
 		}
 
-		this._stageSize = stageSize;
+		this.stageSize = stageSize;
 
 		this._bounds = this.bounds();
 
@@ -255,43 +293,45 @@ class DefaultViewManager {
 		this.clear();
 
 		// Update for new views
-		this.viewSettings.width = this._stageSize.width;
-		this.viewSettings.height = this._stageSize.height;
+		this.viewSettings.width = this.stageSize.width;
+		this.viewSettings.height = this.stageSize.height;
 
 		this.updateLayout();
 
 		this.emit(EVENTS.MANAGERS.RESIZED, {
-			width: this._stageSize.width,
-			height: this._stageSize.height
+			width: this.stageSize.width,
+			height: this.stageSize.height
 		}, epubcfi);
 	}
 
 	/**
 	 * createView
-	 * @param {*} section 
-	 * @param {*} forceRight 
-	 * @returns {object} view
+	 * @param {Section} section 
+	 * @param {boolean} forceRight 
+	 * @returns {object} View object (default: IframeView)
+	 * @private
 	 */
 	createView(section, forceRight) {
-		return new this.View(section, extend(this.viewSettings, { forceRight }) );
+
+		return new this.View(section, extend(this.viewSettings, { forceRight }));
 	}
 
 	/**
 	 * handleNextPrePaginated
-	 * @param {*} forceRight 
-	 * @param {*} section 
-	 * @param {*} action 
+	 * @param {boolean} forceRight 
+	 * @param {Section} section 
+	 * @param {function} action callback function
 	 * @returns {*}
+	 * @private
 	 */
 	handleNextPrePaginated(forceRight, section, action) {
-		let next;
 
 		if (this.layout.name === "pre-paginated" && this.layout.divisor > 1) {
 			if (forceRight || section.index === 0) {
 				// First page (cover) should stand alone for pre-paginated books
 				return;
 			}
-			next = section.next();
+			const next = section.next();
 			if (next && !next.properties.includes("page-spread-left")) {
 				return action.call(this, next);
 			}
@@ -300,14 +340,14 @@ class DefaultViewManager {
 
 	/**
 	 * display
-	 * @param {*} section 
-	 * @param {*} target 
+	 * @param {Section} section 
+	 * @param {string|number} target 
 	 * @returns {Promise} displaying promise
 	 */
-	display(section, target){
+	display(section, target) {
 
-		var displaying = new defer();
-		var displayed = displaying.promise;
+		const displaying = new defer();
+		const displayed = displaying.promise;
 
 		// Check if moving to target is needed
 		if (target === section.href || isNumber(target)) {
@@ -315,23 +355,21 @@ class DefaultViewManager {
 		}
 
 		// Check to make sure the section we want isn't already shown
-		var visible = this.views.find(section);
+		const visible = this.views.find(section);
 
 		// View is already shown, just move to correct location in view
-		if(visible && section && this.layout.name !== "pre-paginated") {
-			let offset = visible.offset();
+		if (visible && section && this.layout.name !== "pre-paginated") {
+			const offset = visible.offset();
 
 			if (this.settings.direction === "ltr") {
 				this.scrollTo(offset.left, offset.top, true);
 			} else {
-				let width = visible.width();
+				const width = visible.width();
 				this.scrollTo(offset.left + width, offset.top, true);
 			}
 
-			if(target) {
-				let offset = visible.locationOf(target);
-				let width = visible.width();
-				this.moveTo(offset, width);
+			if (target) {
+				this.moveTo(visible.locationOf(target), visible.width());
 			}
 
 			displaying.resolve();
@@ -342,68 +380,65 @@ class DefaultViewManager {
 		this.clear();
 
 		let forceRight = false;
-		if (this.layout.name === "pre-paginated" && this.layout.divisor === 2 && section.properties.includes("page-spread-right")) {
+		if (this.layout.name === "pre-paginated" && 
+			this.layout.divisor === 2 && 
+			section.properties.includes("page-spread-right")) {
 			forceRight = true;
 		}
 
-		this.add(section, forceRight)
-			.then(function(view){
+		this.add(section, forceRight).then((view) => {
 
-				// Move to correct place within the section, if needed
-				if(target) {
-					let offset = view.locationOf(target);
-					let width = view.width();
-					this.moveTo(offset, width);
-				}
+			// Move to correct place within the section, if needed
+			if (target) {
+				let offset = view.locationOf(target);
+				let width = view.width();
+				this.moveTo(offset, width);
+			}
+		}, (err) => {
+			displaying.reject(err);
+		}).then(() => {
+			return this.handleNextPrePaginated(forceRight, section, this.add);
+		}).then(() => {
+			this.views.show();
+			displaying.resolve();
+		});
 
-			}.bind(this), (err) => {
-				displaying.reject(err);
-			})
-			.then(function(){
-				return this.handleNextPrePaginated(forceRight, section, this.add);
-			}.bind(this))
-			.then(function(){
-
-				this.views.show();
-
-				displaying.resolve();
-
-			}.bind(this));
-		// .then(function(){
-		// 	return this.hooks.display.trigger(view);
-		// }.bind(this))
-		// .then(function(){
-		// 	this.views.show();
-		// }.bind(this));
 		return displayed;
 	}
 
 	/**
 	 * afterDisplayed
 	 * @param {*} view 
+	 * @private
 	 */
-	afterDisplayed(view){
+	afterDisplayed(view) {
+
 		this.emit(EVENTS.MANAGERS.ADDED, view);
 	}
 
 	/**
 	 * afterResized
 	 * @param {*} view 
+	 * @private
 	 */
-	afterResized(view){
+	afterResized(view) {
+
 		this.emit(EVENTS.MANAGERS.RESIZE, view.section);
 	}
 
 	/**
 	 * moveTo
-	 * @param {*} offset 
-	 * @param {*} width 
+	 * @param {object} offset
+	 * @param {number} offset.top
+	 * @param {number} offset.left
+	 * @param {number} width 
+	 * @private
 	 */
-	moveTo(offset, width){
-		var distX = 0,
-				distY = 0;
+	moveTo(offset, width) {
 
-		if(!this.isPaginated) {
+		let distX = 0, distY = 0;
+
+		if (!this.isPaginated) {
 			distY = offset.top;
 		} else {
 			distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
@@ -418,27 +453,29 @@ class DefaultViewManager {
 				distY = this.container.scrollHeight - this.layout.delta;
 			}
 		}
-		if(this.settings.direction === 'rtl'){
+
+		if (this.settings.direction === 'rtl') {
 			/***
 				the `floor` function above (L343) is on positive values, so we should add one `layout.delta`
 				to distX or use `Math.ceil` function, or multiply offset.left by -1
 				before `Math.floor`
 			*/
-			distX = distX + this.layout.delta
-			distX = distX - width
+			distX = distX + this.layout.delta;
+			distX = distX - width;
 		}
+
 		this.scrollTo(distX, distY, true);
 	}
 
 	/**
 	 * add
-	 * @param {*} section 
-	 * @param {*} forceRight 
-	 * @returns {*}
+	 * @param {Section} section 
+	 * @param {boolean} forceRight 
+	 * @returns {Promise}
 	 */
-	add(section, forceRight){
-		var view = this.createView(section, forceRight);
+	add(section, forceRight) {
 
+		const view = this.createView(section, forceRight);
 		this.views.append(view);
 
 		// view.on(EVENTS.VIEWS.SHOWN, this.afterDisplayed.bind(this));
@@ -458,12 +495,14 @@ class DefaultViewManager {
 
 	/**
 	 * append
-	 * @param {*} section 
-	 * @param {*} forceRight 
-	 * @returns {*}
+	 * @param {Section} section Section object
+	 * @param {boolean} forceRight 
+	 * @returns {Promise}
+	 * @private
 	 */
-	append(section, forceRight){
-		var view = this.createView(section, forceRight);
+	append(section, forceRight) {
+
+		const view = this.createView(section, forceRight);
 		this.views.append(view);
 
 		view.onDisplayed = this.afterDisplayed.bind(this);
@@ -482,12 +521,14 @@ class DefaultViewManager {
 
 	/**
 	 * prepend
-	 * @param {*} section 
-	 * @param {*} forceRight 
-	 * @returns {*}
+	 * @param {Section} section 
+	 * @param {boolean} forceRight 
+	 * @returns {Promise}
+	 * @private
 	 */
-	prepend(section, forceRight){
-		var view = this.createView(section, forceRight);
+	prepend(section, forceRight) {
+
+		const view = this.createView(section, forceRight);
 
 		view.on(EVENTS.VIEWS.RESIZED, (bounds) => {
 			this.counter(bounds);
@@ -512,45 +553,36 @@ class DefaultViewManager {
 	/**
 	 * counter
 	 * @param {*} bounds 
+	 * @private
 	 */
-	counter(bounds){
-		if(this.settings.axis === "vertical") {
+	counter(bounds) {
+
+		if (this.settings.axis === "vertical") {
 			this.scrollBy(0, bounds.heightDelta, true);
 		} else {
 			this.scrollBy(bounds.widthDelta, 0, true);
 		}
-
 	}
-
-	// resizeView(view) {
-	//
-	// 	if(this.settings.globalLayoutProperties.layout === "pre-paginated") {
-	// 		view.lock("both", this.bounds.width, this.bounds.height);
-	// 	} else {
-	// 		view.lock("width", this.bounds.width, this.bounds.height);
-	// 	}
-	//
-	// };
 
 	/**
 	 * next
-	 * @returns {*}
+	 * @returns {Promise}
 	 */
-	next(){
-		var next;
-		var left;
+	next() {
 
-		let dir = this.settings.direction;
+		let next;
+		let left;
+		const dir = this.settings.direction;
 
-		if(!this.views.length) return;
+		if (!this.views.length) return;
 
-		if(this.isPaginated && this.settings.axis === "horizontal" && (!dir || dir === "ltr")) {
+		if (this.isPaginated && this.settings.axis === "horizontal" && (!dir || dir === "ltr")) {
 
 			this.scrollLeft = this.container.scrollLeft;
 
 			left = this.container.scrollLeft + this.container.offsetWidth + this.layout.delta;
 
-			if(left <= this.container.scrollWidth) {
+			if (left <= this.container.scrollWidth) {
 				this.scrollBy(this.layout.delta, 0, true);
 			} else {
 				next = this.views.last().section.next();
@@ -559,7 +591,7 @@ class DefaultViewManager {
 
 			this.scrollLeft = this.container.scrollLeft;
 
-			if (this.settings.rtlScrollType === "default"){
+			if (this.settings.rtlScrollType === "default") {
 				left = this.container.scrollLeft;
 
 				if (left > 0) {
@@ -568,9 +600,9 @@ class DefaultViewManager {
 					next = this.views.last().section.next();
 				}
 			} else {
-				left = this.container.scrollLeft + ( this.layout.delta * -1 );
+				left = this.container.scrollLeft + (this.layout.delta * -1);
 
-				if (left > this.container.scrollWidth * -1){
+				if (left > this.container.scrollWidth * -1) {
 					this.scrollBy(this.layout.delta, 0, true);
 				} else {
 					next = this.views.last().section.next();
@@ -580,10 +612,9 @@ class DefaultViewManager {
 		} else if (this.isPaginated && this.settings.axis === "vertical") {
 
 			this.scrollTop = this.container.scrollTop;
+			const top = this.container.scrollTop + this.container.offsetHeight;
 
-			let top  = this.container.scrollTop + this.container.offsetHeight;
-
-			if(top < this.container.scrollHeight) {
+			if (top < this.container.scrollHeight) {
 				this.scrollBy(0, this.layout.height, true);
 			} else {
 				next = this.views.last().section.next();
@@ -593,57 +624,58 @@ class DefaultViewManager {
 			next = this.views.last().section.next();
 		}
 
-		if(next) {
+		if (next) {
 			this.clear();
-			// The new section may have a different writing-mode from the old section. Thus, we need to update layout.
+			// The new section may have a different 
+			// writing-mode from the old section. 
+			// Thus, we need to update layout.
 			this.updateLayout();
 
 			let forceRight = false;
-			if (this.layout.name === "pre-paginated" && this.layout.divisor === 2 && next.properties.includes("page-spread-right")) {
+			if (this.layout.name === "pre-paginated" && 
+				this.layout.divisor === 2 && 
+				next.properties.includes("page-spread-right")) {
 				forceRight = true;
 			}
 
-			return this.append(next, forceRight)
-				.then(function(){
-					return this.handleNextPrePaginated(forceRight, next, this.append);
-				}.bind(this), (err) => {
-					return err;
-				})
-				.then(function(){
+			return this.append(next, forceRight).then(() => {
+				return this.handleNextPrePaginated(forceRight, next, this.append);
+			}, (err) => {
+				return err;
+			}).then(() => {
 
-					// Reset position to start for scrolled-doc vertical-rl in default mode
-					if (!this.isPaginated &&
-						this.settings.axis === "horizontal" &&
-						this.settings.direction === "rtl" &&
-						this.settings.rtlScrollType === "default") {
-						
-						this.scrollTo(this.container.scrollWidth, 0, true);
-					}
-					this.views.show();
-				}.bind(this));
+				// Reset position to start for scrolled-doc vertical-rl in default mode
+				if (!this.isPaginated &&
+					this.settings.axis === "horizontal" &&
+					this.settings.direction === "rtl" &&
+					this.settings.rtlScrollType === "default") {
+
+					this.scrollTo(this.container.scrollWidth, 0, true);
+				}
+				this.views.show();
+			});
 		}
-
-
 	}
 
 	/**
 	 * prev
-	 * @returns {*}
+	 * @returns {Promise}
 	 */
-	prev(){
-		var prev;
-		var left;
-		let dir = this.settings.direction;
+	prev() {
 
-		if(!this.views.length) return;
+		let prev;
+		let left;
+		const dir = this.settings.direction;
 
-		if(this.isPaginated && this.settings.axis === "horizontal" && (!dir || dir === "ltr")) {
+		if (!this.views.length) return;
+
+		if (this.isPaginated && this.settings.axis === "horizontal" && (!dir || dir === "ltr")) {
 
 			this.scrollLeft = this.container.scrollLeft;
 
 			left = this.container.scrollLeft;
 
-			if(left > 0) {
+			if (left > 0) {
 				this.scrollBy(-this.layout.delta, 0, true);
 			} else {
 				prev = this.views.first().section.prev();
@@ -653,7 +685,7 @@ class DefaultViewManager {
 
 			this.scrollLeft = this.container.scrollLeft;
 
-			if (this.settings.rtlScrollType === "default"){
+			if (this.settings.rtlScrollType === "default") {
 				left = this.container.scrollLeft + this.container.offsetWidth;
 
 				if (left < this.container.scrollWidth) {
@@ -662,7 +694,7 @@ class DefaultViewManager {
 					prev = this.views.first().section.prev();
 				}
 			}
-			else{
+			else {
 				left = this.container.scrollLeft;
 
 				if (left < 0) {
@@ -675,93 +707,94 @@ class DefaultViewManager {
 		} else if (this.isPaginated && this.settings.axis === "vertical") {
 
 			this.scrollTop = this.container.scrollTop;
+			const top = this.container.scrollTop;
 
-			let top = this.container.scrollTop;
-
-			if(top > 0) {
+			if (top > 0) {
 				this.scrollBy(0, -(this.layout.height), true);
 			} else {
 				prev = this.views.first().section.prev();
 			}
 
 		} else {
-
 			prev = this.views.first().section.prev();
-
 		}
 
-		if(prev) {
+		if (prev) {
 			this.clear();
-			// The new section may have a different writing-mode from the old section. Thus, we need to update layout.
+			// The new section may have a different 
+			// writing-mode from the old section. 
+			// Thus, we need to update layout.
 			this.updateLayout();
 
 			let forceRight = false;
-			if (this.layout.name === "pre-paginated" && this.layout.divisor === 2 && typeof prev.prev() !== "object") {
+			if (this.layout.name === "pre-paginated" && 
+				this.layout.divisor === 2 && 
+				typeof prev.prev() !== "object") {
 				forceRight = true;
 			}
 
-			return this.prepend(prev, forceRight)
-				.then(function(){
-					var left;
-					if (this.layout.name === "pre-paginated" && this.layout.divisor > 1) {
-						left = prev.prev();
-						if (left) {
-							return this.prepend(left);
-						}
+			return this.prepend(prev, forceRight).then(() => {
+
+				if (this.layout.name === "pre-paginated" && this.layout.divisor > 1) {
+					const left = prev.prev();
+					if (left) {
+						return this.prepend(left);
 					}
-				}.bind(this), (err) => {
-					return err;
-				})
-				.then(function(){
-					if(this.isPaginated && this.settings.axis === "horizontal") {
-						if (this.settings.direction === "rtl") {
-							if (this.settings.rtlScrollType === "default"){
-								this.scrollTo(0, 0, true);
-							}
-							else{
-								this.scrollTo((this.container.scrollWidth * -1) + this.layout.delta, 0, true);
-							}
-						} else {
-							this.scrollTo(this.container.scrollWidth - this.layout.delta, 0, true);
+				}
+			}, (err) => {
+				return err;
+			}).then(() => {
+				if (this.isPaginated && this.settings.axis === "horizontal") {
+					if (this.settings.direction === "rtl") {
+						if (this.settings.rtlScrollType === "default") {
+							this.scrollTo(0, 0, true);
 						}
+						else {
+							this.scrollTo((this.container.scrollWidth * -1) + this.layout.delta, 0, true);
+						}
+					} else {
+						this.scrollTo(this.container.scrollWidth - this.layout.delta, 0, true);
 					}
-					this.views.show();
-				}.bind(this));
+				}
+				this.views.show();
+			});
 		}
 	}
 
 	/**
 	 * current
-	 * @returns {*}
+	 * @returns {*} view
 	 */
-	current(){
-		var visible = this.visible();
-		if(visible.length){
+	current() {
+
+		const visible = this.visible();
+		if (visible.length) {
 			// Current is the last visible view
-			return visible[visible.length-1];
+			return visible[visible.length - 1];
 		}
 		return null;
 	}
 
 	/**
-	 * clear
+	 * clear views
 	 */
-	clear () {
+	clear() {
 
 		// this.q.clear();
 
 		if (this.views) {
 			this.views.hide();
-			this.scrollTo(0,0, true);
+			this.scrollTo(0, 0, true);
 			this.views.clear();
 		}
 	}
 
 	/**
 	 * currentLocation
-	 * @returns {*} location
+	 * @returns {object[]} Location sections
 	 */
-	currentLocation(){
+	currentLocation() {
+
 		this.updateLayout();
 		if (this.isPaginated && this.settings.axis === "horizontal") {
 			this.location = this.paginatedLocation();
@@ -773,28 +806,31 @@ class DefaultViewManager {
 
 	/**
 	 * scrolledLocation
-	 * @returns {*} location
+	 * @returns {object[]} Location sections
+	 * @private
 	 */
 	scrolledLocation() {
-		let visible = this.visible();
-		let container = this.container.getBoundingClientRect();
-		let pageHeight = (container.height < window.innerHeight) ? container.height : window.innerHeight;
-		let pageWidth = (container.width < window.innerWidth) ? container.width : window.innerWidth;
-		let vertical = (this.settings.axis === "vertical");
-		let rtl =  (this.settings.direction === "rtl");
-		
+
+		const visible = this.visible();
+		const container = this.container.getBoundingClientRect();
+		const pageHeight = (container.height < window.innerHeight) ? container.height : window.innerHeight;
+		const pageWidth = (container.width < window.innerWidth) ? container.width : window.innerWidth;
+		const vertical = (this.settings.axis === "vertical");
+		const rtl = (this.settings.direction === "rtl");
+
 		let offset = 0;
 		let used = 0;
 
-		if(this.settings.fullsize) {
+		if (this.settings.fullsize) {
 			offset = vertical ? window.scrollY : window.scrollX;
 		}
 
-		let sections = visible.map((view) => {
-			let {index, href} = view.section;
-			let position = view.position();
-			let width = view.width();
-			let height = view.height();
+		const sections = visible.map(view => {
+
+			const { index, href } = view.section;
+			const position = view.position();
+			const width = view.width();
+			const height = view.height();
 
 			let startPos;
 			let endPos;
@@ -814,23 +850,27 @@ class DefaultViewManager {
 			}
 
 			let currPage = Math.ceil(startPos / stopPos);
-			let pages = [];
 			let endPage = Math.ceil(endPos / stopPos);
 
 			// Reverse page counts for horizontal rtl
 			if (this.settings.direction === "rtl" && !vertical) {
-				let tempStartPage = currPage;
+				const tmp = currPage;
 				currPage = totalPages - endPage;
-				endPage = totalPages - tempStartPage;
+				endPage = totalPages - tmp;
 			}
 
-			pages = [];
-			for (var i = currPage; i <= endPage; i++) {
-				let pg = i + 1;
+			const pages = [];
+			for (let i = currPage; i <= endPage; i++) {
+				const pg = i + 1;
 				pages.push(pg);
 			}
 
-			let mapping = this.mapping.page(view.contents, view.section.cfiBase, startPos, endPos);
+			const mapping = this.mapping.page(
+				view.contents, 
+				view.section.cfiBase, 
+				startPos, 
+				endPos
+			);
 
 			return {
 				index,
@@ -838,7 +878,7 @@ class DefaultViewManager {
 				pages,
 				totalPages,
 				mapping
-			};
+			}
 		});
 
 		return sections;
@@ -846,29 +886,32 @@ class DefaultViewManager {
 
 	/**
 	 * paginatedLocation
-	 * @returns {*} location
+	 * @returns {object[]} sections
+	 * @private
 	 */
-	paginatedLocation(){
-		let visible = this.visible();
-		let container = this.container.getBoundingClientRect();
+	paginatedLocation() {
+
+		const visible = this.visible();
+		const container = this.container.getBoundingClientRect();
 
 		let left = 0;
 		let used = 0;
 
-		if(this.settings.fullsize) {
+		if (this.settings.fullsize) {
 			left = window.scrollX;
 		}
 
-		let sections = visible.map((view) => {
-			let {index, href} = view.section;
-			let offset;
-			let position = view.position();
-			let width = view.width();
+		const sections = visible.map(view => {
+
+			const { index, href } = view.section;
+			const position = view.position();
+			const width = view.width();
 
 			// Find mapping
 			let start;
 			let end;
 			let pageWidth;
+			let offset;
 
 			if (this.settings.direction === "rtl") {
 				offset = container.right - left;
@@ -884,39 +927,42 @@ class DefaultViewManager {
 
 			used += pageWidth;
 
-			let mapping = this.mapping.page(view.contents, view.section.cfiBase, start, end);
-
-			let totalPages = this.layout.count(width).pages;
 			let startPage = Math.floor(start / this.layout.pageWidth);
-			let pages = [];
 			let endPage = Math.floor(end / this.layout.pageWidth);
-			
+
 			// start page should not be negative
 			if (startPage < 0) {
 				startPage = 0;
 				endPage = endPage + 1;
 			}
 
+			const totalPages = this.layout.count(width).pages;
 			// Reverse page counts for rtl
 			if (this.settings.direction === "rtl") {
-				let tempStartPage = startPage;
+				const tmp = startPage;
 				startPage = totalPages - endPage;
-				endPage = totalPages - tempStartPage;
+				endPage = totalPages - tmp;
 			}
 
-
-			for (var i = startPage + 1; i <= endPage; i++) {
-				let pg = i;
-				pages.push(pg);
+			const pages = [];
+			for (let i = startPage + 1; i <= endPage; i++) {
+				pages.push(i);
 			}
 
+			const mapping = this.mapping.page(
+				view.contents, 
+				view.section.cfiBase, 
+				start, 
+				end
+			);
+			
 			return {
 				index,
 				href,
 				pages,
 				totalPages,
 				mapping
-			};
+			}
 		});
 
 		return sections;
@@ -925,22 +971,24 @@ class DefaultViewManager {
 	/**
 	 * isVisible
 	 * @param {*} view 
-	 * @param {*} offsetPrev 
-	 * @param {*} offsetNext 
-	 * @param {*} _container 
+	 * @param {number} offsetPrev 
+	 * @param {number} offsetNext 
+	 * @param {DOMRect} [rect] 
 	 * @returns {boolean}
+	 * @private
 	 */
-	isVisible(view, offsetPrev, offsetNext, _container){
-		var position = view.position();
-		var container = _container || this.bounds();
+	isVisible(view, offsetPrev, offsetNext, rect) {
 
-		if(this.settings.axis === "horizontal" &&
+		const position = view.position();
+		const container = rect || this.bounds();
+
+		if (this.settings.axis === "horizontal" &&
 			position.right > container.left - offsetPrev &&
 			position.left < container.right + offsetNext) {
 
 			return true;
 
-		} else if(this.settings.axis === "vertical" &&
+		} else if (this.settings.axis === "vertical" &&
 			position.bottom > container.top - offsetPrev &&
 			position.top < container.bottom + offsetNext) {
 
@@ -948,49 +996,46 @@ class DefaultViewManager {
 		}
 
 		return false;
-
 	}
 
 	/**
-	 * visible
-	 * @returns {object[]} visible
+	 * Get array of visible views
+	 * @returns {object[]} array of visible views
 	 */
-	visible(){
-		var container = this.bounds();
-		var views = this.views.displayed();
-		var viewsLength = views.length;
-		var visible = [];
-		var isVisible;
-		var view;
+	visible() {
 
-		for (var i = 0; i < viewsLength; i++) {
-			view = views[i];
-			isVisible = this.isVisible(view, 0, 0, container);
+		const container = this.bounds();
+		const views = this.views.displayed();
+		const items = [];
 
-			if(isVisible === true) {
-				visible.push(view);
+		for (let i = 0, len = views.length; i < len; i++) {
+			const view = views[i];
+			if (this.isVisible(view, 0, 0, container)) {
+				items.push(view);
 			}
-
 		}
-		return visible;
+
+		return items;
 	}
 
 	/**
 	 * scrollBy
-	 * @param {*} x 
-	 * @param {*} y 
-	 * @param {*} silent 
+	 * @param {number} x 
+	 * @param {number} y 
+	 * @param {boolean} silent 
+	 * @private
 	 */
-	scrollBy(x, y, silent){
-		let dir = this.settings.direction === "rtl" ? -1 : 1;
+	scrollBy(x, y, silent) {
 
-		if(silent) {
+		const dir = this.settings.direction === "rtl" ? -1 : 1;
+
+		if (silent) {
 			this.ignore = true;
 		}
 
-		if(!this.settings.fullsize) {
-			if(x) this.container.scrollLeft += x * dir;
-			if(y) this.container.scrollTop += y;
+		if (!this.settings.fullsize) {
+			if (x) this.container.scrollLeft += x * dir;
+			if (y) this.container.scrollTop += y;
 		} else {
 			window.scrollBy(x * dir, y * dir);
 		}
@@ -999,32 +1044,36 @@ class DefaultViewManager {
 
 	/**
 	 * scrollTo
-	 * @param {*} x 
-	 * @param {*} y 
-	 * @param {*} silent 
+	 * @param {number} x 
+	 * @param {number} y 
+	 * @param {boolean} silent 
+	 * @private
 	 */
-	scrollTo(x, y, silent){
-		if(silent) {
+	scrollTo(x, y, silent) {
+
+		if (silent) {
 			this.ignore = true;
 		}
 
-		if(!this.settings.fullsize) {
+		if (!this.settings.fullsize) {
 			this.container.scrollLeft = x;
 			this.container.scrollTop = y;
 		} else {
-			window.scrollTo(x,y);
+			window.scrollTo(x, y);
 		}
 		this.scrolled = true;
 	}
 
 	/**
-	 * onScroll
+	 * onScroll event handler
+	 * @private
 	 */
-	onScroll(){
+	onScroll() {
+
 		let scrollTop;
 		let scrollLeft;
 
-		if(!this.settings.fullsize) {
+		if (!this.settings.fullsize) {
 			scrollTop = this.container.scrollTop;
 			scrollLeft = this.container.scrollLeft;
 		} else {
@@ -1035,52 +1084,50 @@ class DefaultViewManager {
 		this.scrollTop = scrollTop;
 		this.scrollLeft = scrollLeft;
 
-		if(!this.ignore) {
+		if (!this.ignore) {
 			this.emit(EVENTS.MANAGERS.SCROLL, {
 				top: scrollTop,
 				left: scrollLeft
 			});
 
 			clearTimeout(this.afterScrolled);
-			this.afterScrolled = setTimeout(function () {
+			this.afterScrolled = setTimeout(() => {
 				this.emit(EVENTS.MANAGERS.SCROLLED, {
 					top: this.scrollTop,
 					left: this.scrollLeft
 				});
-			}.bind(this), 20);
-
-
-
+			}, 20);
 		} else {
 			this.ignore = false;
 		}
-
 	}
 
 	/**
 	 * bounds
-	 * @returns {*}
+	 * @returns {DOMRect}
 	 */
 	bounds() {
-		var bounds;
 
-		bounds = this.stage.bounds();
-
-		return bounds;
+		return this.stage.bounds();
 	}
 
 	/**
 	 * applyLayout
-	 * @param {*} layout 
+	 * @param {Layout} layout Layout object
 	 */
 	applyLayout(layout) {
 
+		/**
+		 * @member {Layout} layout
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
 		this.layout = layout;
 		this.updateLayout();
-		if (this.views && this.views.length > 0 && this.layout.name === "pre-paginated") {
+		if (this.views && this.views.length > 0 && 
+			this.layout.name === "pre-paginated") {
 			this.display(this.views.first().section);
 		}
-		 // this.manager.layout(this.layout.format);
 	}
 
 	/**
@@ -1088,18 +1135,16 @@ class DefaultViewManager {
 	 */
 	updateLayout() {
 
-		if (!this.stage) {
-			return;
-		}
+		if (!this.stage) return;
 
-		this._stageSize = this.stage.size();
+		this.stageSize = this.stage.size();
 
-		if(!this.isPaginated) {
-			this.layout.calculate(this._stageSize.width, this._stageSize.height);
+		if (!this.isPaginated) {
+			this.layout.calculate(this.stageSize.width, this.stageSize.height);
 		} else {
 			this.layout.calculate(
-				this._stageSize.width,
-				this._stageSize.height,
+				this.stageSize.width,
+				this.stageSize.height,
 				this.settings.gap
 			);
 
@@ -1107,7 +1152,6 @@ class DefaultViewManager {
 			this.settings.offset = this.layout.delta / this.layout.divisor;
 
 			// this.stage.addStyleRules("iframe", [{"margin-right" : this.layout.gap + "px"}]);
-
 		}
 
 		// Set the dimensions for views
@@ -1119,53 +1163,50 @@ class DefaultViewManager {
 
 	/**
 	 * setLayout
-	 * @param {*} layout 
+	 * @param {Layout} layout 
+	 * @private
 	 */
-	setLayout(layout){
+	setLayout(layout) {
+		/**
+		 * @member {Mapping} mapping
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
+		this.mapping = new Mapping(layout, this.settings.direction, this.settings.axis);
+		this.views && this.views.forEach(view => {
 
+			view && view.setLayout(layout)
+		});
 		this.viewSettings.layout = layout;
-
-		this.mapping = new Mapping(layout.props, this.settings.direction, this.settings.axis);
-
-		if(this.views) {
-
-			this.views.forEach(function(view){
-				if (view) {
-					view.setLayout(layout);
-				}
-			});
-
-		}
-
 	}
 
 	/**
 	 * updateWritingMode
 	 * @param {*} mode 
+	 * @private
 	 */
 	updateWritingMode(mode) {
+
 		this.writingMode = mode;
 	}
 
 	/**
 	 * updateAxis
-	 * @param {*} axis 
-	 * @param {*} forceUpdate  
+	 * @param {string} axis
+	 * @param {boolean} forceUpdate
 	 */
-	updateAxis(axis, forceUpdate){
+	updateAxis(axis, forceUpdate) {
 
 		if (!forceUpdate && axis === this.settings.axis) {
 			return;
 		}
 
 		this.settings.axis = axis;
-
 		this.stage && this.stage.axis(axis);
-
 		this.viewSettings.axis = axis;
 
 		if (this.mapping) {
-			this.mapping = new Mapping(this.layout.props, this.settings.direction, this.settings.axis);
+			this.mapping = new Mapping(this.layout, this.settings.direction, this.settings.axis);
 		}
 
 		if (this.layout) {
@@ -1179,17 +1220,17 @@ class DefaultViewManager {
 
 	/**
 	 * updateFlow
-	 * @param {*} flow 
-	 * @param {*} defaultScrolledOverflow 
+	 * @param {string} flow 
+	 * @param {string} [defaultScrolledOverflow='auto'] 
 	 */
-	updateFlow(flow, defaultScrolledOverflow="auto"){
-		let isPaginated = (flow === "paginated" || flow === "auto");
+	updateFlow(flow, defaultScrolledOverflow = "auto") {
 
+		const isPaginated = (flow === "paginated" || flow === "auto");
 		this.isPaginated = isPaginated;
 
 		if (flow === "scrolled-doc" ||
-				flow === "scrolled-continuous" ||
-				flow === "scrolled") {
+			flow === "scrolled-continuous" ||
+			flow === "scrolled") {
 			this.updateAxis("vertical");
 		} else {
 			this.updateAxis("horizontal");
@@ -1204,25 +1245,22 @@ class DefaultViewManager {
 		}
 
 		this.stage && this.stage.overflow(this.overflow);
-
 		this.updateLayout();
-
 	}
 
 	/**
-	 * getContents
-	 * @returns {object[]}
+	 * Get contents array from views
+	 * @returns {Contents[]} [view.contents]
 	 */
-	getContents(){
-		var contents = [];
+	getContents() {
+
+		const contents = [];
 		if (!this.views) {
 			return contents;
 		}
-		this.views.forEach(function(view){
-			const viewContents = view && view.contents;
-			if (viewContents) {
-				contents.push(viewContents);
-			}
+		this.views.forEach(view => {
+
+			view && contents.push(view.contents)
 		});
 		return contents;
 	}
@@ -1231,13 +1269,11 @@ class DefaultViewManager {
 	 * direction
 	 * @param {string} [dir='ltr'] 
 	 */
-	direction(dir="ltr") {
+	direction(dir = "ltr") {
+
 		this.settings.direction = dir;
-
 		this.stage && this.stage.direction(dir);
-
 		this.viewSettings.direction = dir;
-
 		this.updateLayout();
 	}
 
@@ -1246,11 +1282,11 @@ class DefaultViewManager {
 	 * @returns {boolean}
 	 */
 	isRendered() {
+
 		return this.rendered;
 	}
 }
 
-//-- Enable binding events to Manager
 EventEmitter(DefaultViewManager.prototype);
 
 export default DefaultViewManager;
