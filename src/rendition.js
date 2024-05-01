@@ -32,7 +32,7 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
  * @param {boolean|object} [options.snap=false] use snap scrolling
- * @param {string} [options.direction='ltr'] direction `"ltr"` OR `"rtl"` (TODO: implement to `"auto"` detection)
+ * @param {string} [options.direction] direction `"ltr"` OR `"rtl"` (TODO: implement to `"auto"` detection)
  * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
  * @param {boolean} [options.allowPopups=false] enable opening popup in content
  */
@@ -53,7 +53,7 @@ class Rendition {
 			resizeOnOrientationChange: true,
 			script: null,
 			snap: false,
-			direction: "ltr",
+			direction: null, // TODO: implement to 'auto' detection
 			allowScriptedContent: false,
 			allowPopups: false
 		});
