@@ -17,6 +17,20 @@ class Packaging {
 		this.manifest = {};
 		/**
 		 * @member {object} metadata
+		 * @property {string} title
+		 * @property {string} creator
+		 * @property {string} description
+		 * @property {string} publisher
+		 * @property {string} language
+		 * @property {string} rights
+		 * @property {string} date
+		 * @property {string} modified_date
+		 * @property {string} flow
+		 * @property {string} layout
+		 * @property {string} spread
+		 * @property {string} viewport
+		 * @property {string} orientation
+		 * @property {string} media_active_class
 		 * @memberof Packaging
 		 * @readonly
 		 */
