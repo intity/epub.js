@@ -24,7 +24,7 @@ class Packaging {
 		 * @property {string} language
 		 * @property {string} rights
 		 * @property {string} date
-		 * @property {string} modified_date
+		 * @property {string} modified
 		 * @property {string} flow
 		 * @property {string} layout
 		 * @property {string} spread
@@ -137,7 +137,7 @@ class Packaging {
 		metadata.rights = this.getElementText(xml, "rights");
 		metadata.date = this.getElementText(xml, "date");
 		//-- dcterms:
-		metadata.modified_date = this.getPropertyText(xml, "dcterms:modified");
+		metadata.modified = this.getPropertyText(xml, "dcterms:modified");
 		//-- rendition:
 		metadata.flow = this.getPropertyText(xml, "rendition:flow");
 		metadata.layout = this.getPropertyText(xml, "rendition:layout");
