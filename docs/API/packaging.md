@@ -70,6 +70,25 @@ destroy
 ## Packaging.metadata : <code>object</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
+**Properties**
+
+| Name | Type |
+| --- | --- |
+| title | <code>string</code> | 
+| creator | <code>string</code> | 
+| description | <code>string</code> | 
+| publisher | <code>string</code> | 
+| language | <code>string</code> | 
+| rights | <code>string</code> | 
+| date | <code>string</code> | 
+| modified | <code>string</code> | 
+| flow | <code>string</code> | 
+| layout | <code>string</code> | 
+| spread | <code>string</code> | 
+| viewport | <code>string</code> | 
+| orientation | <code>string</code> | 
+| media_active_class | <code>string</code> | 
+
 <a name="Packaging.navPath"></a>
 
 ## Packaging.navPath : <code>string</code>
