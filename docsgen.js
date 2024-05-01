@@ -54,7 +54,7 @@ const docs = [
 for (const doc of docs) {
     const time = Date.now()
     const item = doc.split('/')
-    let opath = path.resolve(__dirname, "docs")
+    let opath = path.resolve(__dirname, "docs/API")
     let ifile = "src"
     let ofile = opath
     for (let i = 0, len = item.length; i < len; ++i) {

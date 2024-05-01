@@ -6,125 +6,125 @@
 
 ### global classes (dependencies graph)
 
-- [Annotations](annotations.md) `from ./annotations`
-    - [EpubCFI](epubcfi.md)
-    - [constants](utils/constants.md) `from ./utils/constants`
+- [Annotations](API/annotations.md) `from ./annotations`
+    - [EpubCFI](API/epubcfi.md)
+    - [constants](API/utils/constants.md) `from ./utils/constants`
         - EVENTS
-- [Book](book.md) `from ./book`
-    - [Archive](archive.md)
-    - [constants](utils/constants.md) `from ./utils/constants`
+- [Book](API/book.md) `from ./book`
+    - [Archive](API/archive.md)
+    - [constants](API/utils/constants.md) `from ./utils/constants`
         - EPUBJS_VERSION
         - EVENTS
-    - [Container](container.md)
-    - [DisplayOptions](displayoptions.md)
-    - [Locations](locations.md)
-    - [Navigation](navigation.md)
-    - [Packaging](packaging.md)
-    - [Pagelist](pagelist.md)
-    - [Path](utils/path.md)
-    - [Rendition](rendition.md)
-    - [Resources](resources.md)
-    - [request](utils/request.md) `from ./utils/request`
-    - [Spine](spine.md)
-    - [Store](store.md)
-    - [Url](utils/url.md)
-- [Contents](contents.md) `from ./contentss`
-    - [constants](utils/constants.md) `from ./utils/constants`
+    - [Container](API/container.md)
+    - [DisplayOptions](API/displayoptions.md)
+    - [Locations](API/locations.md)
+    - [Navigation](API/navigation.md)
+    - [Packaging](API/packaging.md)
+    - [Pagelist](API/pagelist.md)
+    - [Path](API/utils/path.md)
+    - [Rendition](API/rendition.md)
+    - [Resources](API/resources.md)
+    - [request](API/utils/request.md) `from ./utils/request`
+    - [Spine](API/spine.md)
+    - [Store](API/store.md)
+    - [Url](API/utils/url.md)
+- [Contents](API/contents.md) `from ./contentss`
+    - [constants](API/utils/constants.md) `from ./utils/constants`
         - DOM_EVENTS
         - EPUBJS_VERSION
         - EVENTS
-    - [core](utils/core.md) `from ./utils/core`
+    - [core](API/utils/core.md) `from ./utils/core`
         - borders
         - defaults
         - isNumber
         - prefixed
-    - [EpubCFI](epubcfi.md)
-    - [Mapping](mapping.md)
-    - [replacements](utils/replacements.md) `from ./utils/replacements`
+    - [EpubCFI](API/epubcfi.md)
+    - [Mapping](API/mapping.md)
+    - [replacements](API/utils/replacements.md) `from ./utils/replacements`
         - replaceLinks
-- [EpubCFI](epubcfi.md) `from ./epubcfi`
-    - [core](utils/core.md) `from ./utils/core`
+- [EpubCFI](API/epubcfi.md) `from ./epubcfi`
+    - [core](API/utils/core.md) `from ./utils/core`
         - extend
         - findChildren
         - isNumber
         - RangeObject
         - type
-- [Layout](layout.md) `from ./layout`
-    - [core](utils/core.md) `from ./utils/core`
+- [Layout](API/layout.md) `from ./layout`
+    - [core](API/utils/core.md) `from ./utils/core`
         - extend
-    - [constants](utils/constants.md) `from ./utils/constants`
+    - [constants](API/utils/constants.md) `from ./utils/constants`
         - EVENTS
-- [Locations](locations.md) `from ./locations`
-    - [constants](utils/constants.md) `from ./utils/constants`
+- [Locations](API/locations.md) `from ./locations`
+    - [constants](API/utils/constants.md) `from ./utils/constants`
         - EVENTS
-    - [core](utils/core.md) `from ./utils/core`
+    - [core](API/utils/core.md) `from ./utils/core`
         - defer
         - locationOf
         - sprint
         - qs
-    - [EpubCFI](epubcfi.md)
-    - [Queue](utils/queue.md)
-- [Mapping](mapping.md) `from ./mapping`
-    - [core](utils/core.md) `from ./utils/core`
+    - [EpubCFI](API/epubcfi.md)
+    - [Queue](API/utils/queue.md)
+- [Mapping](API/mapping.md) `from ./mapping`
+    - [core](API/utils/core.md) `from ./utils/core`
         - nodeBounds
-    - [EpubCFI](epubcfi.md)
-- [Navigation](navigation.md) `from ./navigation`
-    - [core](utils/core.md) `from ./utils/core`
+    - [EpubCFI](API/epubcfi.md)
+- [Navigation](API/navigation.md) `from ./navigation`
+    - [core](API/utils/core.md) `from ./utils/core`
         - filterChildren
         - qs
         - qsa
         - querySelectorByType
-- [Packaging](packaging.md) `from ./packaging`
-    - [core](utils/core.md) `from ./utils/core`
+- [Packaging](API/packaging.md) `from ./packaging`
+    - [core](API/utils/core.md) `from ./utils/core`
         - indexOfElementNode
         - qs
         - qsa
         - qsp
-- [Pagelist](pagelist.md) `from ./pagelist`
-    - [core](utils/core.md) `from ./utils/core`
+- [Pagelist](API/pagelist.md) `from ./pagelist`
+    - [core](API/utils/core.md) `from ./utils/core`
         - indexOfSorted
         - locationOf
         - qs
         - qsa
         - querySelectorByType
-    - [EpubCFI](epubcfi.md)
-- [Rendition](rendition.md) `from ./rendition`
-    - [Annotations](annotations.md)
-    - [constants](utils/constants.md) `from ./utils/constants`
+    - [EpubCFI](API/epubcfi.md)
+- [Rendition](API/rendition.md) `from ./rendition`
+    - [Annotations](API/annotations.md)
+    - [constants](API/utils/constants.md) `from ./utils/constants`
         - EVENTS
         - DOM_EVENTS
-    - [Contents](contents.md)
-    - [core](utils/core.md) `from ./utils/core`
+    - [Contents](API/contents.md)
+    - [core](API/utils/core.md) `from ./utils/core`
         - defer
         - extend
         - isFloat
-    - [ContinuousViewManager](managers/continuous/index.md) `from ./managers/continuous/index`
-        - [constants](utils/constants.md) `from ../../utils/constants`
+    - [ContinuousViewManager](API/managers/continuous/index.md) `from ./managers/continuous/index`
+        - [constants](API/utils/constants.md) `from ../../utils/constants`
             - EVENTS
-        - [core](utils/core.md) `from ../../utils/core`
+        - [core](API/utils/core.md) `from ../../utils/core`
             - defer
             - extend
             - requestAnimationFrame
         - DefaultViewManager `from ../default/index`
-        - [Snap](managers/helpers/snap.md) `from ../helpers/snap`
-    - [DefaultViewManager](managers/default/index.md) `from ./managers/default/index`
-        - [constants](utils/constants.md) `from ../../utils/constants`
+        - [Snap](API/managers/helpers/snap.md) `from ../helpers/snap`
+    - [DefaultViewManager](API/managers/default/index.md) `from ./managers/default/index`
+        - [constants](API/utils/constants.md) `from ../../utils/constants`
             - EVENTS
-        - [core](utils/core.md) `from ../../utils/core`
+        - [core](API/utils/core.md) `from ../../utils/core`
             - defer
             - extend
             - isNumber
             - windowBounds
-        - [Mapping](mapping.md) `from ../../mapping`
-        - [scrollType](utils/scrolltype.md) `from ../../utils/scrolltype`
-        - [Stage](managers/helpers/stage.md) `from ../helpers/stage`
-    - [EpubCFI](epubcfi.md)
-    - [Hook](utils/hook.md)
-    - [IframeView](managers/views/iframe.md) `from ./managers/views/iframe`
-        - [constants](utils/constants.md) `from ../../utils/constants`
+        - [Mapping](API/mapping.md) `from ../../mapping`
+        - [scrollType](API/utils/scrolltype.md) `from ../../utils/scrolltype`
+        - [Stage](API/managers/helpers/stage.md) `from ../helpers/stage`
+    - [EpubCFI](API/epubcfi.md)
+    - [Hook](API/utils/hook.md)
+    - [IframeView](API/managers/views/iframe.md) `from ./managers/views/iframe`
+        - [constants](API/utils/constants.md) `from ../../utils/constants`
             - EVENTS
-        - [Contents](contents.md) `from ../../contents`
-        - [core](utils/core.md) `from ../../utils/core`
+        - [Contents](API/contents.md) `from ../../contents`
+        - [core](API/utils/core.md) `from ../../utils/core`
             - createBlobUrl
             - borders
             - bounds
@@ -133,43 +133,43 @@
             - isNumber
             - revokeBlobUrl
             - uuid
-        - [EpubCFI](epubcfi.md) `from ../../epubcfi`
-    - [Layout](layout.md)
-    - [Themes](themes.md)
-    - [Queue](utils/queue.md)
-- [Resources](resources.md) `from ./resources`
-    - [core](utils/core.md) `from ./utils/core`
+        - [EpubCFI](API/epubcfi.md) `from ../../epubcfi`
+    - [Layout](API/layout.md)
+    - [Themes](API/themes.md)
+    - [Queue](API/utils/queue.md)
+- [Resources](API/resources.md) `from ./resources`
+    - [core](API/utils/core.md) `from ./utils/core`
         - blob2base64
         - createBase64Url
         - createBlobUrl
-    - [mime](utils/mime.md) `from ./utils/mime`
-    - [Path](utils/path.md)
-    - [replacements](utils/replacements.md) `from ./utils/replacements`
+    - [mime](API/utils/mime.md) `from ./utils/mime`
+    - [Path](API/utils/path.md)
+    - [replacements](API/utils/replacements.md) `from ./utils/replacements`
         - substitute
-    - [Url](utils/url.md)
-- [Section](section.md) `from ./section`
-    - [core](utils/core.md) `from ./utils/core`
+    - [Url](API/utils/url.md)
+- [Section](API/section.md) `from ./section`
+    - [core](API/utils/core.md) `from ./utils/core`
         - defer
         - sprint
-    - [EpubCFI](epubcfi.md)
-    - [Hook](utils/hook.md)
-    - [replacements](utils/replacements.md) `from ./utils/replacements`
+    - [EpubCFI](API/epubcfi.md)
+    - [Hook](API/utils/hook.md)
+    - [replacements](API/utils/replacements.md) `from ./utils/replacements`
         - replaceBase
-    - [request](utils/request.md) `from ./utils/request`
-- [Spine](spine.md) `from ./spine`
-    - [EpubCFI](epubcfi.md)
-    - [Hook](utils/hook.md)
-    - [replacements](utils/replacements.md) `from ./utils/replacements`
+    - [request](API/utils/request.md) `from ./utils/request`
+- [Spine](API/spine.md) `from ./spine`
+    - [EpubCFI](API/epubcfi.md)
+    - [Hook](API/utils/hook.md)
+    - [replacements](API/utils/replacements.md) `from ./utils/replacements`
         - replaceBase
         - replaceCanonical
         - replaceMeta
-    - [Section](section.md)
-- [Themes](themes.md) `from ./themes`
-    - [Url](utils/url.md)
+    - [Section](API/section.md)
+- [Themes](API/themes.md) `from ./themes`
+    - [Url](API/utils/url.md)
 
 ### utils classes
 
-- [Hook](utils/hook.md) `from ./utils/hook`
-- [Path](utils/path.md) `from ./utils/path`
-- [Queue](utils/queue.md) `from ./utils/queue`
-- [Url](utils/url.md) `from ./utils/url`
+- [Hook](API/utils/hook.md) `from ./utils/hook`
+- [Path](API/utils/path.md) `from ./utils/path`
+- [Queue](API/utils/queue.md) `from ./utils/queue`
+- [Url](API/utils/url.md) `from ./utils/url`
