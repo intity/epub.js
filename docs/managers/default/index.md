@@ -45,9 +45,10 @@ Default View Manager
 Constructor
 
 
-| Param | Type |
-| --- | --- |
-| options | <code>object</code> | 
+| Param | Type | Default |
+| --- | --- | --- |
+| options | <code>object</code> |  | 
+| [options.view] | <code>string</code> \| <code>object</code> | <code>&quot;&#x27;iframe&#x27;&quot;</code> | 
 
 <a name="DefaultViewManager+render"></a>
 

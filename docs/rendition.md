@@ -11,7 +11,6 @@ the section content.
     * [new Rendition(book, [options])](#new_Rendition_new)
     * _instance_
         * [.setManager(manager)](#Rendition+setManager)
-        * [.requireView(view)](#Rendition+requireView) ⇒ <code>any</code>
         * [.requireManager(manager)](#Rendition+requireManager) ⇒ <code>any</code>
         * [.start()](#Rendition+start)
         * [.attachTo(element)](#Rendition+attachTo) ⇒ <code>Promise</code>
@@ -84,17 +83,6 @@ Set the manager function
 | Param | Type |
 | --- | --- |
 | manager | <code>function</code> | 
-
-<a name="Rendition+requireView"></a>
-
-## rendition.requireView(view) ⇒ <code>any</code>
-Require the view from passed string, or as a class function
-
-**Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-
-| Param | Type |
-| --- | --- |
-| view | <code>string</code> \| <code>object</code> | 
 
 <a name="Rendition+requireManager"></a>
 
