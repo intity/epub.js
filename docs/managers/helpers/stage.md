@@ -7,25 +7,32 @@ Stage
 
 * [Stage](#Stage)
     * [new Stage(options)](#new_Stage_new)
-    * [.create(options)](#Stage+create) ⇒ <code>Element</code>
-    * [.wrap(container)](#Stage+wrap) ⇒ <code>Element</code>
-    * [.getElement(element)](#Stage+getElement) ⇒ <code>Element</code>
-    * [.attachTo(what)](#Stage+attachTo) ⇒ <code>Element</code>
-    * [.getContainer()](#Stage+getContainer) ⇒ <code>Element</code>
-    * [.onResize(func)](#Stage+onResize)
-    * [.onOrientationChange(func)](#Stage+onOrientationChange)
-    * [.size(width, height)](#Stage+size) ⇒ <code>object</code>
-    * [.bounds()](#Stage+bounds) ⇒ <code>object</code>
-    * [.getSheet()](#Stage+getSheet) ⇒ <code>CSSStyleSheet</code>
-    * [.addStyleRules(selector, rulesArray)](#Stage+addStyleRules)
-    * [.axis(axis)](#Stage+axis)
-    * [.direction(dir)](#Stage+direction)
-    * [.overflow(overflow)](#Stage+overflow)
-    * [.destroy()](#Stage+destroy)
+    * _instance_
+        * [.create(options)](#Stage+create) ⇒ <code>Element</code>
+        * [.wrap(container)](#Stage+wrap) ⇒ <code>Element</code>
+        * [.getElement(element)](#Stage+getElement) ⇒ <code>Element</code>
+        * [.attachTo(what)](#Stage+attachTo) ⇒ <code>Element</code>
+        * [.getContainer()](#Stage+getContainer) ⇒ <code>Element</code>
+        * [.onResize(func)](#Stage+onResize)
+        * [.onOrientationChange(func)](#Stage+onOrientationChange)
+        * [.size([width], [height])](#Stage+size) ⇒ <code>object</code>
+        * [.bounds()](#Stage+bounds) ⇒ <code>DOMRect</code> \| <code>object</code>
+        * [.getSheet()](#Stage+getSheet) ⇒ <code>CSSStyleSheet</code>
+        * [.addStyleRules(selector, rulesArray)](#Stage+addStyleRules)
+        * [.axis(axis)](#Stage+axis)
+        * [.direction(dir)](#Stage+direction)
+        * [.overflow(overflow)](#Stage+overflow)
+        * [.destroy()](#Stage+destroy)
+    * _static_
+        * [.settings](#Stage.settings) : <code>object</code>
+        * [.id](#Stage.id) : <code>string</code>
+        * [.container](#Stage.container) : <code>Element</code>
 
 <a name="new_Stage_new"></a>
 
 ## new Stage(options)
+Constructor
+
 
 | Param | Type |
 | --- | --- |
@@ -114,20 +121,20 @@ onOrientationChange
 
 <a name="Stage+size"></a>
 
-## stage.size(width, height) ⇒ <code>object</code>
+## stage.size([width], [height]) ⇒ <code>object</code>
 size
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Type |
 | --- | --- |
-| width | <code>string</code> \| <code>number</code> | 
-| height | <code>string</code> \| <code>number</code> | 
+| [width] | <code>string</code> \| <code>number</code> | 
+| [height] | <code>string</code> \| <code>number</code> | 
 
 <a name="Stage+bounds"></a>
 
-## stage.bounds() ⇒ <code>object</code>
-bounds
+## stage.bounds() ⇒ <code>DOMRect</code> \| <code>object</code>
+Get bounding client rect
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+getSheet"></a>
@@ -145,7 +152,7 @@ addStyleRules
 
 | Param | Type |
 | --- | --- |
-| selector | <code>\*</code> | 
+| selector | <code>string</code> | 
 | rulesArray | <code>Array.&lt;object&gt;</code> | 
 
 <a name="Stage+axis"></a>
@@ -187,3 +194,18 @@ overflow
 destroy
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage.settings"></a>
+
+## Stage.settings : <code>object</code>
+**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Read only**: true  
+<a name="Stage.id"></a>
+
+## Stage.id : <code>string</code>
+**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Read only**: true  
+<a name="Stage.container"></a>
+
+## Stage.container : <code>Element</code>
+**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Read only**: true  
