@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="toolbar">
+        <div class="box">
+            <label for="layout">Layout:</label>
+            <select name="layout" id="layout">
+                <option value="reflowable">reflowable</option>
+                <option value="pre-paginated">pre-paginated</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="flow">Flow:</label>
+            <select name="flow" id="flow">
+                <option value="paginated">paginated</option>
+                <option value="scrolled">scrolled</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="spread">Spread:</label>
+            <select name="spread" id="spread">
+                <option value="auto">auto</option>
+                <option value="none">none</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="direction">Direction:</label>
+            <select name="direction" id="direction">
+                <option value="ltr">ltr</option>
+                <option value="rtl">rtl</option>
+            </select>
+        </div>
+    </div>
+    <div id="content">
+        <div id="viewer" class="spreads">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow">‹</a>
+        <a id="next" href="#next" class="arrow">›</a>
+    </div>
+    <script>
+        const book = ePub("https://s3.amazonaws.com/moby-dick/moby-dick.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        book.ready.then(() => {
+            const prev = document.getElementById("prev")
+            const next = document.getElementById("next")
+            prev.onclick = (e) => {
+                rendition.layout.direction === "rtl" ? rendition.next() : rendition.prev()
+                e.preventDefault()
+            }
+            next.onclick = (e) => {
+                rendition.layout.direction === "rtl" ? rendition.prev() : rendition.next()
+                e.preventDefault()
+            }
+            console.log(rendition)
+        })
+        rendition.on("rendered", section => {
+            const layout = document.getElementById("layout")
+            const flow = document.getElementById("flow")
+            const spread = document.getElementById("spread")
+            const direction = document.getElementById("direction")
+            const divider = document.getElementById("divider")
+            layout.onchange = (e) => {
+                rendition.updateLayout({
+                    name: e.target.value,
+                    flow: "auto",
+                    sread: "paginated"
+                })
+            }
+            flow.onchange = (e) => {
+                const value = e.target.value
+                if (value === "paginated") {
+                    spread.disabled = false
+                } else {
+                    spread.value = "none"
+                    spread.disabled = true
+                }
+                rendition.updateLayout({
+                    flow: e.target.value,
+                    spread: spread.value
+                })
+            }
+            spread.onchange = (e) => {
+                rendition.updateLayout({
+                    spread: e.target.value
+                })
+            }
+            direction.onchange = (e) => {
+                rendition.updateLayout({
+                    direction: e.target.value
+                })
+            }
+        })
+        rendition.on("layout", (props, changed) => {
+            if (props.spread === "none") {
+                divider.style.display = "none";
+            } else if (props.flow === "paginated" && props.divisor === 2) {
+                divider.style.display = "block";
+            }
+            console.log(changed)
+        })
+        rendition.on("relocated", (location) => {
+            if (location.atStart) {
+                prev.style.display = "none"
+            } else {
+                prev.style.display = "block"
+            }
+            if (location.atEnd) {
+                next.style.display = "none"
+            } else {
+                next.style.display = "block"
+            }
+        })
+    </script>
+</body>
+
+</html>

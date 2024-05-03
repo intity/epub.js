@@ -47,11 +47,10 @@ class Stage {
 	 */
 	create(options) {
 
-		let height = options.height; // !== false ? options.height : "100%";
-		let width = options.width; // !== false ? options.width : "100%";
-		let overflow = options.overflow || false;
 		let axis = options.axis || "vertical";
-		let direction = options.direction;
+		let width = options.width;
+		let height = options.height;
+		let overflow = options.overflow || false;
 
 		extend(this.settings, options);
 
@@ -100,9 +99,10 @@ class Stage {
 			}
 		}
 
+		let direction = options.direction;
 		if (direction) {
 			container.dir = direction;
-			container.style["direction"] = direction;
+			//container.style["direction"] = direction;
 		}
 
 		if (direction && this.settings.fullsize) {
@@ -215,7 +215,7 @@ class Stage {
 		let _height = height || this.settings.height;
 
 		// If width or height are set to false, inherit them from containing element
-		if (width === null) {
+		if (!width) {
 			bounds = this.parentElement.getBoundingClientRect();
 
 			if (bounds.width) {
@@ -230,7 +230,7 @@ class Stage {
 			}
 		}
 
-		if (height === null) {
+		if (!height) {
 			bounds = bounds || this.parentElement.getBoundingClientRect();
 
 			if (bounds.height) {
@@ -367,33 +367,30 @@ class Stage {
 
 		if (this.container) {
 			this.container.dir = dir;
-			this.container.style["direction"] = dir;
+			//this.container.style["direction"] = dir;
 		}
 
 		if (this.settings.fullsize) {
 			document.body.style["direction"] = dir;
 		}
-		this.settings.dir = dir;
 	}
 
 	/**
 	 * overflow
-	 * @param {string} overflow 
+	 * @param {string} value 
 	 */
-	overflow(overflow) {
+	overflow(value) {
 
-		if (this.container) {
-			if (overflow === "scroll" && this.settings.axis === "vertical") {
-				this.container.style["overflow-y"] = overflow;
-				this.container.style["overflow-x"] = "hidden";
-			} else if (overflow === "scroll" && this.settings.axis === "horizontal") {
-				this.container.style["overflow-y"] = "hidden";
-				this.container.style["overflow-x"] = overflow;
-			} else {
-				this.container.style["overflow"] = overflow;
-			}
+		if (value === "scroll" && this.settings.axis === "vertical") {
+			this.container.style["overflow-y"] = value;
+			this.container.style["overflow-x"] = "hidden";
+		} else if (value === "scroll" && this.settings.axis === "horizontal") {
+			this.container.style["overflow-y"] = "hidden";
+			this.container.style["overflow-x"] = value;
+		} else {
+			this.container.style["overflow"] = value;
 		}
-		this.settings.overflow = overflow;
+		this.settings.overflow = value;
 	}
 
 	/**

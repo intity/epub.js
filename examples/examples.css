@@ -10,6 +10,32 @@ body {
   min-height: 800px;
 }
 
+.box {
+  margin: 10px;
+}
+
+#toolbar {
+  display: flex;
+  position: relative;
+  height: 40px;
+  align-items: center;
+  z-index: 10;
+  justify-content: center;
+}
+
+#toolbar label {
+  font-size: small;
+}
+
+#content {
+  top: 0;
+  position: absolute;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+}
+
 #title {
   width: 900px;
   min-height: 18px;
@@ -24,6 +50,10 @@ body {
   color: #777;
 }
 
+#viewer {
+  overflow: hidden;
+}
+
 #viewer.spreads {
   width: 900px;
   height: 600px;
@@ -32,8 +62,6 @@ body {
   padding: 0;
   position: relative;
   margin: 10px auto;
-  background: white url('ajax-loader.gif') center center no-repeat;
-  top: calc(50vh - 400px);
 }
 
 #viewer.spreads .epub-view > iframe {
@@ -41,7 +69,6 @@ body {
 }
 
 #viewer.scrolled {
-  overflow: hidden;
   width: 800px;
   margin: 0 auto;
   position: relative;
@@ -68,8 +95,19 @@ body {
   margin: 10px auto;
 }
 
+#divider {
+  position: absolute;
+  width: 1px;
+  border-right: 1px #000 dashed;
+  height: 90%;
+  z-index: 1;
+  left: 50%;
+  top: 5%;
+  opacity: .15;
+}
+
 @media (min-width: 1000px) {
-  #viewer.spreads:after {
+  /* #viewer.spreads:after {
     position: absolute;
     width: 1px;
     border-right: 1px #000 solid;
@@ -81,7 +119,7 @@ body {
     opacity: .15;
     box-shadow: -2px 0 15px rgba(0, 0, 0, 1);
     content:  "";
-  }
+  } */
 
   #viewer.spreads.single:after {
     display: none;

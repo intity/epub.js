@@ -27,14 +27,14 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {string|function} [options.view='iframe']
  * @param {string} [options.layout] layout to force
  * @param {string} [options.spread] force spread value
+ * @param {string} [options.direction] direction `"ltr"` OR `"rtl"`
  * @param {number} [options.minSpreadWidth] overridden by spread: none (never) / both (always)
  * @param {string} [options.stylesheet] url of stylesheet to be injected
  * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
  * @param {boolean|object} [options.snap=false] use snap scrolling
- * @param {string} [options.direction] direction `"ltr"` OR `"rtl"` (TODO: implement to `"auto"` detection)
- * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
  * @param {boolean} [options.allowPopups=false] enable opening popup in content
+ * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
  */
 class Rendition {
 	constructor(book, options) {
@@ -42,20 +42,20 @@ class Rendition {
 		this.settings = extend(this.settings || {}, {
 			width: null,
 			height: null,
-			ignoreClass: "",
 			manager: "default",
 			view: "iframe",
 			flow: null,
 			layout: null,
 			spread: null,
 			minSpreadWidth: 800,
-			stylesheet: null,
-			resizeOnOrientationChange: true,
 			script: null,
 			snap: false,
 			direction: null, // TODO: implement to 'auto' detection
+			ignoreClass: "",
+			stylesheet: null,
+			allowPopups: false,
 			allowScriptedContent: false,
-			allowPopups: false
+			resizeOnOrientationChange: true,
 		});
 
 		extend(this.settings, options);
@@ -201,33 +201,25 @@ class Rendition {
 			this.settings.layout = "pre-paginated";
 		}
 
-		switch (metadata.spread) {
-			case "none":
-				this.settings.spread = "none";
-				break;
-			case "both":
-				this.settings.spread = true;
-				break;
-		}
+		// Parse metadata to get layout props
+		const layoutProps = this.determineLayoutProperties(metadata);
+
+		this.layout = new Layout(layoutProps);
+		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+			this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
+		});
+		this.layout.set(layoutProps);
 
 		if (this.manager === undefined) {
-			const viewManager = this.requireManager(this.settings.manager);
-			this.manager = new viewManager({
+			const manager = this.requireManager(this.settings.manager);
+			this.manager = new manager(this.layout, {
 				view: this.settings.view,
-				queue: this.q,
 				request: this.book.load.bind(this.book),
-				settings: this.settings
+				ignoreClass: this.settings.ignoreClass,
+				allowPopups: this.settings.allowPopups,
+				resizeOnOrientationChange: this.settings.resizeOnOrientationChange
 			});
 		}
-
-		this.direction(metadata.direction || this.settings.direction);
-
-		// Parse metadata to get layout props
-		this.settings.globalLayoutProperties = this.determineLayoutProperties(metadata);
-
-		this.flow(this.settings.globalLayoutProperties.flow);
-
-		this.layout(this.settings.globalLayoutProperties);
 
 		// Listen for displayed views
 		this.manager.on(EVENTS.MANAGERS.ADDED, this.afterDisplayed.bind(this));
@@ -491,123 +483,30 @@ class Rendition {
 	/**
 	 * Determine the Layout properties from metadata and settings
 	 * @private
-	 * @param  {object} metadata
+	 * @param {object} metadata
 	 * @return {object} Layout properties
 	 */
 	determineLayoutProperties(metadata) {
 
 		return {
-			flow: this.settings.flow || metadata.flow || "auto",
-			layout: this.settings.layout || metadata.layout || "reflowable",
+			name: this.settings.layout || metadata.layout || "reflowable",
+			flow: this.settings.flow || metadata.flow || "paginated",
 			spread: this.settings.spread || metadata.spread || "auto",
-			orientation: this.settings.orientation || metadata.orientation || "auto",
 			viewport: metadata.viewport || "",
-			minSpreadWidth: this.settings.minSpreadWidth || metadata.minSpreadWidth || 800,
-			direction: this.settings.direction || metadata.direction || "ltr"
+			direction: this.settings.direction || metadata.direction || "ltr",
+			orientation: this.settings.orientation || metadata.orientation || "auto",
+			minSpreadWidth: this.settings.minSpreadWidth || metadata.minSpreadWidth || 800
 		}
 	}
 
 	/**
-	 * Adjust the flow of the rendition to paginated or scrolled
-	 * (scrolled-continuous vs scrolled-doc are handled by different view managers)
-	 * @param  {string} flow values: `"paginated"` OR `"scrolled"`
+	 * Layout configuration
+	 * @param {object} options
 	 */
-	flow(flow) {
+	updateLayout(options) {
 
-		let value = flow;
-		if (flow === "scrolled" ||
-			flow === "scrolled-doc" ||
-			flow === "scrolled-continuous") {
-			value = "scrolled";
-		}
-
-		if (flow === "auto" || flow === "paginated") {
-			value = "paginated";
-		}
-
-		this.settings.flow = flow;
-
-		if (this._layout) {
-			this._layout.flow(value);
-		}
-
-		if (this.manager && this._layout) {
-			this.manager.applyLayout(this._layout);
-		}
-
-		if (this.manager) {
-			this.manager.updateFlow(value);
-		}
-
-		if (this.manager && this.manager.isRendered() && this.location) {
-			this.manager.clear();
-			this.display(this.location.start.cfi);
-		}
-	}
-
-	/**
-	 * Adjust the layout of the rendition to reflowable or pre-paginated
-	 * @param {object} settings
-	 * @returns {Layout} Layout object
-	 */
-	layout(settings) {
-
-		if (settings) {
-			this._layout = new Layout(settings);
-			this._layout.spread(settings.spread, this.settings.minSpreadWidth);
-
-			// this.mapping = new Mapping(this._layout.props);
-
-			this._layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
-				this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
-			})
-		}
-
-		if (this.manager && this._layout) {
-			this.manager.applyLayout(this._layout);
-		}
-
-		return this._layout;
-	}
-
-	/**
-	 * Adjust if the rendition uses spreads
-	 * @param  {string} spread none | auto (TODO: implement landscape, portrait, both)
-	 * @param  {int} [min] min width to use spreads at
-	 */
-	spread(spread, min) {
-
-		this.settings.spread = spread;
-
-		if (min) {
-			this.settings.minSpreadWidth = min;
-		}
-
-		if (this._layout) {
-			this._layout.spread(spread, min);
-		}
-
-		if (this.manager && this.manager.isRendered()) {
-			this.manager.updateLayout();
-		}
-	}
-
-	/**
-	 * Adjust the direction of the rendition
-	 * @param  {string} dir
-	 */
-	direction(dir) {
-
-		this.settings.direction = dir || "ltr";
-
-		if (this.manager) {
-			this.manager.direction(this.settings.direction);
-		}
-
-		if (this.manager && this.manager.isRendered() && this.location) {
-			this.manager.clear();
-			this.display(this.location.start.cfi);
-		}
+		this.layout.set(options);
+		this.display(this.location.start.cfi);
 	}
 
 	/**
@@ -861,7 +760,7 @@ class Rendition {
 	 */
 	adjustImages(contents) {
 
-		if (this._layout.name === "pre-paginated") {
+		if (this.layout.name === "pre-paginated") {
 			return new Promise((resolve) => {
 				resolve();
 			});
@@ -876,7 +775,7 @@ class Rendition {
 		}
 		const height = (contents.content.offsetHeight - (padding.top + padding.bottom)) * .95;
 		const hPadding = padding.left + padding.right;
-		const maxWidth = (this._layout.columnWidth ? (this._layout.columnWidth - hPadding) + "px" : "100%") + "!important";
+		const maxWidth = (this.layout.columnWidth ? (this.layout.columnWidth - hPadding) + "px" : "100%") + "!important";
 
 		contents.addStylesheetRules({
 			"img": {

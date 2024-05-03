@@ -1,4 +1,3 @@
-import { extend } from "./utils/core";
 import { EVENTS } from "./utils/constants";
 import EventEmitter from "event-emitter";
 
@@ -9,34 +8,51 @@ class Layout {
 	/**
 	 * Constructor
 	 * @param {object} options 
-	 * @param {string} [options.layout='reflowable'] values: `"reflowable"` OR `"pre-paginated"`
-	 * @param {string} [options.spread] values: `"none"` OR `"auto"`
+	 * @param {string} [options.name='reflowable'] values: `"reflowable"` OR `"pre-paginated"`
+	 * @param {string} [options.flow='paginated'] values: `"paginated"` OR `"scrolled"`
+	 * @param {string} [options.spread='auto'] values: `"auto"` OR `"none"`
+	 * @param {string} [options.direction='ltr'] values: `"ltr"` OR `"rtl"`
+	 * @param {string} [options.orientation='auto'] values: `"auto"` OR `"landscape"` OR `"portrait"`
 	 * @param {number} [options.minSpreadWidth=800]
-	 * @param {boolean} [options.evenSpreads=false]
 	 */
 	constructor(options) {
-
-		this.settings = options;
 		/**
 		 * @member {string} name Layout name
 		 * @memberof Layout
 		 * @protected
 		 */
-		this.name = options.layout || "reflowable";
-		this._spread = (options.spread === "none") ? false : true;
+		this.name = "reflowable";
+		/**
+		 * @member {string} flow
+		 * @memberof
+		 * @readonly
+		 */
+		this.flow = "paginated";
+		/**
+		 * @member {boolean} spread
+		 * @memberof Layout
+		 * @readonly
+		 */
+		this.spread = "auto";
+		/**
+		 * @member {string} direction
+		 * @memberof Layout
+		 * @readonly
+		 */
+		this.direction = "ltr";
+		/**
+		 * @member {string} orientation
+		 * @memberof Layout
+		 * @readonly
+		 */
+		this.orientation = "auto"; // no implementation
+		this.viewport = "";
 		/**
 		 * @member {number} minSpreadWidth
 		 * @memberof Layout
 		 * @readonly
 		 */
-		this.minSpreadWidth = options.minSpreadWidth || 800;
-		/**
-		 * @member {boolean} evenSpreads
-		 * @memberof Layout
-		 * @readonlys
-		 */
-		this.evenSpreads = options.evenSpreads || false;
-		this.flow(options.flow);
+		this.minSpreadWidth = 800;
 		/**
 		 * @member {number} width Layout width
 		 * @memberof Layout
@@ -79,59 +95,96 @@ class Layout {
 		 * @readonly
 		 */
 		this.divisor = 1;
+
+		this.set({
+			name: options && options.name,
+			flow: options && options.flow,
+			spread: options && options.spread,
+			direction: options && options.direction,
+			orientation: options && options.orientation,
+			minSpreadWidth: options && options.minSpreadWidth
+		});
 	}
 
 	/**
-	 * Switch the flow between paginated and scrolled
-	 * @param {string} str `"paginated"` OR `"scrolled"`
-	 * @return {string} Simplified flow
+	 * Set options
+	 * @param {object} options
 	 */
-	flow(str) {
+	set(options) {
 
-		if (typeof str === "string") {
-			if (str === "scrolled" ||
-				str === "scrolled-continuous" ||
-				str === "scrolled-doc") {
-				this._flow = "scrolled";
-			} else {
-				this._flow = "paginated";
+		const error = (name) => console.error(`Invalid '${name}' property type`);
+		Object.keys(options).forEach(opt => {
+			const value = options[opt];
+			if (this[opt] === value || typeof value === "undefined") {
+				delete options[opt];
+			} else if (opt === "name" || opt === "direction" || opt === "orientation") {
+				if (typeof value === "string") {
+					this[opt] = options[opt];
+				} else error(opt);
+			} else if (opt === "flow") {
+				if (typeof value === "string") {
+					switch (value) {
+						case "scrolled":
+						case "scrolled-doc":
+						case "scrolled-continuous":
+							this.flow = "scrolled";
+							break;
+						default:
+							this.flow = "paginated";
+							break;
+					}
+				} else error(opt);
+			} else if (opt === "spread") {
+				if (typeof value === "string") {
+					switch (value) {
+						case "auto":
+						case "both":
+							this.spread = "auto";
+							break;
+						default:
+							this.spread = "none";
+							break;
+					}
+				} else error(opt);
+			} else if (
+				opt === "width" ||
+				opt === "height" || 
+				opt === "gap" || 
+				opt === "minSreadWidth") {
+				if (typeof value === "number") {
+					if (value >= 0) {
+						this[opt] = options[opt];
+					}
+				} else error(opt);
 			}
+		});
+
+		this.calculate();
+
+		if (Object.keys(options).length) {
+			this.emit(EVENTS.LAYOUT.UPDATED, this, options);
 		}
-		return this._flow;
-	}
-
-	/**
-	 * Switch between using spreads or not, and set the
-	 * width at which they switch to single.
-	 * @param  {string} [spread] `"none"` OR `"always"` OR `"auto"`
-	 * @param  {number} [min] integer in pixels
-	 * @return {boolean} true OR false
-	 */
-	spread(spread, min) {
-
-		if (spread) {
-			this._spread = spread === "none" ? false : true;
-		}
-
-		if (min >= 0) {
-			this.minSpreadWidth = min;
-		}
-
-		return this._spread;
 	}
 
 	/**
 	 * Calculate the dimensions of the pagination
-	 * @param  {number} width width of the rendering
-	 * @param  {number} height height of the rendering
-	 * @param  {number} [gap] width of the gap between columns
+	 * @param {number} [width] width of the rendering
+	 * @param {number} [height] height of the rendering
+	 * @param {number} [gap] width of the gap between columns
 	 */
 	calculate(width, height, gap) {
+
+		if (typeof width === "undefined") {
+			width = this.width;
+		}
+		if (typeof height === "undefined") {
+			height = this.height;
+		}
 
 		//-- Check the width and create even width columns
 
 		let divisor;
-		if (this._spread && width >= this.minSpreadWidth) {
+		if (this.spread === "auto" && width >= this.minSpreadWidth) {
 			divisor = 2;
 		} else {
 			divisor = 1;
@@ -139,11 +192,13 @@ class Layout {
 
 		const section = Math.floor(width / 12);
 
-		if (this.name === "reflowable" && this._flow === "paginated" && !(gap >= 0)) {
+		if (this.name === "reflowable" && this.flow === "paginated" && !(gap >= 0)) {
 			gap = ((section % 2 === 0) ? section : section - 1);
 		}
-
 		if (this.name === "pre-paginated") {
+			gap = 0;
+		}
+		if (typeof gap === "undefined") {
 			gap = 0;
 		}
 
@@ -168,7 +223,7 @@ class Layout {
 		this.pageWidth = pageWidth;
 		this.delta = width;
 		this.columnWidth = columnWidth;
-		this.gap = gap || 0;
+		this.gap = gap;
 		this.divisor = divisor;
 	}
 
@@ -182,8 +237,8 @@ class Layout {
 		let formating;
 		if (this.name === "pre-paginated") {
 			formating = contents.fit(this.columnWidth, this.height, section);
-		} else if (this._flow === "paginated") {
-			formating = contents.columns(this.width, this.height, this.columnWidth, this.gap, this.settings.direction);
+		} else if (this.flow === "paginated") {
+			formating = contents.columns(this.width, this.height, this.columnWidth, this.gap, this.direction);
 		} else if (axis && axis === "horizontal") {
 			formating = contents.size(null, this.height);
 		} else {
@@ -206,7 +261,7 @@ class Layout {
 		if (this.name === "pre-paginated") {
 			spreads = 1;
 			pages = 1;
-		} else if (this._flow === "paginated") {
+		} else if (this.flow === "paginated") {
 			pageLength = pageLength || this.delta;
 			spreads = Math.ceil(totalLength / pageLength);
 			pages = spreads * this.divisor;
@@ -219,25 +274,6 @@ class Layout {
 		return {
 			spreads,
 			pages
-		}
-	}
-
-	/**
-	 * Update props that have changed (unused)
-	 * @param  {object} props
-	 * @private
-	 */
-	update(props) {
-		// Remove props that haven't changed
-		Object.keys(props).forEach((propName) => {
-			if (this.props[propName] === props[propName]) {
-				delete props[propName];
-			}
-		});
-
-		if (Object.keys(props).length > 0) {
-			let newProps = extend(this.props, props);
-			this.emit(EVENTS.LAYOUT.UPDATED, newProps, props);
 		}
 	}
 }
