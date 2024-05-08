@@ -117,7 +117,7 @@
             //console.log(view)
         })
         rendition.on("layout", (props, changed) => {
-            if (props.spread === "none") {
+            if (props.spread === "none" || props.divisor === 1) {
                 divider.style.display = "none";
             } else if (props.flow === "paginated" && props.divisor > 1) {
                 divider.style.display = "block";
