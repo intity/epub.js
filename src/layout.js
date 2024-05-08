@@ -41,11 +41,16 @@ class Layout {
 		 */
 		this.direction = "ltr";
 		/**
-		 * @member {string} orientation
+		 * @member {string} orientation no implementation
 		 * @memberof Layout
 		 * @readonly
 		 */
-		this.orientation = "auto"; // no implementation
+		this.orientation = "auto";
+		/**
+		 * @member {string} viewport no implementation
+		 * @memberof Layout
+		 * @readonly
+		 */
 		this.viewport = "";
 		/**
 		 * @member {number} minSpreadWidth
@@ -229,7 +234,9 @@ class Layout {
 
 	/**
 	 * Apply Css to a Document
-	 * @param  {Contents} contents
+	 * @param {Contents} contents
+	 * @param {Section} [section] 
+	 * @param {string} [axis] 
 	 * @return {Promise}
 	 */
 	format(contents, section, axis) {
@@ -250,9 +257,9 @@ class Layout {
 
 	/**
 	 * Count number of pages
-	 * @param  {number} totalLength
-	 * @param  {number} pageLength
-	 * @return {{spreads: Number, pages: Number}}
+	 * @param {number} totalLength
+	 * @param {number} pageLength
+	 * @return {{spreads: number, pages: number}}
 	 */
 	count(totalLength, pageLength) {
 
