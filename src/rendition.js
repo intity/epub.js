@@ -208,7 +208,6 @@ class Rendition {
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
 		});
-		this.layout.set(layoutProps);
 
 		if (this.manager === undefined) {
 			const manager = this.requireManager(this.settings.manager);
