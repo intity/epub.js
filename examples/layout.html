@@ -49,6 +49,13 @@
         <a id="next" href="#next" class="arrow">›</a>
     </div>
     <script>
+        const layout = document.getElementById("layout")
+        const flow = document.getElementById("flow")
+        const spread = document.getElementById("spread")
+        const direction = document.getElementById("direction")
+        const divider = document.getElementById("divider")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
         const book = ePub("https://s3.amazonaws.com/moby-dick/moby-dick.epub")
         const rendition = book.renderTo("viewer", {
             width: "100%",
@@ -56,8 +63,6 @@
         })
         rendition.display()
         book.ready.then(() => {
-            const prev = document.getElementById("prev")
-            const next = document.getElementById("next")
             prev.onclick = (e) => {
                 rendition.layout.direction === "rtl" ? rendition.next() : rendition.prev()
                 e.preventDefault()
@@ -66,14 +71,6 @@
                 rendition.layout.direction === "rtl" ? rendition.prev() : rendition.next()
                 e.preventDefault()
             }
-            console.log(rendition)
-        })
-        rendition.on("rendered", section => {
-            const layout = document.getElementById("layout")
-            const flow = document.getElementById("flow")
-            const spread = document.getElementById("spread")
-            const direction = document.getElementById("direction")
-            const divider = document.getElementById("divider")
             layout.onchange = (e) => {
                 rendition.updateLayout({
                     name: e.target.value,
@@ -90,7 +87,7 @@
                     spread.disabled = true
                 }
                 rendition.updateLayout({
-                    flow: e.target.value,
+                    flow: value,
                     spread: spread.value
                 })
             }
@@ -104,11 +101,15 @@
                     direction: e.target.value
                 })
             }
+            console.log(rendition)
+        })
+        rendition.on("rendered", (section, view) => {
+            //console.log(view)
         })
         rendition.on("layout", (props, changed) => {
             if (props.spread === "none") {
                 divider.style.display = "none";
-            } else if (props.flow === "paginated" && props.divisor === 2) {
+            } else if (props.flow === "paginated" && props.divisor > 1) {
                 divider.style.display = "block";
             }
             console.log(changed)
