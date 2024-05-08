@@ -155,7 +155,7 @@ class Layout {
 				opt === "width" ||
 				opt === "height" || 
 				opt === "gap" || 
-				opt === "minSreadWidth") {
+				opt === "minSpreadWidth") {
 				if (typeof value === "number") {
 					if (value >= 0) {
 						this[opt] = options[opt];
