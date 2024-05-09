@@ -1160,10 +1160,6 @@ class DefaultViewManager {
 		if (this.mapping) {
 			this.mapping = new Mapping(this.layout, this.layout.direction, this.settings.axis);
 		}
-
-		if (axis === "vertical") {
-			this.layout.set({ spread: "none" });
-		}
 	}
 
 	/**
