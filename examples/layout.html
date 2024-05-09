@@ -83,9 +83,7 @@
             }
             layout.onchange = (e) => {
                 rendition.updateLayout({
-                    name: e.target.value,
-                    flow: "auto",
-                    sread: "paginated"
+                    name: e.target.value
                 })
             }
             flow.onchange = (e) => {
@@ -97,8 +95,7 @@
                     spread.disabled = true
                 }
                 rendition.updateLayout({
-                    flow: value,
-                    spread: spread.value
+                    flow: value
                 })
             }
             spread.onchange = (e) => {

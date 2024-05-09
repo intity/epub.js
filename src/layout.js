@@ -133,6 +133,7 @@ class Layout {
 						case "scrolled-doc":
 						case "scrolled-continuous":
 							this.flow = "scrolled";
+							this.spread = "none"; // autocomplete
 							break;
 						default:
 							this.flow = "paginated";
