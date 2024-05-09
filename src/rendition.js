@@ -38,7 +38,11 @@ import ContinuousViewManager from "./managers/continuous/index";
  */
 class Rendition {
 	constructor(book, options) {
-
+		/**
+		 * @member {object} settings
+		 * @memberof Rendition
+		 * @readonly
+		 */
 		this.settings = extend(this.settings || {}, {
 			width: null,
 			height: null,
@@ -211,13 +215,13 @@ class Rendition {
 
 		if (this.manager === undefined) {
 			const manager = this.requireManager(this.settings.manager);
-			this.manager = new manager(this.layout, {
+			const options = {
 				view: this.settings.view,
-				request: this.book.load.bind(this.book),
 				ignoreClass: this.settings.ignoreClass,
 				allowPopups: this.settings.allowPopups,
 				resizeOnOrientationChange: this.settings.resizeOnOrientationChange
-			});
+			};
+			this.manager = new manager(this.book, this.layout, options);
 		}
 
 		// Listen for displayed views
@@ -410,14 +414,14 @@ class Rendition {
 
 	/**
 	 * Report orientation events and display the last seen location
-	 * @param {string} orientation 
+	 * @param {ScreenOrientation} orientation 
 	 * @private
 	 */
 	onOrientationChange(orientation) {
 		/**
 		 * Emit that the rendition has been rotated
 		 * @event orientationchange
-		 * @param {string} orientation
+		 * @param {ScreenOrientation} orientation
 		 * @memberof Rendition
 		 */
 		this.emit(EVENTS.RENDITION.ORIENTATION_CHANGE, orientation);
@@ -525,16 +529,16 @@ class Rendition {
 			 * @event locationChanged
 			 * @deprecated
 			 * @type {object}
-			 * @property {number} index
 			 * @property {string} href
+			 * @property {number} index
 			 * @property {EpubCFI} start
 			 * @property {EpubCFI} end
 			 * @property {number} percentage
 			 * @memberof Rendition
 			 */
 			this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
-				index: this.location.start.index,
 				href: this.location.start.href,
+				index: this.location.start.index,
 				start: this.location.start.cfi,
 				end: this.location.end.cfi,
 				percentage: this.location.start.percentage
@@ -593,8 +597,8 @@ class Rendition {
 		const end = location[location.length - 1];
 		const located = {
 			start: {
-				index: start.index,
 				href: start.href,
+				index: start.index,
 				cfi: start.mapping.start,
 				displayed: {
 					page: start.pages[0] || 1,
@@ -602,8 +606,8 @@ class Rendition {
 				}
 			},
 			end: {
-				index: end.index,
 				href: end.href,
+				index: end.index,
 				cfi: end.mapping.end,
 				displayed: {
 					page: end.pages[end.pages.length - 1] || 1,
