@@ -61,6 +61,11 @@
         const divider = document.getElementById("divider")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
+        const update = (location) => {
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+        }
         const book = ePub("https://s3.amazonaws.com/moby-dick/moby-dick.epub")
         const rendition = book.renderTo("viewer", {
             width: "100%",
@@ -122,19 +127,13 @@
             } else if (props.flow === "paginated" && props.divisor > 1) {
                 divider.style.display = "block";
             }
+            if (changed.direction) {
+                update()
+            }
             console.log(changed)
         })
         rendition.on("relocated", (location) => {
-            if (location.atStart) {
-                prev.style.display = "none"
-            } else {
-                prev.style.display = "block"
-            }
-            if (location.atEnd) {
-                next.style.display = "none"
-            } else {
-                next.style.display = "block"
-            }
+            update(location)
         })
     </script>
 </body>
