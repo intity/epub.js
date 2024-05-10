@@ -515,7 +515,6 @@ class Rendition {
 	/**
 	 * Report the current location
 	 * @fires relocated
-	 * @fires locationChanged
 	 */
 	reportLocation() {
 
@@ -525,25 +524,6 @@ class Rendition {
 				return;
 			}
 			this.location = located;
-			/**
-			 * @event locationChanged
-			 * @deprecated
-			 * @type {object}
-			 * @property {string} href
-			 * @property {number} index
-			 * @property {EpubCFI} start
-			 * @property {EpubCFI} end
-			 * @property {number} percentage
-			 * @memberof Rendition
-			 */
-			this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
-				href: this.location.start.href,
-				index: this.location.start.index,
-				start: this.location.start.cfi,
-				end: this.location.end.cfi,
-				percentage: this.location.start.percentage
-			});
-
 			/**
 			 * @event relocated
 			 * @type {displayedLocation}

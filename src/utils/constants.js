@@ -50,7 +50,6 @@ export const EVENTS = {
     REMOVED : "removed",
     RESIZED : "resized",
     ORIENTATION_CHANGE : "orientationchange",
-    LOCATION_CHANGED : "locationChanged",
     RELOCATED : "relocated",
     MARK_CLICKED : "markClicked",
     SELECTED : "selected",
