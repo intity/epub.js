@@ -515,6 +515,7 @@ class Rendition {
 	/**
 	 * Report the current location
 	 * @fires relocated
+	 * @returns {Promise}
 	 */
 	reportLocation() {
 
