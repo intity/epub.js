@@ -130,7 +130,7 @@ class Section {
 	/**
 	 * Render the contents of a section
 	 * @param {function} [request] a request method to use for loading
-	 * @return {string} output a serialized XML Document
+	 * @return {Promise} output a serialized XML Document
 	 */
 	render(request) {
 
