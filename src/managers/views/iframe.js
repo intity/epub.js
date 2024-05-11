@@ -33,7 +33,6 @@ class IframeView {
 
 		this.id = "epubjs-view-" + uuid();
 		this.section = section;
-		this.index = section.index;
 		this.element = this.container(this.settings.axis);
 		this.added = false;
 		this.displayed = false;
@@ -129,7 +128,7 @@ class IframeView {
 		this.width = 0;
 		this.height = 0;
 
-		this.element.setAttribute("ref", this.index);
+		this.element.setAttribute("ref", this.section.index);
 		this.added = true;
 		this.elementBounds = bounds(this.element);
 
