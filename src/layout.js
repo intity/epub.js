@@ -259,7 +259,7 @@ class Layout {
 	/**
 	 * Count number of pages
 	 * @param {number} totalLength
-	 * @param {number} pageLength
+	 * @param {number} [pageLength]
 	 * @return {{spreads: number, pages: number}}
 	 */
 	count(totalLength, pageLength) {
