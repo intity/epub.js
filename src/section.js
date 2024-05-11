@@ -174,7 +174,6 @@ class Section {
 		const find = (node) => {
 
 			const text = node.textContent.toLowerCase();
-			const range = section.document.createRange();
 			const limit = 150;
 			let pos, last = -1;
 
@@ -184,7 +183,7 @@ class Section {
 
 				if (pos !== -1) {
 					// We found it! Generate a CFI
-					range = section.document.createRange();
+					const range = section.document.createRange();
 					range.setStart(node, pos);
 					range.setEnd(node, pos + q.length);
 
