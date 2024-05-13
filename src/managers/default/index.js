@@ -18,7 +18,10 @@ class DefaultViewManager {
 	 * Constructor
 	 * @param {Book} book 
 	 * @param {Layout} layout 
-	 * @param {object} options
+	 * @param {object} [options]
+	 * @param {string} [options.axis]
+	 * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
+	 * @param {string} [options.ignoreClass='']
 	 * @param {string|object} [options.view='iframe']
 	 */
 	constructor(book, layout, options) {
@@ -29,21 +32,18 @@ class DefaultViewManager {
 		 */
 		this.name = "default";
 		this.request = book.load.bind(book);
-		this.settings = extend(this.settings || {}, {
+		this.settings = extend({
 			axis: null,
 			view: "iframe",
 			hidden: false,
-			method: null, // srcdoc, blobUrl, write
+			method: null,
 			fullsize: null,
 			allowPopups: false,
 			ignoreClass: "",
 			writingMode: undefined,
 			allowScriptedContent: false,
 			resizeOnOrientationChange: false
-		});
-
-		extend(this.settings, options || {});
-
+		}, options || {});
 		/**
 		 * @member {Layout} layout
 		 * @memberof DefaultViewManager
@@ -162,15 +162,14 @@ class DefaultViewManager {
 
 		window.onpagehide = (e) => this.destroy();
 
-		let scroller;
-		if (!this.settings.fullsize) {
-			scroller = this.container;
+		let container;
+		if (this.settings.fullsize) {
+			container = window;
 		} else {
-			scroller = window;
+			container = this.container;
 		}
 
-		this._onScroll = this.onScroll.bind(this);
-		scroller.addEventListener("scroll", this._onScroll);
+		container.addEventListener("scroll", this.onScroll.bind(this));
 	}
 
 	/**
@@ -179,15 +178,14 @@ class DefaultViewManager {
 	 */
 	removeEventListeners() {
 
-		let scroller;
-		if (!this.settings.fullsize) {
-			scroller = this.container;
+		let container;
+		if (this.settings.fullsize) {
+			container = window;
 		} else {
-			scroller = window;
+			container = this.container;
 		}
 
-		scroller.removeEventListener("scroll", this._onScroll);
-		this._onScroll = undefined;
+		container.removeEventListener("scroll", this.onScroll.bind(this));
 	}
 
 	/**
@@ -533,7 +531,7 @@ class DefaultViewManager {
 
 	/**
 	 * counter
-	 * @param {*} bounds 
+	 * @param {object} bounds 
 	 * @private
 	 */
 	counter(bounds) {
@@ -551,12 +549,11 @@ class DefaultViewManager {
 	 */
 	next() {
 
-		let next;
-		let left;
+		let left, section;
 		const dir = this.layout.direction;
 
 		if (this.views.length === 0) {
-			return;
+			return null;
 		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "ltr") {
 
 			this.scrollLeft = this.container.scrollLeft;
@@ -566,7 +563,7 @@ class DefaultViewManager {
 			if (left <= this.container.scrollWidth) {
 				this.scrollBy(this.layout.delta, 0, true);
 			} else {
-				next = this.views.last().section.next();
+				section = this.views.last().section.next();
 			}
 		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "rtl") {
 
@@ -578,7 +575,7 @@ class DefaultViewManager {
 				if (left > 0) {
 					this.scrollBy(this.layout.delta, 0, true);
 				} else {
-					next = this.views.last().section.next();
+					section = this.views.last().section.next();
 				}
 			} else {
 				left = this.container.scrollLeft + (this.layout.delta * -1);
@@ -586,7 +583,7 @@ class DefaultViewManager {
 				if (left > this.container.scrollWidth * -1) {
 					this.scrollBy(this.layout.delta, 0, true);
 				} else {
-					next = this.views.last().section.next();
+					section = this.views.last().section.next();
 				}
 			}
 
@@ -598,14 +595,14 @@ class DefaultViewManager {
 			if (top < this.container.scrollHeight) {
 				this.scrollBy(0, this.layout.height, true);
 			} else {
-				next = this.views.last().section.next();
+				section = this.views.last().section.next();
 			}
 
 		} else {
-			next = this.views.last().section.next();
+			section = this.views.last().section.next();
 		}
 
-		if (next) {
+		if (section) {
 			this.clear();
 			// The new section may have a different 
 			// writing-mode from the old section. 
@@ -615,12 +612,12 @@ class DefaultViewManager {
 			let forceRight = false;
 			if (this.layout.name === "pre-paginated" && 
 				this.layout.divisor === 2 && 
-				next.properties.includes("page-spread-right")) {
+				section.properties.includes("page-spread-right")) {
 				forceRight = true;
 			}
 
-			return this.append(next, forceRight).then(() => {
-				return this.handleNextPrePaginated(forceRight, next, this.append);
+			return this.append(section, forceRight).then(() => {
+				return this.handleNextPrePaginated(forceRight, section, this.append);
 			}, (err) => {
 				return err;
 			}).then(() => {
@@ -644,12 +641,11 @@ class DefaultViewManager {
 	 */
 	prev() {
 
-		let prev;
-		let left;
+		let left, section;
 		const dir = this.layout.direction;
 
 		if (this.views.length === 0) {
-			return;
+			return null;
 		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "ltr") {
 
 			this.scrollLeft = this.container.scrollLeft;
@@ -659,7 +655,7 @@ class DefaultViewManager {
 			if (left > 0) {
 				this.scrollBy(-this.layout.delta, 0, true);
 			} else {
-				prev = this.views.first().section.prev();
+				section = this.views.first().section.prev();
 			}
 
 		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "rtl") {
@@ -672,7 +668,7 @@ class DefaultViewManager {
 				if (left < this.container.scrollWidth) {
 					this.scrollBy(-this.layout.delta, 0, true);
 				} else {
-					prev = this.views.first().section.prev();
+					section = this.views.first().section.prev();
 				}
 			}
 			else {
@@ -681,7 +677,7 @@ class DefaultViewManager {
 				if (left < 0) {
 					this.scrollBy(-this.layout.delta, 0, true);
 				} else {
-					prev = this.views.first().section.prev();
+					section = this.views.first().section.prev();
 				}
 			}
 
@@ -693,14 +689,14 @@ class DefaultViewManager {
 			if (top > 0) {
 				this.scrollBy(0, -(this.layout.height), true);
 			} else {
-				prev = this.views.first().section.prev();
+				section = this.views.first().section.prev();
 			}
 
 		} else {
-			prev = this.views.first().section.prev();
+			section = this.views.first().section.prev();
 		}
 
-		if (prev) {
+		if (section) {
 			this.clear();
 			// The new section may have a different 
 			// writing-mode from the old section. 
@@ -710,14 +706,14 @@ class DefaultViewManager {
 			let forceRight = false;
 			if (this.layout.name === "pre-paginated" && 
 				this.layout.divisor === 2 && 
-				typeof prev.prev() !== "object") {
+				typeof section.prev() !== "object") {
 				forceRight = true;
 			}
 
-			return this.prepend(prev, forceRight).then(() => {
+			return this.prepend(section, forceRight).then(() => {
 
 				if (this.layout.name === "pre-paginated" && this.layout.divisor > 1) {
-					const left = prev.prev();
+					const left = section.prev();
 					if (left) {
 						return this.prepend(left);
 					}
@@ -743,15 +739,15 @@ class DefaultViewManager {
 	}
 
 	/**
-	 * current
+	 * Get current visible view
 	 * @returns {*} view
 	 */
 	current() {
 
-		const visible = this.visible();
-		if (visible.length) {
+		const views = this.visible();
+		if (views.length) {
 			// Current is the last visible view
-			return visible[visible.length - 1];
+			return views[views.length - 1];
 		}
 		return null;
 	}
@@ -1003,13 +999,12 @@ class DefaultViewManager {
 			this.ignore = true;
 		}
 
-		if (!this.settings.fullsize) {
+		if (this.settings.fullsize) {
+			window.scrollBy(x * dir, y * dir);
+		} else {
 			if (x) this.container.scrollLeft += x * dir;
 			if (y) this.container.scrollTop += y;
-		} else {
-			window.scrollBy(x * dir, y * dir);
 		}
-		this.scrolled = true;
 	}
 
 	/**
@@ -1025,13 +1020,12 @@ class DefaultViewManager {
 			this.ignore = true;
 		}
 
-		if (!this.settings.fullsize) {
+		if (this.settings.fullsize) {
+			window.scrollTo(x, y);
+		} else {
 			this.container.scrollLeft = x;
 			this.container.scrollTop = y;
-		} else {
-			window.scrollTo(x, y);
 		}
-		this.scrolled = true;
 	}
 
 	/**
@@ -1043,18 +1037,20 @@ class DefaultViewManager {
 		let scrollTop;
 		let scrollLeft;
 
-		if (!this.settings.fullsize) {
-			scrollTop = this.container.scrollTop;
-			scrollLeft = this.container.scrollLeft;
-		} else {
+		if (this.settings.fullsize) {
 			scrollTop = window.scrollY;
 			scrollLeft = window.scrollX;
+		} else {
+			scrollTop = this.container.scrollTop;
+			scrollLeft = this.container.scrollLeft;
 		}
 
 		this.scrollTop = scrollTop;
 		this.scrollLeft = scrollLeft;
 
-		if (!this.ignore) {
+		if (this.ignore) {
+			this.ignore = false;
+		} else {
 			this.emit(EVENTS.MANAGERS.SCROLL, {
 				top: scrollTop,
 				left: scrollLeft
@@ -1063,12 +1059,10 @@ class DefaultViewManager {
 			clearTimeout(this.afterScrolled);
 			this.afterScrolled = setTimeout(() => {
 				this.emit(EVENTS.MANAGERS.SCROLLED, {
-					top: this.scrollTop,
-					left: this.scrollLeft
+					top: scrollTop,
+					left: scrollLeft
 				});
 			}, 20);
-		} else {
-			this.ignore = false;
 		}
 	}
 
@@ -1108,7 +1102,11 @@ class DefaultViewManager {
 		 * @memberof DefaultViewManager
 		 * @readonly
 		 */
-		this.mapping = new Mapping(this.layout, this.layout.direction, this.settings.axis);
+		this.mapping = new Mapping(
+			this.layout,
+			this.layout.direction,
+			this.settings.axis
+		);
 
 		if (this.views.length > 0 &&
 			this.layout.name === "pre-paginated") {
@@ -1127,14 +1125,15 @@ class DefaultViewManager {
 	}
 
 	/**
-	 * updateAxis
+	 * Update axis
 	 * @param {string} axis
-	 * @param {boolean} forceUpdate
+	 * @param {boolean} [forceUpdate=false] force update
 	 * @private
 	 */
-	updateAxis(axis, forceUpdate) {
+	updateAxis(axis, forceUpdate = false) {
 
-		if (!forceUpdate && axis === this.settings.axis) {
+		if (axis === this.settings.axis &&
+			forceUpdate === false) {
 			return;
 		}
 
@@ -1142,7 +1141,11 @@ class DefaultViewManager {
 		this.stage.axis(axis);
 
 		if (this.mapping) {
-			this.mapping = new Mapping(this.layout, this.layout.direction, this.settings.axis);
+			this.mapping = new Mapping(
+				this.layout,
+				this.layout.direction,
+				axis
+			);
 		}
 	}
 
