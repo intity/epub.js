@@ -145,49 +145,6 @@ class Contents {
 	}
 
 	/**
-	 * Get the width of the text using Range
-	 * @deprecated
-	 * @returns {number} width
-	 */
-	textWidth() {
-
-		const range = this.document.createRange();
-		const content = this.content || this.document.body;
-		const border = borders(content);
-
-		// Select the contents of frame
-		range.selectNodeContents(content);
-
-		// get the width of the text content
-		const rect = range.getBoundingClientRect();
-		let width = rect.width;
-
-		if (border && border.width) {
-			width += border.width;
-		}
-
-		return Math.round(width);
-	}
-
-	/**
-	 * Get the height of the text using Range
-	 * @deprecated
-	 * @returns {number} height
-	 */
-	textHeight() {
-
-		const range = this.document.createRange();
-		const content = this.content || this.document.body;
-
-		range.selectNodeContents(content);
-
-		const rect = range.getBoundingClientRect();
-		const height = rect.bottom;
-
-		return Math.round(height);
-	}
-
-	/**
 	 * Get size of the text using Range
 	 * @returns {{ width: number, height: number }}
 	 */
