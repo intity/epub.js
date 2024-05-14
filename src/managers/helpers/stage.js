@@ -11,7 +11,6 @@ class Stage {
 	 * @param {Layout} layout 
 	 * @param {object} options
 	 * @param {string} options.axis
-	 * @param {string} options.direction
 	 * @param {boolean} options.fullsize
 	 * @param {string|number} options.width
 	 * @param {string|number} options.height
