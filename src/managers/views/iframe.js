@@ -303,7 +303,7 @@ class IframeView {
 			height = this.layout.height;
 		} else if (this.settings.axis === "horizontal") {
 			// Get the width of the text
-			width = this.contents.textWidth();
+			width = this.contents.textSize().width;
 
 			if (width % this.layout.pageWidth > 0) {
 				width = Math.ceil(width / this.layout.pageWidth) * this.layout.pageWidth;
@@ -320,7 +320,7 @@ class IframeView {
 			}
 		} else if (this.settings.axis === "vertical") {
 			// Expand Vertically
-			height = this.contents.textHeight();
+			height = this.contents.textSize().height;
 			if (this.layout.flow === "paginated" &&
 				height % this.layout.height > 0) {
 				height = Math.ceil(height / this.layout.height) * this.layout.height;
