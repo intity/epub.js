@@ -1,64 +1,76 @@
 import EventEmitter from "event-emitter";
-import {isNumber, prefixed, borders, defaults} from "./utils/core";
 import EpubCFI from "./epubcfi";
 import Mapping from "./mapping";
-import {replaceLinks} from "./utils/replacements";
+import { replaceLinks } from "./utils/replacements";
 import { EPUBJS_VERSION, EVENTS, DOM_EVENTS } from "./utils/constants";
+import { isNumber, prefixed, borders, defaults } from "./utils/core";
 
 const hasNavigator = typeof (navigator) !== "undefined";
-
 const isChrome = hasNavigator && /Chrome/.test(navigator.userAgent);
 const isWebkit = hasNavigator && !isChrome && /AppleWebKit/.test(navigator.userAgent);
-
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 
 /**
  * Handles DOM manipulation, queries and events for View contents
- * @param {document} doc Document
- * @param {element} content Parent Element (typically Body)
- * @param {string} cfiBase Section component of CFIs
- * @param {number} sectionIndex Index in Spine of Conntent's Section
  */
 class Contents {
+	/**
+	 * Constructor
+	 * @param {document} doc Document
+	 * @param {element} content Parent Element (typically Body)
+	 * @param {string} cfiBase Section component of CFIs
+	 * @param {number} sectionIndex Index in Spine of Conntent's Section
+	 */
 	constructor(doc, content, cfiBase, sectionIndex) {
-		// Blank Cfi for Parsing
+		/**
+		 * @member {EpubCFI} epubcfi Blank Cfi for Parsing
+		 * @memberof Contents
+		 * @readonly
+		 */
 		this.epubcfi = new EpubCFI();
-
 		this.document = doc;
-		this.documentElement =  this.document.documentElement;
+		this.documentElement = this.document.documentElement;
 		this.content = content || this.document.body;
 		this.window = this.document.defaultView;
-
 		this._size = {
 			width: 0,
 			height: 0
 		};
-
+		/**
+		 * @member {number} sectionIndex
+		 * @memberof Contents
+		 * @readonly
+		 */
 		this.sectionIndex = sectionIndex || 0;
+		/**
+		 * @member {string} cfiBase
+		 * @memberof Contents
+		 * @readonly
+		 */
 		this.cfiBase = cfiBase || "";
+		this.active = true;
 
 		this.epubReadingSystem("epub.js", EPUBJS_VERSION);
-		this.called = 0;
-		this.active = true;
 		this.listeners();
 	}
 
 	/**
-		* Get DOM events that are listened for and passed along
-		*/
+	 * Get DOM events that are listened for and passed along
+	 */
 	static get listenedEvents() {
+
 		return DOM_EVENTS;
 	}
 
 	/**
-		* Get or Set width
-		* @param {number} [w]
-		* @returns {number} width
-		*/
+	 * Get or Set width
+	 * @param {number} [w]
+	 * @returns {number} width
+	 */
 	width(w) {
-		// var frame = this.documentElement;
-		var frame = this.content;
+
+		const frame = this.content;
 
 		if (w && isNumber(w)) {
 			w = w + "px";
@@ -66,22 +78,19 @@ class Contents {
 
 		if (w) {
 			frame.style.width = w;
-			// this.content.style.width = w;
 		}
 
 		return parseInt(this.window.getComputedStyle(frame)["width"]);
-
-
 	}
 
 	/**
-		* Get or Set height
-		* @param {number} [h]
-		* @returns {number} height
-		*/
+	 * Get or Set height
+	 * @param {number} [h]
+	 * @returns {number} height
+	 */
 	height(h) {
-		// var frame = this.documentElement;
-		var frame = this.content;
+
+		const frame = this.content;
 
 		if (h && isNumber(h)) {
 			h = h + "px";
@@ -89,21 +98,19 @@ class Contents {
 
 		if (h) {
 			frame.style.height = h;
-			// this.content.style.height = h;
 		}
 
 		return parseInt(this.window.getComputedStyle(frame)["height"]);
-
 	}
 
 	/**
-		* Get or Set width of the contents
-		* @param {number} [w]
-		* @returns {number} width
-		*/
+	 * Get or Set width of the contents
+	 * @param {number} [w]
+	 * @returns {number} width
+	 */
 	contentWidth(w) {
 
-		var content = this.content || this.document.body;
+		const content = this.content || this.document.body;
 
 		if (w && isNumber(w)) {
 			w = w + "px";
@@ -114,18 +121,16 @@ class Contents {
 		}
 
 		return parseInt(this.window.getComputedStyle(content)["width"]);
-
-
 	}
 
 	/**
-		* Get or Set height of the contents
-		* @param {number} [h]
-		* @returns {number} height
-		*/
+	 * Get or Set height of the contents
+	 * @param {number} [h]
+	 * @returns {number} height
+	 */
 	contentHeight(h) {
 
-		var content = this.content || this.document.body;
+		const content = this.content || this.document.body;
 
 		if (h && isNumber(h)) {
 			h = h + "px";
@@ -136,26 +141,25 @@ class Contents {
 		}
 
 		return parseInt(this.window.getComputedStyle(content)["height"]);
-
 	}
 
 	/**
-		* Get the width of the text using Range
-		* @returns {number} width
-		*/
+	 * Get the width of the text using Range
+	 * @deprecated
+	 * @returns {number} width
+	 */
 	textWidth() {
-		let rect;
-		let width;
-		let range = this.document.createRange();
-		let content = this.content || this.document.body;
-		let border = borders(content);
+
+		const range = this.document.createRange();
+		const content = this.content || this.document.body;
+		const border = borders(content);
 
 		// Select the contents of frame
 		range.selectNodeContents(content);
 
 		// get the width of the text content
-		rect = range.getBoundingClientRect();
-		width = rect.width;
+		const rect = range.getBoundingClientRect();
+		let width = rect.width;
 
 		if (border && border.width) {
 			width += border.width;
@@ -165,47 +169,75 @@ class Contents {
 	}
 
 	/**
-		* Get the height of the text using Range
-		* @returns {number} height
-		*/
+	 * Get the height of the text using Range
+	 * @deprecated
+	 * @returns {number} height
+	 */
 	textHeight() {
-		let rect;
-		let height;
-		let range = this.document.createRange();
-		let content = this.content || this.document.body;
+
+		const range = this.document.createRange();
+		const content = this.content || this.document.body;
 
 		range.selectNodeContents(content);
 
-		rect = range.getBoundingClientRect();
-		height = rect.bottom;
+		const rect = range.getBoundingClientRect();
+		const height = rect.bottom;
 
 		return Math.round(height);
 	}
 
 	/**
-		* Get documentElement scrollWidth
-		* @returns {number} width
-		*/
+	 * Get size of the text using Range
+	 * @returns {{ width: number, height: number }}
+	 */
+	textSize() {
+
+		const range = this.document.createRange();
+		const content = this.content || this.document.body;
+		// Select the contents of frame
+		range.selectNodeContents(content);
+		// get rect of the text content
+		const rect = range.getBoundingClientRect();
+		const border = borders(content);
+		let width = rect.width;
+		let height = rect.height;
+		if (border) {
+			if (border.width) {
+				width += border.width;
+			}
+			if (border.height) {
+				height += border.height;
+			}
+		}
+
+		return {
+			width: Math.round(width),
+			height: Math.round(height)
+		}
+	}
+
+	/**
+	 * Get documentElement scrollWidth
+	 * @returns {number} width
+	 */
 	scrollWidth() {
-		var width = this.documentElement.scrollWidth;
 
-		return width;
+		return this.documentElement.scrollWidth;
 	}
 
 	/**
-		* Get documentElement scrollHeight
-		* @returns {number} height
-		*/
+	 * Get documentElement scrollHeight
+	 * @returns {number} height
+	 */
 	scrollHeight() {
-		var height = this.documentElement.scrollHeight;
 
-		return height;
+		return this.documentElement.scrollHeight;
 	}
 
 	/**
-		* Set overflow css style of the contents
-		* @param {string} [overflow]
-		*/
+	 * Set overflow css style of the contents
+	 * @param {string} [overflow]
+	 */
 	overflow(overflow) {
 
 		if (overflow) {
@@ -216,9 +248,9 @@ class Contents {
 	}
 
 	/**
-		* Set overflowX css style of the documentElement
-		* @param {string} [overflow]
-		*/
+	 * Set overflowX css style of the documentElement
+	 * @param {string} [overflow]
+	 */
 	overflowX(overflow) {
 
 		if (overflow) {
@@ -229,9 +261,9 @@ class Contents {
 	}
 
 	/**
-		* Set overflowY css style of the documentElement
-		* @param {string} [overflow]
-		*/
+	 * Set overflowY css style of the documentElement
+	 * @param {string} [overflow]
+	 */
 	overflowY(overflow) {
 
 		if (overflow) {
@@ -242,13 +274,14 @@ class Contents {
 	}
 
 	/**
-		* Set Css styles on the contents element (typically Body)
-		* @param {string} property
-		* @param {string} value
-		* @param {boolean} [priority] set as "important"
-		*/
+	 * Set Css styles on the contents element (typically Body)
+	 * @param {string} property
+	 * @param {string} value
+	 * @param {boolean} [priority] set as "important"
+	 */
 	css(property, value, priority) {
-		var content = this.content || this.document.body;
+
+		const content = this.content || this.document.body;
 
 		if (value) {
 			content.style.setProperty(property, value, priority ? "important" : "");
@@ -260,64 +293,63 @@ class Contents {
 	}
 
 	/**
-		* Get or Set the viewport element
-		* @param {object} [options]
-		* @param {string} [options.width]
-		* @param {string} [options.height]
-		* @param {string} [options.scale]
-		* @param {string} [options.minimum]
-		* @param {string} [options.maximum]
-		* @param {string} [options.scalable]
-		*/
+	 * Get or Set the viewport element
+	 * @param {object} [options]
+	 * @param {string} [options.width]
+	 * @param {string} [options.height]
+	 * @param {string} [options.scale]
+	 * @param {string} [options.minimum]
+	 * @param {string} [options.maximum]
+	 * @param {string} [options.scalable]
+	 */
 	viewport(options) {
-		var _width, _height, _scale, _minimum, _maximum, _scalable;
-		// var width, height, scale, minimum, maximum, scalable;
-		var $viewport = this.document.querySelector("meta[name='viewport']");
-		var parsed = {
-			"width": undefined,
-			"height": undefined,
-			"scale": undefined,
-			"minimum": undefined,
-			"maximum": undefined,
-			"scalable": undefined
+
+		const parsed = {
+			width: undefined,
+			height: undefined,
+			scale: undefined,
+			minimum: undefined,
+			maximum: undefined,
+			scalable: undefined
 		};
-		var newContent = [];
-		var settings = {};
+		let viewport = this.document.querySelector("meta[name='viewport']");
 
-		/*
-		* check for the viewport size
-		* <meta name="viewport" content="width=1024,height=697" />
-		*/
-		if($viewport && $viewport.hasAttribute("content")) {
-			let content = $viewport.getAttribute("content");
-			let _width = content.match(/width\s*=\s*([^,]*)/);
-			let _height = content.match(/height\s*=\s*([^,]*)/);
-			let _scale = content.match(/initial-scale\s*=\s*([^,]*)/);
-			let _minimum = content.match(/minimum-scale\s*=\s*([^,]*)/);
-			let _maximum = content.match(/maximum-scale\s*=\s*([^,]*)/);
-			let _scalable = content.match(/user-scalable\s*=\s*([^,]*)/);
+		/***
+		 * check for the viewport size
+		 * <meta name="viewport" content="width=1024,height=697" />
+		 */
+		if (viewport && viewport.hasAttribute("content")) {
 
-			if(_width && _width.length && typeof _width[1] !== "undefined"){
-				parsed.width = _width[1];
+			const content = viewport.getAttribute("content");
+			const width = content.match(/width\s*=\s*([^,]*)/);
+			const height = content.match(/height\s*=\s*([^,]*)/);
+			const scale = content.match(/initial-scale\s*=\s*([^,]*)/);
+			const minimum = content.match(/minimum-scale\s*=\s*([^,]*)/);
+			const maximum = content.match(/maximum-scale\s*=\s*([^,]*)/);
+			const scalable = content.match(/user-scalable\s*=\s*([^,]*)/);
+
+			if (width && width.length && typeof width[1] !== "undefined") {
+				parsed.width = width[1];
 			}
-			if(_height && _height.length && typeof _height[1] !== "undefined"){
-				parsed.height = _height[1];
+			if (height && height.length && typeof height[1] !== "undefined") {
+				parsed.height = height[1];
 			}
-			if(_scale && _scale.length && typeof _scale[1] !== "undefined"){
-				parsed.scale = _scale[1];
+			if (scale && scale.length && typeof scale[1] !== "undefined") {
+				parsed.scale = scale[1];
 			}
-			if(_minimum && _minimum.length && typeof _minimum[1] !== "undefined"){
-				parsed.minimum = _minimum[1];
+			if (minimum && minimum.length && typeof minimum[1] !== "undefined") {
+				parsed.minimum = minimum[1];
 			}
-			if(_maximum && _maximum.length && typeof _maximum[1] !== "undefined"){
-				parsed.maximum = _maximum[1];
+			if (maximum && maximum.length && typeof maximum[1] !== "undefined") {
+				parsed.maximum = maximum[1];
 			}
-			if(_scalable && _scalable.length && typeof _scalable[1] !== "undefined"){
-				parsed.scalable = _scalable[1];
+			if (scalable && scalable.length && typeof scalable[1] !== "undefined") {
+				parsed.scalable = scalable[1];
 			}
 		}
 
-		settings = defaults(options || {}, parsed);
+		const settings = defaults(options || {}, parsed);
+		const newContent = [];
 
 		if (options) {
 			if (settings.width) {
@@ -351,17 +383,15 @@ class Contents {
 				}
 			}
 
-			if (!$viewport) {
-				$viewport = this.document.createElement("meta");
-				$viewport.setAttribute("name", "viewport");
-				this.document.querySelector("head").appendChild($viewport);
+			if (viewport === null) {
+				viewport = this.document.createElement("meta");
+				viewport.setAttribute("name", "viewport");
+				this.document.querySelector("head").appendChild(viewport);
 			}
 
-			$viewport.setAttribute("content", newContent.join(", "));
-
+			viewport.setAttribute("content", newContent.join(", "));
 			this.window.scrollTo(0, 0);
 		}
-
 
 		return settings;
 	}
@@ -371,6 +401,7 @@ class Contents {
 	 * @private
 	 */
 	expand() {
+
 		this.emit(EVENTS.CONTENTS.EXPAND);
 	}
 
@@ -379,16 +410,12 @@ class Contents {
 	 * @private
 	 */
 	listeners() {
+
 		this.imageLoadListeners();
-
 		this.mediaQueryListeners();
-
 		// this.fontLoadListeners();
-
 		this.addEventListeners();
-
 		this.addSelectionListeners();
-
 		// this.transitionListeners();
 
 		if (typeof ResizeObserver === "undefined") {
@@ -399,7 +426,6 @@ class Contents {
 		}
 
 		// this.mutationObservers();
-
 		this.linksHandler();
 	}
 
@@ -410,7 +436,6 @@ class Contents {
 	removeListeners() {
 
 		this.removeEventListeners();
-
 		this.removeSelectionListeners();
 
 		if (this.observer) {
@@ -426,14 +451,14 @@ class Contents {
 	 * @private
 	 */
 	resizeCheck() {
-		let width = this.textWidth();
-		let height = this.textHeight();
 
-		if (width != this._size.width || height != this._size.height) {
+		const size = this.textSize();
+
+		if (size.width !== this._size.width || size.height !== this._size.height) {
 
 			this._size = {
-				width: width,
-				height: height
+				width: size.width,
+				height: size.height
 			};
 
 			this.onResize && this.onResize(this._size);
@@ -446,7 +471,7 @@ class Contents {
 	 * @private
 	 */
 	resizeListeners() {
-		var width, height;
+
 		// Test size again
 		clearTimeout(this.expanding);
 		requestAnimationFrame(this.resizeCheck.bind(this));
@@ -458,6 +483,7 @@ class Contents {
 	 * @private
 	 */
 	visibilityListeners() {
+
 		document.addEventListener("visibilitychange", () => {
 			if (document.visibilityState === "visible" && this.active === false) {
 				this.active = true;
@@ -470,11 +496,12 @@ class Contents {
 	}
 
 	/**
-	 * Use css transitions to detect resize
+	 * Use css transitions to detect resize (unused)
 	 * @private
 	 */
 	transitionListeners() {
-		let body = this.content;
+
+		const body = this.content;
 
 		body.style['transitionProperty'] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
 		body.style['transitionDuration'] = "0.001ms";
@@ -491,28 +518,28 @@ class Contents {
 	 * @private
 	 */
 	mediaQueryListeners() {
-		var sheets = this.document.styleSheets;
-		var mediaChangeHandler = function(m){
-			if(m.matches && !this._expanding) {
+
+		const sheets = this.document.styleSheets;
+		const mediaChangeHandler = (m) => {
+			if (m.matches && !this.expanding) {
 				setTimeout(this.expand.bind(this), 1);
 			}
-		}.bind(this);
+		};
 
-		for (var i = 0; i < sheets.length; i += 1) {
-			var rules;
+		for (let i = 0; i < sheets.length; i += 1) {
+			let rules;
 			// Firefox errors if we access cssRules cross-domain
 			try {
 				rules = sheets[i].cssRules;
 			} catch (e) {
+				console.error(e);
 				return;
 			}
-			if(!rules) return; // Stylesheets changed
-			for (var j = 0; j < rules.length; j += 1) {
-				//if (rules[j].constructor === CSSMediaRule) {
-				if(rules[j].media){
-					var mql = this.window.matchMedia(rules[j].media.mediaText);
-					mql.addListener(mediaChangeHandler);
-					//mql.onchange = mediaChangeHandler;
+			if (!rules) return; // Stylesheets changed
+			for (let j = 0; j < rules.length; j += 1) {
+				if (rules[j].media) {
+					const mql = this.window.matchMedia(rules[j].media.mediaText);
+					mql.onchange = mediaChangeHandler;
 				}
 			}
 		}
@@ -533,7 +560,7 @@ class Contents {
 	}
 
 	/**
-	 * Use MutationObserver to listen for changes in the DOM and check for resize
+	 * Use MutationObserver to listen for changes in the DOM and check for resize (unused)
 	 * @private
 	 */
 	mutationObservers() {
@@ -543,7 +570,12 @@ class Contents {
 		});
 
 		// configuration of the observer:
-		let config = { attributes: true, childList: true, characterData: true, subtree: true };
+		const config = {
+			attributes: true,
+			childList: true,
+			characterData: true,
+			subtree: true
+		};
 
 		// pass in the target node, as well as the observer options
 		this.observer.observe(this.document, config);
@@ -554,31 +586,29 @@ class Contents {
 	 * @private
 	 */
 	imageLoadListeners() {
-		var images = this.document.querySelectorAll("img");
-		var img;
-		for (var i = 0; i < images.length; i++) {
-			img = images[i];
+
+		const images = this.document.querySelectorAll("img");
+		for (let i = 0; i < images.length; i++) {
+			const img = images[i];
 
 			if (typeof img.naturalWidth !== "undefined" &&
-					img.naturalWidth === 0) {
+				img.naturalWidth === 0) {
 				img.onload = this.expand.bind(this);
 			}
 		}
 	}
 
 	/**
-	 * Listen for font load and check for resize when loaded
+	 * Listen for font load and check for resize when loaded (unused)
 	 * @private
 	 */
 	fontLoadListeners() {
+
 		if (!this.document || !this.document.fonts) {
 			return;
 		}
 
-		this.document.fonts.ready.then(function () {
-			this.resizeCheck();
-		}.bind(this));
-
+		this.document.fonts.ready.then(() => this.resizeCheck());
 	}
 
 	/**
@@ -586,7 +616,8 @@ class Contents {
 	 * @returns {element} documentElement
 	 */
 	root() {
-		if(!this.document) return null;
+
+		if (!this.document) return null;
 		return this.document.documentElement;
 	}
 
@@ -597,19 +628,20 @@ class Contents {
 	 * @returns {object} target position left and top
 	 */
 	locationOf(target, ignoreClass) {
-		var position;
-		var targetPos = {"left": 0, "top": 0};
 
-		if(!this.document) return targetPos;
+		const targetPos = { "left": 0, "top": 0 };
 
-		if(this.epubcfi.isCfiString(target)) {
-			let range = new EpubCFI(target).toRange(this.document, ignoreClass);
+		if (!this.document) return targetPos;
+		let position;
+		if (this.epubcfi.isCfiString(target)) {
 
-			if(range) {
+			const range = new EpubCFI(target).toRange(this.document, ignoreClass);
+
+			if (range) {
 				try {
 					if (!range.endContainer ||
 						(range.startContainer == range.endContainer
-						&& range.startOffset == range.endOffset)) {
+							&& range.startOffset == range.endOffset)) {
 						// If the end for the range is not set, it results in collapsed becoming
 						// true. This in turn leads to inconsistent behaviour when calling
 						// getBoundingRect. Wrong bounds lead to the wrong page being displayed.
@@ -634,8 +666,8 @@ class Contents {
 
 					// Construct a new non-collapsed range
 					if (isWebkit) {
-						let container = range.startContainer;
-						let newRange = new Range();
+						const container = range.startContainer;
+						const newRange = new Range();
 						try {
 							if (container.nodeType === ELEMENT_NODE) {
 								position = container.getBoundingClientRect();
@@ -659,15 +691,14 @@ class Contents {
 				}
 			}
 
-		} else if(typeof target === "string" &&
-			target.indexOf("#") > -1) {
+		} else if (typeof target === "string" && target.indexOf("#") > -1) {
 
-			let id = target.substring(target.indexOf("#")+1);
-			let el = this.document.getElementById(id);
-			if(el) {
+			const id = target.substring(target.indexOf("#") + 1);
+			const el = this.document.getElementById(id);
+			if (el) {
 				if (isWebkit) {
 					// Webkit reports incorrect bounding rects in Columns
-					let newRange = new Range();
+					const newRange = new Range();
 					newRange.selectNode(el);
 					position = newRange.getBoundingClientRect();
 				} else {
@@ -687,30 +718,32 @@ class Contents {
 	/**
 	 * Append a stylesheet link to the document head
 	 * @param {string} src url
+	 * @returns {Promise}
 	 */
 	addStylesheet(src) {
-		return new Promise(function(resolve, reject){
-			var $stylesheet;
-			var ready = false;
 
-			if(!this.document) {
+		return new Promise((resolve, reject) => {
+
+			let ready = false;
+
+			if (!this.document) {
 				resolve(false);
 				return;
 			}
 
 			// Check if link already exists
-			$stylesheet = this.document.querySelector("link[href='"+src+"']");
-			if ($stylesheet) {
+			let stylesheet = this.document.querySelector("link[href='" + src + "']");
+			if (stylesheet) {
 				resolve(true);
 				return; // already present
 			}
 
-			$stylesheet = this.document.createElement("link");
-			$stylesheet.type = "text/css";
-			$stylesheet.rel = "stylesheet";
-			$stylesheet.href = src;
-			$stylesheet.onload = $stylesheet.onreadystatechange = function() {
-				if ( !ready && (!this.readyState || this.readyState == "complete") ) {
+			stylesheet = this.document.createElement("link");
+			stylesheet.type = "text/css";
+			stylesheet.rel = "stylesheet";
+			stylesheet.href = src;
+			stylesheet.onload = stylesheet.onreadystatechange = () => {
+				if (!ready && (!this.readyState || this.readyState == "complete")) {
 					ready = true;
 					// Let apply
 					setTimeout(() => {
@@ -719,19 +752,23 @@ class Contents {
 				}
 			};
 
-			this.document.head.appendChild($stylesheet);
-
-		}.bind(this));
+			this.document.head.appendChild(stylesheet);
+		});
 	}
 
+	/**
+	 * _getStylesheetNode
+	 * @param {string} key 
+	 * @returns {Element}
+	 * @private
+	 */
 	_getStylesheetNode(key) {
-		var styleEl;
-		key = "epubjs-inserted-css-" + (key || '');
 
-		if(!this.document) return false;
+		if (!this.document) return null;
 
+		key = "epubjs-inserted-css-" + (key || "");
 		// Check if link already exists
-		styleEl = this.document.getElementById(key);
+		let styleEl = this.document.getElementById(key);
 		if (!styleEl) {
 			styleEl = this.document.createElement("style");
 			styleEl.id = key;
@@ -745,12 +782,15 @@ class Contents {
 	 * Append stylesheet css
 	 * @param {string} serializedCss
 	 * @param {string} key If the key is the same, the CSS will be replaced instead of inserted
+	 * @returns {boolean}
 	 */
 	addStylesheetCss(serializedCss, key) {
-		if(!this.document || !serializedCss) return false;
 
-		var styleEl;
-		styleEl = this._getStylesheetNode(key);
+		if (!this.document || !serializedCss) {
+			return false;
+		}
+
+		const styleEl = this._getStylesheetNode(key);
 		styleEl.innerHTML = serializedCss;
 
 		return true;
@@ -764,24 +804,24 @@ class Contents {
 	 * @param {string} key If the key is the same, the CSS will be replaced instead of inserted
 	 */
 	addStylesheetRules(rules, key) {
-		var styleSheet;
 
-		if(!this.document || !rules || rules.length === 0) return;
+		if (!this.document || !rules || rules.length === 0) return;
 
 		// Grab style sheet
-		styleSheet = this._getStylesheetNode(key).sheet;
+		const styleSheet = this._getStylesheetNode(key).sheet;
 
 		if (Object.prototype.toString.call(rules) === "[object Array]") {
-			for (var i = 0, rl = rules.length; i < rl; i++) {
-				var j = 1, rule = rules[i], selector = rules[i][0], propStr = "";
+			for (let i = 0, len = rules.length; i < len; i++) {
+				let j = 1, rule = rules[i], propStr = "";
+				const selector = rules[i][0];
 				// If the second argument of a rule is an array of arrays, correct our variables.
 				if (Object.prototype.toString.call(rule[1][0]) === "[object Array]") {
 					rule = rule[1];
 					j = 0;
 				}
 
-				for (var pl = rule.length; j < pl; j++) {
-					var prop = rule[j];
+				for (let pl = rule.length; j < pl; j++) {
+					const prop = rule[j];
 					propStr += prop[0] + ":" + prop[1] + (prop[2] ? " !important" : "") + ";\n";
 				}
 
@@ -818,31 +858,29 @@ class Contents {
 	 */
 	addScript(src) {
 
-		return new Promise(function(resolve, reject){
-			var $script;
-			var ready = false;
+		return new Promise((resolve, reject) => {
 
-			if(!this.document) {
+			if (!this.document) {
 				resolve(false);
 				return;
 			}
 
-			$script = this.document.createElement("script");
-			$script.type = "text/javascript";
-			$script.async = true;
-			$script.src = src;
-			$script.onload = $script.onreadystatechange = function() {
-				if ( !ready && (!this.readyState || this.readyState == "complete") ) {
+			let ready = false;
+			const script = this.document.createElement("script");
+			script.type = "text/javascript";
+			script.async = true;
+			script.src = src;
+			script.onload = script.onreadystatechange = () => {
+				if (!ready && (!this.readyState || this.readyState == "complete")) {
 					ready = true;
-					setTimeout(function(){
+					setTimeout(function () {
 						resolve(true);
 					}, 1);
 				}
 			};
 
-			this.document.head.appendChild($script);
-
-		}.bind(this));
+			this.document.head.appendChild(script);
+		});
 	}
 
 	/**
@@ -850,16 +888,14 @@ class Contents {
 	 * @param {string} className
 	 */
 	addClass(className) {
-		var content;
 
-		if(!this.document) return;
+		if (!this.document) return;
 
-		content = this.content || this.document.body;
+		const content = this.content || this.document.body;
 
 		if (content) {
 			content.classList.add(className);
 		}
-
 	}
 
 	/**
@@ -867,44 +903,40 @@ class Contents {
 	 * @param {string} removeClass
 	 */
 	removeClass(className) {
-		var content;
 
-		if(!this.document) return;
+		if (!this.document) return;
 
-		content = this.content || this.document.body;
+		const content = this.content || this.document.body;
 
 		if (content) {
 			content.classList.remove(className);
 		}
-
 	}
 
 	/**
 	 * Add DOM event listeners
 	 * @private
 	 */
-	addEventListeners(){
-		if(!this.document) {
-			return;
-		}
+	addEventListeners() {
+
+		if (!this.document) return;
 
 		this._triggerEvent = this.triggerEvent.bind(this);
 
-		DOM_EVENTS.forEach(function(eventName){
+		DOM_EVENTS.forEach(eventName => {
 			this.document.addEventListener(eventName, this._triggerEvent, { passive: true });
 		}, this);
-
 	}
 
 	/**
 	 * Remove DOM event listeners
 	 * @private
 	 */
-	removeEventListeners(){
-		if(!this.document) {
-			return;
-		}
-		DOM_EVENTS.forEach(function(eventName){
+	removeEventListeners() {
+
+		if (!this.document) return;
+
+		DOM_EVENTS.forEach(eventName => {
 			this.document.removeEventListener(eventName, this._triggerEvent, { passive: true });
 		}, this);
 		this._triggerEvent = undefined;
@@ -914,7 +946,8 @@ class Contents {
 	 * Emit passed browser events
 	 * @private
 	 */
-	triggerEvent(e){
+	triggerEvent(e) {
+
 		this.emit(e.type, e);
 	}
 
@@ -922,10 +955,10 @@ class Contents {
 	 * Add listener for text selection
 	 * @private
 	 */
-	addSelectionListeners(){
-		if(!this.document) {
-			return;
-		}
+	addSelectionListeners() {
+
+		if (!this.document) return;
+
 		this._onSelectionChange = this.onSelectionChange.bind(this);
 		this.document.addEventListener("selectionchange", this._onSelectionChange, { passive: true });
 	}
@@ -934,10 +967,10 @@ class Contents {
 	 * Remove listener for text selection
 	 * @private
 	 */
-	removeSelectionListeners(){
-		if(!this.document) {
-			return;
-		}
+	removeSelectionListeners() {
+
+		if (!this.document) return;
+
 		this.document.removeEventListener("selectionchange", this._onSelectionChange, { passive: true });
 		this._onSelectionChange = undefined;
 	}
@@ -946,28 +979,27 @@ class Contents {
 	 * Handle getting text on selection
 	 * @private
 	 */
-	onSelectionChange(e){
+	onSelectionChange(e) {
+
 		if (this.selectionEndTimeout) {
 			clearTimeout(this.selectionEndTimeout);
 		}
-		this.selectionEndTimeout = setTimeout(function() {
-			var selection = this.window.getSelection();
+		this.selectionEndTimeout = setTimeout(() => {
+			const selection = this.window.getSelection();
 			this.triggerSelectedEvent(selection);
-		}.bind(this), 250);
+		}, 250);
 	}
 
 	/**
 	 * Emit event on text selection
 	 * @private
 	 */
-	triggerSelectedEvent(selection){
-		var range, cfirange;
+	triggerSelectedEvent(selection) {
 
 		if (selection && selection.rangeCount > 0) {
-			range = selection.getRangeAt(0);
-			if(!range.collapsed) {
-				// cfirange = this.section.cfiFromRange(range);
-				cfirange = new EpubCFI(range, this.cfiBase).toString();
+			const range = selection.getRangeAt(0);
+			if (!range.collapsed) {
+				const cfirange = new EpubCFI(range, this.cfiBase).toString();
 				this.emit(EVENTS.CONTENTS.SELECTED, cfirange);
 				this.emit(EVENTS.CONTENTS.SELECTED_RANGE, range);
 			}
@@ -976,13 +1008,14 @@ class Contents {
 
 	/**
 	 * Get a Dom Range from EpubCFI
-	 * @param {EpubCFI} _cfi
+	 * @param {EpubCFI} cfi
 	 * @param {string} [ignoreClass]
 	 * @returns {Range} range
 	 */
-	range(_cfi, ignoreClass){
-		var cfi = new EpubCFI(_cfi);
-		return cfi.toRange(this.document, ignoreClass);
+	range(cfi, ignoreClass) {
+
+		const epubcfi = new EpubCFI(cfi);
+		return epubcfi.toRange(this.document, ignoreClass);
 	}
 
 	/**
@@ -991,7 +1024,8 @@ class Contents {
 	 * @param {string} [ignoreClass]
 	 * @returns {EpubCFI} cfi
 	 */
-	cfiFromRange(range, ignoreClass){
+	cfiFromRange(range, ignoreClass) {
+
 		return new EpubCFI(range, this.cfiBase, ignoreClass).toString();
 	}
 
@@ -1001,13 +1035,15 @@ class Contents {
 	 * @param {string} [ignoreClass]
 	 * @returns {EpubCFI} cfi
 	 */
-	cfiFromNode(node, ignoreClass){
+	cfiFromNode(node, ignoreClass) {
+
 		return new EpubCFI(node, this.cfiBase, ignoreClass).toString();
 	}
 
 	// TODO: find where this is used - remove?
-	map(layout){
-		var map = new Mapping(layout);
+	map(layout) {
+
+		const map = new Mapping(layout);
 		return map.section();
 	}
 
@@ -1016,15 +1052,16 @@ class Contents {
 	 * @param {number} [width]
 	 * @param {number} [height]
 	 */
-	size(width, height){
-		var viewport = { scale: 1.0, scalable: "no" };
+	size(width, height) {
 
-		this.layoutStyle("scrolling");
+		const viewport = { scale: 1.0, scalable: "no" };
+
+		this.setLayoutStyle("scrolling");
 
 		if (width >= 0) {
 			this.width(width);
 			viewport.width = width;
-			this.css("padding", "0 "+(width/12)+"px");
+			this.css("padding", "0 " + (width / 12) + "px");
 		}
 
 		if (height >= 0) {
@@ -1034,8 +1071,6 @@ class Contents {
 
 		this.css("margin", "0");
 		this.css("box-sizing", "border-box");
-
-
 		this.viewport(viewport);
 	}
 
@@ -1046,18 +1081,21 @@ class Contents {
 	 * @param {number} columnWidth
 	 * @param {number} gap
 	 */
-	columns(width, height, columnWidth, gap, dir){
-		let COLUMN_AXIS = prefixed("column-axis");
-		let COLUMN_GAP = prefixed("column-gap");
-		let COLUMN_WIDTH = prefixed("column-width");
-		let COLUMN_FILL = prefixed("column-fill");
+	columns(width, height, columnWidth, gap, dir) {
 
-		let writingMode = this.writingMode();
-		let axis = (writingMode.indexOf("vertical") === 0) ? "vertical" : "horizontal";
+		const COLUMN_AXIS = prefixed("column-axis");
+		const COLUMN_GAP = prefixed("column-gap");
+		const COLUMN_WIDTH = prefixed("column-width");
+		const COLUMN_FILL = prefixed("column-fill");
 
-		this.layoutStyle("paginated");
+		const AXIS_H = "horizontal";
+		const AXIS_V = "vertical";
+		const writingMode = this.writingMode();
+		const axis = (writingMode.indexOf(AXIS_V) === 0) ? AXIS_V : AXIS_H;
 
-		if (dir === "rtl" && axis === "horizontal") {
+		this.setLayoutStyle("paginated");
+
+		if (dir === "rtl" && axis === AXIS_H) {
 			this.direction(dir);
 		}
 
@@ -1065,7 +1103,12 @@ class Contents {
 		this.height(height);
 
 		// Deal with Mobile trying to scale to viewport
-		this.viewport({ width: width, height: height, scale: 1.0, scalable: "no" });
+		this.viewport({
+			width: width,
+			height: height,
+			scale: 1.0,
+			scalable: "no"
+		});
 
 		// TODO: inline-block needs more testing
 		// Fixes Safari column cut offs, but causes RTL issues
@@ -1074,27 +1117,25 @@ class Contents {
 		this.css("overflow-y", "hidden");
 		this.css("margin", "0", true);
 
-		if (axis === "vertical") {
+		if (axis === AXIS_V) {
 			this.css("padding-top", (gap / 2) + "px", true);
 			this.css("padding-bottom", (gap / 2) + "px", true);
 			this.css("padding-left", "20px");
 			this.css("padding-right", "20px");
-			this.css(COLUMN_AXIS, "vertical");
+			this.css(COLUMN_AXIS, AXIS_V);
 		} else {
 			this.css("padding-top", "20px");
 			this.css("padding-bottom", "20px");
 			this.css("padding-left", (gap / 2) + "px", true);
 			this.css("padding-right", (gap / 2) + "px", true);
-			this.css(COLUMN_AXIS, "horizontal");
+			this.css(COLUMN_AXIS, AXIS_H);
 		}
 
 		this.css("box-sizing", "border-box");
 		this.css("max-width", "inherit");
-
 		this.css(COLUMN_FILL, "auto");
-
-		this.css(COLUMN_GAP, gap+"px");
-		this.css(COLUMN_WIDTH, columnWidth+"px");
+		this.css(COLUMN_GAP, gap + "px");
+		this.css(COLUMN_WIDTH, columnWidth + "px");
 
 		// Fix glyph clipping in WebKit
 		// https://github.com/futurepress/epub.js/issues/983
@@ -1107,14 +1148,15 @@ class Contents {
 	 * @param {number} offsetX
 	 * @param {number} offsetY
 	 */
-	scaler(scale, offsetX, offsetY){
-		var scaleStr = "scale(" + scale + ")";
-		var translateStr = "";
+	scaler(scale, offsetX, offsetY) {
+
+		const scaleStr = "scale(" + scale + ")";
+		let translateStr = "";
 		// this.css("position", "absolute"));
 		this.css("transform-origin", "top left");
 
 		if (offsetX >= 0 || offsetY >= 0) {
-			translateStr = " translate(" + (offsetX || 0 )+ "px, " + (offsetY || 0 )+ "px )";
+			translateStr = " translate(" + (offsetX || 0) + "px, " + (offsetY || 0) + "px )";
 		}
 
 		this.css("transform", scaleStr + translateStr);
@@ -1125,13 +1167,14 @@ class Contents {
 	 * @param {number} width
 	 * @param {number} height
 	 */
-	fit(width, height, section){
-		var viewport = this.viewport();
-		var viewportWidth = parseInt(viewport.width);
-		var viewportHeight = parseInt(viewport.height);
-		var widthScale = width / viewportWidth;
-		var heightScale = height / viewportHeight;
-		var scale = widthScale < heightScale ? widthScale : heightScale;
+	fit(width, height, section) {
+
+		const viewport = this.viewport();
+		const viewportWidth = parseInt(viewport.width);
+		const viewportHeight = parseInt(viewport.height);
+		const widthScale = width / viewportWidth;
+		const heightScale = height / viewportHeight;
+		const scale = widthScale < heightScale ? widthScale : heightScale;
 
 		// the translate does not work as intended, elements can end up unaligned
 		// var offsetY = (height - (viewportHeight * scale)) / 2;
@@ -1140,7 +1183,7 @@ class Contents {
 		// 	offsetX = width - (viewportWidth * scale);
 		// }
 
-		this.layoutStyle("paginated");
+		this.setLayoutStyle("paginated");
 
 		// scale needs width and height to be set
 		this.width(viewportWidth);
@@ -1157,24 +1200,34 @@ class Contents {
 		this.css("background-color", "transparent");
 		if (section && section.properties.includes("page-spread-left")) {
 			// set margin since scale is weird
-			var marginLeft = width - (viewportWidth * scale);
+			const marginLeft = width - (viewportWidth * scale);
 			this.css("margin-left", marginLeft + "px");
 		}
 	}
 
 	/**
 	 * Set the direction of the text
-	 * @param {string} [dir="ltr"] "rtl" | "ltr"
+	 * @param {string} [dir="ltr"] `"rtl"` OR `"ltr"`
 	 */
-	direction(dir) {
+	direction(dir = "ltr") {
+
 		if (this.documentElement) {
 			this.documentElement.style["direction"] = dir;
 		}
 	}
 
+	/**
+	 * mapPage
+	 * @param {string} cfiBase 
+	 * @param {Layout} layout 
+	 * @param {number} start 
+	 * @param {number} end 
+	 * @param {boolean} dev 
+	 * @returns {any}
+	 */
 	mapPage(cfiBase, layout, start, end, dev) {
-		var mapping = new Mapping(layout, dev);
 
+		const mapping = new Mapping(layout, dev);
 		return mapping.page(this, cfiBase, start, end);
 	}
 
@@ -1183,6 +1236,7 @@ class Contents {
 	 * @private
 	 */
 	linksHandler() {
+
 		replaceLinks(this.content, (href) => {
 			this.emit(EVENTS.CONTENTS.LINK_CLICKED, href);
 		});
@@ -1190,16 +1244,17 @@ class Contents {
 
 	/**
 	 * Set the writingMode of the text
-	 * @param {string} [mode="horizontal-tb"] "horizontal-tb" | "vertical-rl" | "vertical-lr"
+	 * @param {string} [mode="horizontal-tb"] `"horizontal-tb"` OR `"vertical-rl"` OR `"vertical-lr"`
 	 */
 	writingMode(mode) {
-		let WRITING_MODE = prefixed("writing-mode");
+
+		const WRITING_MODE = prefixed("writing-mode");
 
 		if (mode && this.documentElement) {
 			this.documentElement.style[WRITING_MODE] = mode;
 		}
 
-		return this.window.getComputedStyle(this.documentElement)[WRITING_MODE] || '';
+		return this.window.getComputedStyle(this.documentElement)[WRITING_MODE] || "";
 	}
 
 	/**
@@ -1207,14 +1262,14 @@ class Contents {
 	 * @param {string} [style="paginated"] "scrolling" | "paginated"
 	 * @private
 	 */
-	layoutStyle(style) {
+	setLayoutStyle(style) {
 
 		if (style) {
-			this._layoutStyle = style;
-			navigator.epubReadingSystem.layoutStyle = this._layoutStyle;
+			this.layoutStyle = style;
+			navigator.epubReadingSystem.layoutStyle = this.layoutStyle;
 		}
 
-		return this._layoutStyle || "paginated";
+		return this.layoutStyle || "paginated";
 	}
 
 	/**
@@ -1224,11 +1279,12 @@ class Contents {
 	 * @private
 	 */
 	epubReadingSystem(name, version) {
+
 		navigator.epubReadingSystem = {
 			name: name,
 			version: version,
-			layoutStyle: this.layoutStyle(),
-			hasFeature: function (feature) {
+			layoutStyle: this.setLayoutStyle(),
+			hasFeature: feature => {
 				switch (feature) {
 					case "dom-manipulation":
 						return true;
@@ -1250,11 +1306,12 @@ class Contents {
 		return navigator.epubReadingSystem;
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
-		// this.document.removeEventListener('transitionend', this._resizeCheck);
 
 		this.removeListeners();
-
 	}
 }
 
