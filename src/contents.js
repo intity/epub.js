@@ -1052,11 +1052,7 @@ class Contents {
 		const axis = (writingMode.indexOf(AXIS_V) === 0) ? AXIS_V : AXIS_H;
 
 		this.setLayoutStyle("paginated");
-
-		if (dir === "rtl" && axis === AXIS_H) {
-			this.direction(dir);
-		}
-
+		this.direction(dir);
 		this.width(width);
 		this.height(height);
 
@@ -1165,12 +1161,12 @@ class Contents {
 
 	/**
 	 * Set the direction of the text
-	 * @param {string} [dir="ltr"] `"rtl"` OR `"ltr"`
+	 * @param {string} [dir='ltr'] values: `"ltr"` OR `"rtl"`
 	 */
 	direction(dir = "ltr") {
 
 		if (this.documentElement) {
-			this.documentElement.style["direction"] = dir;
+			this.documentElement.dir = dir;
 		}
 	}
 
