@@ -1095,11 +1095,7 @@ class DefaultViewManager {
 		 * @memberof DefaultViewManager
 		 * @readonly
 		 */
-		this.mapping = new Mapping(
-			this.layout,
-			this.layout.direction,
-			this.settings.axis
-		);
+		this.mapping = new Mapping(this.layout, this.settings.axis);
 
 		if (this.views.length > 0 &&
 			this.layout.name === "pre-paginated") {
@@ -1134,11 +1130,7 @@ class DefaultViewManager {
 		this.stage.axis(axis);
 
 		if (this.mapping) {
-			this.mapping = new Mapping(
-				this.layout,
-				this.layout.direction,
-				axis
-			);
+			this.mapping = new Mapping(this.layout, axis);
 		}
 	}
 

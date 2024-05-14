@@ -8,15 +8,13 @@ class Mapping {
 	/**
 	 * Constructor
 	 * @param {Layout} layout Layout to apply
-	 * @param {string} [direction="ltr"] Text direction
-	 * @param {string} [axis="horizontal"] vertical or horizontal axis
+	 * @param {string} [axis="horizontal"] values: `"horizontal"` OR `"vertical"`
 	 * @param {boolean} [dev=false] toggle developer highlighting
 	 */
-	constructor(layout, direction, axis, dev = false) {
+	constructor(layout, axis, dev = false) {
 
 		this.layout = layout;
 		this.horizontal = axis === "horizontal";
-		this.direction = direction || "ltr";
 		this.devMode = dev;
 	}
 
@@ -153,7 +151,7 @@ class Mapping {
 				let left, right, top, bottom;
 				const elPos = nodeBounds(node);
 
-				if (this.horizontal && this.direction === "ltr") {
+				if (this.horizontal && this.layout.direction === "ltr") {
 
 					left = this.horizontal ? elPos.left : elPos.top;
 					right = this.horizontal ? elPos.right : elPos.bottom;
@@ -166,7 +164,7 @@ class Mapping {
 						prev = node;
 						stack.push(node);
 					}
-				} else if (this.horizontal && this.direction === "rtl") {
+				} else if (this.horizontal && this.layout.direction === "rtl") {
 
 					left = elPos.left;
 					right = elPos.right;
@@ -224,7 +222,7 @@ class Mapping {
 				let left, right, top, bottom;
 				const elPos = nodeBounds(node);
 
-				if (this.horizontal && this.direction === "ltr") {
+				if (this.horizontal && this.layout.direction === "ltr") {
 
 					left = Math.round(elPos.left);
 					right = Math.round(elPos.right);
@@ -237,7 +235,7 @@ class Mapping {
 						prev = node;
 						stack.push(node);
 					}
-				} else if (this.horizontal && this.direction === "rtl") {
+				} else if (this.horizontal && this.layout.direction === "rtl") {
 
 					left = Math.round(this.horizontal ? elPos.left : elPos.top);
 					right = Math.round(this.horizontal ? elPos.right : elPos.bottom);
@@ -291,11 +289,11 @@ class Mapping {
 			const range = ranges[i];
 			const pos = range.getBoundingClientRect();
 
-			if (this.horizontal && this.direction === "ltr") {
+			if (this.horizontal && this.layout.direction === "ltr") {
 				if (pos.left >= start) {
 					return range;
 				}
-			} else if (this.horizontal && this.direction === "rtl") {
+			} else if (this.horizontal && this.layout.direction === "rtl") {
 				if (pos.right <= end) {
 					return range;
 				}
@@ -327,13 +325,13 @@ class Mapping {
 			const range = ranges[i];
 			const pos = range.getBoundingClientRect();
 
-			if (this.horizontal && this.direction === "ltr") {
+			if (this.horizontal && this.layout.direction === "ltr") {
 				if (pos.left > end && prev) {
 					return prev;
 				} else if (pos.right > end) {
 					return range;
 				}
-			} else if (this.horizontal && this.direction === "rtl") {
+			} else if (this.horizontal && this.layout.direction === "rtl") {
 				if (pos.right < start && prev) {
 					return prev;
 				} else if (pos.left < start) {
