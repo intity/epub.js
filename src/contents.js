@@ -1217,17 +1217,14 @@ class Contents {
 
 	/**
 	 * Set the layoutStyle of the content
-	 * @param {string} [style="paginated"] "scrolling" | "paginated"
+	 * @param {string} [value='paginated'] values: `"paginated"` OR `"scrolling"`
 	 * @private
 	 */
-	setLayoutStyle(style) {
+	setLayoutStyle(value = "paginated") {
 
-		if (style) {
-			this.layoutStyle = style;
-			navigator.epubReadingSystem.layoutStyle = this.layoutStyle;
-		}
-
-		return this.layoutStyle || "paginated";
+		this.layoutStyle = value;
+		navigator.epubReadingSystem.layoutStyle = value;
+		return value;
 	}
 
 	/**
@@ -1241,7 +1238,7 @@ class Contents {
 		navigator.epubReadingSystem = {
 			name: name,
 			version: version,
-			layoutStyle: this.setLayoutStyle(),
+			layoutStyle: "paginated",
 			hasFeature: feature => {
 				switch (feature) {
 					case "dom-manipulation":
