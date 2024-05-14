@@ -1,5 +1,6 @@
 import { uuid, isNumber, isElement, windowBounds, extend } from "../../utils/core";
-import throttle from 'lodash/throttle'
+import { EVENTS } from "../../utils/constants";
+import throttle from "lodash/throttle";
 
 /**
  * Stage
@@ -7,6 +8,7 @@ import throttle from 'lodash/throttle'
 class Stage {
 	/**
 	 * Constructor
+	 * @param {Layout} layout 
 	 * @param {object} options
 	 * @param {string} options.axis
 	 * @param {string} options.direction
@@ -14,7 +16,8 @@ class Stage {
 	 * @param {string|number} options.width
 	 * @param {string|number} options.height
 	 */
-	constructor(options) {
+	constructor(layout, options) {
+
 		/**
 		 * @member {object} settings
 		 * @memberof Stage
@@ -33,6 +36,16 @@ class Stage {
 		 * @readonly
 		 */
 		this.container = this.create(this.settings);
+		this.layout = layout;
+		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+			if (changed.flow) {
+				this.updateFlow(changed.flow);
+			} else if (changed.direction) {
+				this.direction(changed.direction);
+			}
+		});
+		this.updateFlow();
+		this.direction();
 
 		if (this.settings.hidden) {
 			this.wrapper = this.wrap(this.container);
@@ -50,7 +63,6 @@ class Stage {
 		let axis = options.axis || "vertical";
 		let width = options.width;
 		let height = options.height;
-		let overflow = options.overflow || false;
 
 		extend(this.settings, options);
 
@@ -85,28 +97,6 @@ class Stage {
 
 		if (height) {
 			container.style.height = height;
-		}
-
-		if (overflow) {
-			if (overflow === "scroll" && axis === "vertical") {
-				container.style["overflow-y"] = overflow;
-				container.style["overflow-x"] = "hidden";
-			} else if (overflow === "scroll" && axis === "horizontal") {
-				container.style["overflow-y"] = "hidden";
-				container.style["overflow-x"] = overflow;
-			} else {
-				container.style["overflow"] = overflow;
-			}
-		}
-
-		let direction = options.direction;
-		if (direction) {
-			container.dir = direction;
-			//container.style["direction"] = direction;
-		}
-
-		if (direction && this.settings.fullsize) {
-			document.body.style["direction"] = direction;
 		}
 
 		return container;
@@ -360,37 +350,41 @@ class Stage {
 	}
 
 	/**
-	 * direction
-	 * @param {string} dir 
+	 * Update direction
+	 * @param {string} [value] direction
+	 * @private
 	 */
-	direction(dir) {
+	direction(value) {
+
+		value = value || this.layout.direction;
 
 		if (this.container) {
-			this.container.dir = dir;
-			//this.container.style["direction"] = dir;
+			this.container.dir = value;
 		}
 
 		if (this.settings.fullsize) {
-			document.body.style["direction"] = dir;
+			document.body.style["direction"] = value;
 		}
 	}
 
 	/**
-	 * overflow
-	 * @param {string} value 
+	 * Update Flow
+	 * @param {string} [value] `layout.flow` value
+	 * @private
 	 */
-	overflow(value) {
+	updateFlow(value) {
 
-		if (value === "scroll" && this.settings.axis === "vertical") {
-			this.container.style["overflow-y"] = value;
-			this.container.style["overflow-x"] = "hidden";
-		} else if (value === "scroll" && this.settings.axis === "horizontal") {
-			this.container.style["overflow-y"] = "hidden";
-			this.container.style["overflow-x"] = value;
-		} else {
-			this.container.style["overflow"] = value;
+		value = value || this.layout.flow;
+		switch (value) {
+			case "paginated":
+				this.container.style["overflow-y"] = "hidden";
+				this.container.style["overflow-x"] = "hidden";
+				break;
+			case "scrolled":
+				this.container.style["overflow-y"] = "auto";
+				this.container.style["overflow-x"] = "hidden";
+				break;
 		}
-		this.settings.overflow = value;
 	}
 
 	/**

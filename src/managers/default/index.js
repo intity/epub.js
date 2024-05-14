@@ -1,11 +1,11 @@
 import EventEmitter from "event-emitter";
-import { extend, defer, windowBounds, isNumber } from "../../utils/core";
 import Mapping from "../../mapping";
 import Stage from "../helpers/stage";
 import Views from "../helpers/views";
 import IframeView from "../views/iframe";
 import scrollType from "../../utils/scrolltype";
 import { EVENTS } from "../../utils/constants";
+import { extend, defer, windowBounds, isNumber } from "../../utils/core";
 
 const AXIS_H = "horizontal";
 const AXIS_V = "vertical";
@@ -52,10 +52,12 @@ class DefaultViewManager {
 		this.layout = layout;
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			if (changed.flow) {
-				this.isPaginated = changed.flow === "paginated" || changed.flow === "auto";
-				this.updateFlow(changed.flow);
-			} else if (changed.direction) {
-				this.stage.direction(changed.direction);
+				this.isPaginated = changed.flow === "paginated";
+				if (this.isPaginated) {
+					this.updateAxis(AXIS_H);
+				} else {
+					this.updateAxis(AXIS_V);
+				}
 			}
 			this.clear();
 			this.updateLayout();
@@ -93,32 +95,23 @@ class DefaultViewManager {
 			this.settings.fullsize = true;
 		}
 
-		if (this.settings.fullsize) {
-			this.settings.overflow = "visible";
-			this.overflow = this.settings.overflow;
-		}
-
 		this.settings.rtlScrollType = scrollType();
 		/**
 		 * @member {Stage} stage
 		 * @memberof DefaultViewManager
 		 * @property {string} axis
-		 * @property {string} direction
 		 * @property {string|number} width
 		 * @property {string|number} height
-		 * @property {string} overflow
 		 * @property {boolean} hidden
 		 * @property {boolean} fullsize
 		 * @readonly
 		 */
-		this.stage = new Stage({
+		this.stage = new Stage(this.layout, {
 			axis: this.settings.axis,
 			width: size.width,
 			height: size.height,
 			hidden: this.settings.hidden,
-			fullsize: this.settings.fullsize,
-			overflow: this.overflow,
-			direction: this.layout.direction
+			fullsize: this.settings.fullsize
 		});
 		this.stage.attachTo(element);
 		/**
@@ -1150,31 +1143,8 @@ class DefaultViewManager {
 	}
 
 	/**
-	 * Update Flow
-	 * @param {string} flow
-	 * @param {string} [defaultScrolledOverflow='auto']
-	 * @private
-	 */
-	updateFlow(flow, defaultScrolledOverflow = "auto") {
-
-		if (flow === "scrolled") {
-			this.updateAxis(AXIS_V);
-		} else {
-			this.updateAxis(AXIS_H);
-		}
-
-		if (this.settings.overflow) {
-			this.overflow = this.settings.overflow;
-		} else {
-			this.overflow = this.isPaginated ? "hidden" : defaultScrolledOverflow;
-		}
-
-		this.stage.overflow(this.overflow);
-	}
-
-	/**
 	 * Get contents array from views
-	 * @returns {Contents[]} [view.contents]
+	 * @returns {object[]} [view.contents]
 	 */
 	getContents() {
 
