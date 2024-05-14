@@ -32,6 +32,7 @@ class Contents {
 		this.document = doc;
 		this.documentElement = this.document.documentElement;
 		this.content = content || this.document.body;
+		this.content.style.overflow = "hidden";
 		this.window = this.document.defaultView;
 		this._size = {
 			width: 0,
