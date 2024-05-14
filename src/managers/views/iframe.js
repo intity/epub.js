@@ -5,6 +5,9 @@ import { EVENTS } from "../../utils/constants";
 import { extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl } from "../../utils/core";
 import { Pane, Highlight, Underline } from "marks-pane";
 
+const AXIS_H = "horizontal";
+const AXIS_V = "vertical";
+
 /**
  * IframeView class
  */
@@ -28,7 +31,7 @@ class IframeView {
 		 * @readonly
 		 */
 		this.settings = extend({
-			axis: null, //layout.flow === "scrolled" ? "vertical" : "horizontal",
+			axis: null,
 			method: null,
 			forceRight: false,
 			forceEvenPages: false,
@@ -48,7 +51,7 @@ class IframeView {
 		 * @readonly
 		 */
 		this.section = section;
-		this.element = this.container(this.settings.axis);
+		this.element = this.container();
 		this.added = false;
 		this.displayed = false;
 		this.rendered = false;
@@ -73,29 +76,22 @@ class IframeView {
 		this.highlights = {};
 		this.underlines = {};
 		this.marks = {};
+		this.setAxis(this.settings.axis);
 	}
 
 	/**
-	 * container
-	 * @param {string} [axis] 
+	 * Create view container
 	 * @returns {Element} HTML element
+	 * @private
 	 */
-	container(axis) {
+	container() {
 
 		const element = document.createElement("div");
 		element.classList.add("epub-view");
-		element.style.height = "0px";
-		element.style.width = "0px";
+		element.style.height = "0";
+		element.style.width = "0";
 		element.style.overflow = "hidden";
 		element.style.position = "relative";
-		element.style.display = "block";
-
-		// if (axis && axis == "horizontal") {
-		// 	element.style.flex = "none";
-		// } else {
-		// 	element.style.flex = "initial";
-		// }
-
 		return element;
 	}
 
@@ -153,14 +149,14 @@ class IframeView {
 		}).then(() => {
 			// find and report the writingMode axis
 			const writingMode = this.contents.writingMode();
-			const hasVertical = writingMode.indexOf("vertical") === 0;
+			const hasVertical = writingMode.indexOf(AXIS_V) === 0;
 
 			// Set the axis based on the flow and writing mode
 			let axis;
 			if (this.layout.flow === "scrolled") {
-				axis = hasVertical ? "horizontal" : "vertical";
+				axis = hasVertical ? AXIS_H : AXIS_V;
 			} else {
-				axis = hasVertical ? "vertical" : "horizontal";
+				axis = hasVertical ? AXIS_V : AXIS_H;
 			}
 
 			if (hasVertical && this.layout.flow === "paginated") {
@@ -231,7 +227,7 @@ class IframeView {
 		let what;
 		if (this.layout.name === "pre-paginated") {
 			what = "both";
-		} else if (this.settings.axis === "horizontal") {
+		} else if (this.settings.axis === AXIS_H) {
 			what = "height";
 		} else {
 			what = "width";
@@ -301,7 +297,7 @@ class IframeView {
 		if (this.layout.name === "pre-paginated") {
 			width = this.layout.columnWidth;
 			height = this.layout.height;
-		} else if (this.settings.axis === "horizontal") {
+		} else if (this.settings.axis === AXIS_H) {
 			// Get the width of the text
 			width = this.contents.textSize().width;
 
@@ -482,19 +478,22 @@ class IframeView {
 	}
 
 	/**
-	 * setAxis
-	 * @param {string} axis 
+	 * Set axis
+	 * @param {string} value 
 	 */
-	setAxis(axis) {
+	setAxis(value) {
 
-		this.settings.axis = axis;
+		if (value === null) {
+			value = this.layout.flow === "paginated" ? AXIS_H : AXIS_V;
+		}
 
-		// if (axis == "horizontal") {
-		// 	this.element.style.flex = "none";
-		// } else {
-		// 	this.element.style.flex = "initial";
-		// }
+		if (value == AXIS_H) {
+			this.element.style.flex = "none";
+		} else {
+			this.element.style.flex = "initial";
+		}
 
+		this.settings.axis = value;
 		this.size();
 	}
 
@@ -806,7 +805,7 @@ class IframeView {
 		let top, right;
 
 		if (this.layout.name === "pre-paginated" ||
-			this.settings.axis !== "horizontal") {
+			this.settings.axis !== AXIS_H) {
 			const pos = range.getBoundingClientRect();
 			top = pos.top;
 			right = pos.right;

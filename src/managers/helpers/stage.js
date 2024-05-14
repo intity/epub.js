@@ -16,7 +16,6 @@ class Stage {
 	 * @param {string|number} options.height
 	 */
 	constructor(layout, options) {
-
 		/**
 		 * @member {object} settings
 		 * @memberof Stage
@@ -45,6 +44,7 @@ class Stage {
 		});
 		this.updateFlow();
 		this.direction();
+		this.axis(options.axis || "vertical");
 
 		if (this.settings.hidden) {
 			this.wrapper = this.wrap(this.container);
@@ -59,7 +59,6 @@ class Stage {
 	 */
 	create(options) {
 
-		let axis = options.axis || "vertical";
 		let width = options.width;
 		let height = options.height;
 
@@ -83,12 +82,8 @@ class Stage {
 		container.style.lineHeight = "0";
 		container.style.verticalAlign = "top";
 		container.style.position = "relative";
-
-		if (axis === "horizontal") {
-			container.style.display = "flex";
-			container.style.flexDirection = "row";
-			container.style.flexWrap = "nowrap";
-		}
+		container.style.display = "flex";
+		container.style.flexWrap = "nowrap";
 
 		if (width) {
 			container.style.width = width;
@@ -333,19 +328,17 @@ class Stage {
 	}
 
 	/**
-	 * axis
-	 * @param {string} axis 
+	 * Set axis
+	 * @param {string} value values: `"horizontal"` OR `"vertical"`
 	 */
-	axis(axis) {
+	axis(value) {
 
-		if (axis === "horizontal") {
-			this.container.style.display = "flex";
+		if (value === "horizontal") {
 			this.container.style.flexDirection = "row";
-			this.container.style.flexWrap = "nowrap";
 		} else {
-			this.container.style.display = "block";
+			this.container.style.flexDirection = null;
 		}
-		this.settings.axis = axis;
+		this.settings.axis = value;
 	}
 
 	/**
