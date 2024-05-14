@@ -1202,13 +1202,13 @@ class Contents {
 
 	/**
 	 * Set the writingMode of the text
-	 * @param {string} [mode="horizontal-tb"] `"horizontal-tb"` OR `"vertical-rl"` OR `"vertical-lr"`
+	 * @param {string} [mode='horizontal-tb'] `"horizontal-tb"` OR `"vertical-rl"` OR `"vertical-lr"`
 	 */
-	writingMode(mode) {
+	writingMode(mode = "horizontal-tb") {
 
 		const WRITING_MODE = prefixed("writing-mode");
 
-		if (mode && this.documentElement) {
+		if (this.documentElement) {
 			this.documentElement.style[WRITING_MODE] = mode;
 		}
 
