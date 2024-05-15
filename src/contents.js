@@ -374,26 +374,15 @@ class Contents {
 	 */
 	resize(entries) {
 
-		const rect = entries[0].contentRect;
-
-		if (this.contentRect.bottom !== rect.bottom ||
-			this.contentRect.height !== rect.height ||
-			this.contentRect.left !== rect.left ||
-			this.contentRect.right !== rect.right ||
-			this.contentRect.top !== rect.top ||
-			this.contentRect.width !== rect.width ||
-			this.contentRect.x !== rect.x ||
-			this.contentRect.y !== rect.y) {
-			this.contentRect.bottom = rect.bottom;
-			this.contentRect.height = rect.height;
-			this.contentRect.left = rect.left;
-			this.contentRect.right = rect.right;
-			this.contentRect.top = rect.top;
-			this.contentRect.width = rect.width;
-			this.contentRect.x = rect.x;
-			this.contentRect.y = rect.y;
-			this.emit(EVENTS.CONTENTS.RESIZE, rect);
-		}
+		let changed = false;
+		const cmp = (rect) => Object.keys(this.contentRect).forEach(p => {
+			if (this.contentRect[p] !== rect[p] && rect[p] !== void 0) {
+				this.contentRect[p] = rect[p];
+				changed = true;
+			}
+		});
+		entries.forEach(entry => entry.contentRect && cmp(entry.contentRect));
+		changed && this.emit(EVENTS.CONTENTS.RESIZE, this.contentRect);
 	}
 
 	/**
