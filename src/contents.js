@@ -19,10 +19,9 @@ class Contents {
 	 * Constructor
 	 * @param {document} doc Document
 	 * @param {element} content Parent Element (typically Body)
-	 * @param {string} cfiBase Section component of CFIs
-	 * @param {number} sectionIndex Index in Spine of Conntent's Section
+	 * @param {Section} section Section object reference
 	 */
-	constructor(doc, content, cfiBase, sectionIndex) {
+	constructor(doc, content, section) {
 		/**
 		 * @member {EpubCFI} epubcfi Blank Cfi for Parsing
 		 * @memberof Contents
@@ -33,7 +32,6 @@ class Contents {
 		this.documentElement = this.document.documentElement;
 		this.content = content || this.document.body;
 		this.content.style.overflow = "hidden";
-		this.window = this.document.defaultView;
 		/**
 		 * @member {object} contentRect
 		 * @memberof Contents
@@ -50,17 +48,12 @@ class Contents {
 			y: 0,
 		};
 		/**
-		 * @member {number} sectionIndex
+		 * @member {Section} section
 		 * @memberof Contents
 		 * @readonly
 		 */
-		this.sectionIndex = sectionIndex || 0;
-		/**
-		 * @member {string} cfiBase
-		 * @memberof Contents
-		 * @readonly
-		 */
-		this.cfiBase = cfiBase || "";
+		this.section = section;
+		this.window = this.document.defaultView;
 		this.active = true;
 
 		this.epubReadingSystem("epub.js", EPUBJS_VERSION);
@@ -725,7 +718,7 @@ class Contents {
 	 */
 	cfiFromRange(range, ignoreClass) {
 
-		return new EpubCFI(range, this.cfiBase, ignoreClass).toString();
+		return new EpubCFI(range, this.section.cfiBase, ignoreClass).toString();
 	}
 
 	/**
@@ -736,7 +729,7 @@ class Contents {
 	 */
 	cfiFromNode(node, ignoreClass) {
 
-		return new EpubCFI(node, this.cfiBase, ignoreClass).toString();
+		return new EpubCFI(node, this.section.cfiBase, ignoreClass).toString();
 	}
 
 	// TODO: find where this is used - remove?
@@ -874,7 +867,7 @@ class Contents {
 		// the translate does not work as intended, elements can end up unaligned
 		// var offsetY = (height - (viewportHeight * scale)) / 2;
 		// var offsetX = 0;
-		// if (this.sectionIndex % 2 === 1) {
+		// if (this.section.index % 2 === 1) {
 		// 	offsetX = width - (viewportWidth * scale);
 		// }
 
@@ -1081,7 +1074,7 @@ class Contents {
 				return;
 			const range = selection.getRangeAt(0);
 			if (!range.collapsed) {
-				const cfirange = new EpubCFI(range, this.cfiBase).toString();
+				const cfirange = new EpubCFI(range, this.section.cfiBase).toString();
 				this.emit(EVENTS.CONTENTS.SELECTED, cfirange);
 				this.emit(EVENTS.CONTENTS.SELECTED_RANGE, range);
 			}
