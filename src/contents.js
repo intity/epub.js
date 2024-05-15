@@ -34,9 +34,20 @@ class Contents {
 		this.content = content || this.document.body;
 		this.content.style.overflow = "hidden";
 		this.window = this.document.defaultView;
-		this._size = {
+		/**
+		 * @member {object} contentRect
+		 * @memberof Contents
+		 * @readonly
+		 */
+		this.contentRect = {
+			bottom: 0,
+			height: 0,
+			left: 0,
+			right: 0,
+			top: 0,
 			width: 0,
-			height: 0
+			x: 0,
+			y: 0,
 		};
 		/**
 		 * @member {number} sectionIndex
@@ -364,209 +375,32 @@ class Contents {
 	}
 
 	/**
-	 * Add DOM listeners
+	 * content resize event handler
+	 * @param {object[]} entries
 	 * @private
 	 */
-	listeners() {
+	resize(entries) {
 
-		this.imageLoadListeners();
-		this.mediaQueryListeners();
-		// this.fontLoadListeners();
-		this.addEventListeners();
-		this.addSelectionListeners();
-		// this.transitionListeners();
+		const rect = entries[0].contentRect;
 
-		if (typeof ResizeObserver === "undefined") {
-			this.resizeListeners();
-			this.visibilityListeners();
-		} else {
-			this.resizeObservers();
+		if (this.contentRect.bottom !== rect.bottom ||
+			this.contentRect.height !== rect.height ||
+			this.contentRect.left !== rect.left ||
+			this.contentRect.right !== rect.right ||
+			this.contentRect.top !== rect.top ||
+			this.contentRect.width !== rect.width ||
+			this.contentRect.x !== rect.x ||
+			this.contentRect.y !== rect.y) {
+			this.contentRect.bottom = rect.bottom;
+			this.contentRect.height = rect.height;
+			this.contentRect.left = rect.left;
+			this.contentRect.right = rect.right;
+			this.contentRect.top = rect.top;
+			this.contentRect.width = rect.width;
+			this.contentRect.x = rect.x;
+			this.contentRect.y = rect.y;
+			this.emit(EVENTS.CONTENTS.RESIZE, rect);
 		}
-
-		// this.mutationObservers();
-		this.linksHandler();
-	}
-
-	/**
-	 * Remove DOM listeners
-	 * @private
-	 */
-	removeListeners() {
-
-		this.removeEventListeners();
-		this.removeSelectionListeners();
-
-		if (this.observer) {
-			this.observer.disconnect();
-		}
-
-		clearTimeout(this.expanding);
-	}
-
-	/**
-	 * Check if size of contents has changed and
-	 * emit 'resize' event if it has.
-	 * @private
-	 */
-	resizeCheck() {
-
-		const size = this.textSize();
-
-		if (size.width !== this._size.width || size.height !== this._size.height) {
-
-			this._size = {
-				width: size.width,
-				height: size.height
-			};
-
-			this.onResize && this.onResize(this._size);
-			this.emit(EVENTS.CONTENTS.RESIZE, this._size);
-		}
-	}
-
-	/**
-	 * Poll for resize detection
-	 * @private
-	 */
-	resizeListeners() {
-
-		// Test size again
-		clearTimeout(this.expanding);
-		requestAnimationFrame(this.resizeCheck.bind(this));
-		this.expanding = setTimeout(this.resizeListeners.bind(this), 350);
-	}
-
-	/**
-	 * Listen for visibility of tab to change
-	 * @private
-	 */
-	visibilityListeners() {
-
-		document.addEventListener("visibilitychange", () => {
-			if (document.visibilityState === "visible" && this.active === false) {
-				this.active = true;
-				this.resizeListeners();
-			} else {
-				this.active = false;
-				clearTimeout(this.expanding);
-			}
-		});
-	}
-
-	/**
-	 * Use css transitions to detect resize (unused)
-	 * @private
-	 */
-	transitionListeners() {
-
-		const body = this.content;
-
-		body.style['transitionProperty'] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
-		body.style['transitionDuration'] = "0.001ms";
-		body.style['transitionTimingFunction'] = "linear";
-		body.style['transitionDelay'] = "0";
-
-		this._resizeCheck = this.resizeCheck.bind(this);
-		this.document.addEventListener('transitionend', this._resizeCheck);
-	}
-
-	/**
-	 * Listen for media query changes and emit 'expand' event
-	 * Adapted from: https://github.com/tylergaw/media-query-events/blob/master/js/mq-events.js
-	 * @private
-	 */
-	mediaQueryListeners() {
-
-		const sheets = this.document.styleSheets;
-		const mediaChangeHandler = (m) => {
-			if (m.matches && !this.expanding) {
-				setTimeout(this.expand.bind(this), 1);
-			}
-		};
-
-		for (let i = 0; i < sheets.length; i += 1) {
-			let rules;
-			// Firefox errors if we access cssRules cross-domain
-			try {
-				rules = sheets[i].cssRules;
-			} catch (e) {
-				console.error(e);
-				return;
-			}
-			if (!rules) return; // Stylesheets changed
-			for (let j = 0; j < rules.length; j += 1) {
-				if (rules[j].media) {
-					const mql = this.window.matchMedia(rules[j].media.mediaText);
-					mql.onchange = mediaChangeHandler;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Use ResizeObserver to listen for changes in the DOM and check for resize
-	 * @private
-	 */
-	resizeObservers() {
-		// create an observer instance
-		this.observer = new ResizeObserver((e) => {
-			requestAnimationFrame(this.resizeCheck.bind(this));
-		});
-
-		// pass in the target node
-		this.observer.observe(this.document.documentElement);
-	}
-
-	/**
-	 * Use MutationObserver to listen for changes in the DOM and check for resize (unused)
-	 * @private
-	 */
-	mutationObservers() {
-		// create an observer instance
-		this.observer = new MutationObserver((mutations) => {
-			this.resizeCheck();
-		});
-
-		// configuration of the observer:
-		const config = {
-			attributes: true,
-			childList: true,
-			characterData: true,
-			subtree: true
-		};
-
-		// pass in the target node, as well as the observer options
-		this.observer.observe(this.document, config);
-	}
-
-	/**
-	 * Test if images are loaded or add listener for when they load
-	 * @private
-	 */
-	imageLoadListeners() {
-
-		const images = this.document.querySelectorAll("img");
-		for (let i = 0; i < images.length; i++) {
-			const img = images[i];
-
-			if (typeof img.naturalWidth !== "undefined" &&
-				img.naturalWidth === 0) {
-				img.onload = this.expand.bind(this);
-			}
-		}
-	}
-
-	/**
-	 * Listen for font load and check for resize when loaded (unused)
-	 * @private
-	 */
-	fontLoadListeners() {
-
-		if (!this.document || !this.document.fonts) {
-			return;
-		}
-
-		this.document.fonts.ready.then(() => this.resizeCheck());
 	}
 
 	/**
@@ -872,99 +706,6 @@ class Contents {
 	}
 
 	/**
-	 * Add DOM event listeners
-	 * @private
-	 */
-	addEventListeners() {
-
-		if (!this.document) return;
-
-		this._triggerEvent = this.triggerEvent.bind(this);
-
-		DOM_EVENTS.forEach(eventName => {
-			this.document.addEventListener(eventName, this._triggerEvent, { passive: true });
-		}, this);
-	}
-
-	/**
-	 * Remove DOM event listeners
-	 * @private
-	 */
-	removeEventListeners() {
-
-		if (!this.document) return;
-
-		DOM_EVENTS.forEach(eventName => {
-			this.document.removeEventListener(eventName, this._triggerEvent, { passive: true });
-		}, this);
-		this._triggerEvent = undefined;
-	}
-
-	/**
-	 * Emit passed browser events
-	 * @private
-	 */
-	triggerEvent(e) {
-
-		this.emit(e.type, e);
-	}
-
-	/**
-	 * Add listener for text selection
-	 * @private
-	 */
-	addSelectionListeners() {
-
-		if (!this.document) return;
-
-		this._onSelectionChange = this.onSelectionChange.bind(this);
-		this.document.addEventListener("selectionchange", this._onSelectionChange, { passive: true });
-	}
-
-	/**
-	 * Remove listener for text selection
-	 * @private
-	 */
-	removeSelectionListeners() {
-
-		if (!this.document) return;
-
-		this.document.removeEventListener("selectionchange", this._onSelectionChange, { passive: true });
-		this._onSelectionChange = undefined;
-	}
-
-	/**
-	 * Handle getting text on selection
-	 * @private
-	 */
-	onSelectionChange(e) {
-
-		if (this.selectionEndTimeout) {
-			clearTimeout(this.selectionEndTimeout);
-		}
-		this.selectionEndTimeout = setTimeout(() => {
-			const selection = this.window.getSelection();
-			this.triggerSelectedEvent(selection);
-		}, 250);
-	}
-
-	/**
-	 * Emit event on text selection
-	 * @private
-	 */
-	triggerSelectedEvent(selection) {
-
-		if (selection && selection.rangeCount > 0) {
-			const range = selection.getRangeAt(0);
-			if (!range.collapsed) {
-				const cfirange = new EpubCFI(range, this.cfiBase).toString();
-				this.emit(EVENTS.CONTENTS.SELECTED, cfirange);
-				this.emit(EVENTS.CONTENTS.SELECTED_RANGE, range);
-			}
-		}
-	}
-
-	/**
 	 * Get a Dom Range from EpubCFI
 	 * @param {EpubCFI} cfi
 	 * @param {string} [ignoreClass]
@@ -1186,17 +927,6 @@ class Contents {
 	}
 
 	/**
-	 * Emit event when link in content is clicked
-	 * @private
-	 */
-	linksHandler() {
-
-		replaceLinks(this.content, (href) => {
-			this.emit(EVENTS.CONTENTS.LINK_CLICKED, href);
-		});
-	}
-
-	/**
 	 * Set the writingMode of the text
 	 * @param {string} [mode='horizontal-tb'] `"horizontal-tb"` OR `"vertical-rl"` OR `"vertical-lr"`
 	 */
@@ -1255,6 +985,209 @@ class Contents {
 			}
 		};
 		return navigator.epubReadingSystem;
+	}
+
+	//-- events --//
+
+	/**
+	 * Add DOM listeners
+	 * @private
+	 */
+	listeners() {
+
+		this.appendListeners();
+		// this.imageLoadListeners();
+		// this.mediaQueryListeners();
+		// this.fontLoadListeners();
+		// this.transitionListeners();
+		// this.mutationListener();
+	}
+
+	/**
+	 * Append listeners
+	 * @private
+	 */
+	appendListeners() {
+
+		if (!this.document) return;
+		//-- DOM EVENTS
+		DOM_EVENTS.forEach(eventName => {
+			this.document.addEventListener(eventName, 
+				this.triggerEvent.bind(this), { passive: true });
+		}, this);
+		//-- SELECTION
+		this.document.addEventListener("selectionchange",
+			this.selectionHandler.bind(this), { passive: true }
+		);
+		//-- RESIZE
+		this.resizeObserver = new ResizeObserver((e) => {
+			requestAnimationFrame(() => this.resize(e));
+		});
+		this.resizeObserver.observe(this.document.documentElement);
+		//-- LINK CLICKED
+		replaceLinks(this.content, (href) => {
+			this.emit(EVENTS.CONTENTS.LINK_CLICKED, href);
+		});
+	}
+
+	/**
+	 * Remove listeners
+	 * @private
+	 */
+	removeListeners() {
+
+		if (!this.document) return;
+		//-- DOM EVENTS
+		DOM_EVENTS.forEach(eventName => {
+			this.document.removeEventListener(eventName, 
+				this.triggerEvent.bind(this), { passive: true });
+		}, this);
+		//-- SELECTION
+		this.document.removeEventListener("selectionchange", 
+			this.selectionHandler.bind(this), { passive: true }
+		);
+		//-- RESIZE
+		if (this.resizeObserver) {
+			this.resizeObserver.disconnect();
+		}
+		//-- MUTATION
+		if (this.mutationObserver) {
+			this.mutationObserver.disconnect();
+		}
+	}
+
+	/**
+	 * Emit passed browser events
+	 * @private
+	 */
+	triggerEvent(e) {
+
+		this.emit(e.type, e);
+	}
+
+	/**
+	 * Handle getting text on selection
+	 * @private
+	 */
+	selectionHandler(e) {
+
+		if (this.selectionEndTimeout) {
+			clearTimeout(this.selectionEndTimeout);
+		}
+
+		this.selectionEndTimeout = setTimeout(() => {
+			const selection = this.window.getSelection();
+			if (!(selection && selection.rangeCount > 0))
+				return;
+			const range = selection.getRangeAt(0);
+			if (!range.collapsed) {
+				const cfirange = new EpubCFI(range, this.cfiBase).toString();
+				this.emit(EVENTS.CONTENTS.SELECTED, cfirange);
+				this.emit(EVENTS.CONTENTS.SELECTED_RANGE, range);
+			}
+		}, 250);
+	}
+
+	/**
+	 * Test if images are loaded or add listener for when they load
+	 * @private
+	 */
+	imageLoadListeners() {
+
+		const images = this.document.querySelectorAll("img");
+		for (let i = 0; i < images.length; i++) {
+			const img = images[i];
+
+			if (typeof img.naturalWidth !== "undefined" &&
+				img.naturalWidth === 0) {
+				img.onload = this.expand.bind(this);
+			}
+		}
+	}
+
+	/**
+	 * Listen for media query changes and emit 'expand' event
+	 * Adapted from: https://github.com/tylergaw/media-query-events/blob/master/js/mq-events.js
+	 * @private
+	 */
+	mediaQueryListeners() {
+
+		const sheets = this.document.styleSheets;
+		const mediaChangeHandler = (m) => {
+			if (m.matches) {
+				setTimeout(this.expand.bind(this), 1);
+			}
+		};
+
+		for (let i = 0; i < sheets.length; i += 1) {
+			let rules;
+			// Firefox errors if we access cssRules cross-domain
+			try {
+				rules = sheets[i].cssRules;
+			} catch (e) {
+				console.error(e);
+				return;
+			}
+			if (!rules) return; // Stylesheets changed
+			for (let j = 0; j < rules.length; j += 1) {
+				if (rules[j].media) {
+					const mql = this.window.matchMedia(rules[j].media.mediaText);
+					mql.onchange = mediaChangeHandler;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Listen for font load and check for resize when loaded (unused)
+	 * @private
+	 */
+	fontLoadListeners() {
+
+		if (!this.document || !this.document.fonts) {
+			return;
+		}
+
+		//this.document.fonts.ready.then(() => this.resize());
+	}
+
+	/**
+	 * Use css transitions to detect resize (unused)
+	 * @private
+	 */
+	transitionListeners() {
+
+		const body = this.content;
+
+		body.style['transitionProperty'] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
+		body.style['transitionDuration'] = "0.001ms";
+		body.style['transitionTimingFunction'] = "linear";
+		body.style['transitionDelay'] = "0";
+
+		//this.document.addEventListener('transitionend', this.resize.bind(this));
+	}
+
+	/**
+	 * Use MutationObserver to listen for changes in 
+	 * the DOM and check for resize (unused)
+	 * @private
+	 */
+	mutationListener() {
+
+		const mutation = (mutations, observer) => {
+
+			mutations.forEach(m => {
+				//console.log(m)
+			});
+		}
+		
+		this.mutationObserver = new MutationObserver(mutation);
+		this.mutationObserver.observe(this.document, {
+			attributes: true,
+			childList: true,
+			characterData: true,
+			subtree: true
+		});
 	}
 
 	/**
