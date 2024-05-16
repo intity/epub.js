@@ -33,18 +33,18 @@
 			width: "100%",
 			height: "100%"
 		})
-		const displayed = rendition.display();
+		const displayed = rendition.display()
 		const prev = document.getElementById("prev")
 		prev.onclick = (e) => {
-			rendition.prev();
-			e.preventDefault();
+			rendition.prev()
+			e.preventDefault()
 		}
 		const next = document.getElementById("next")
 		next.onclick = (e) => {
-			rendition.next();
-			e.preventDefault();
+			rendition.next()
+			e.preventDefault()
 		}
-		let atStart = false, atEnd = false;
+		let atStart = false, atEnd = false
 		const update = (location) => {
             if (location.atStart) {
             	prev.style.display = "none"
@@ -64,22 +64,22 @@
 		const keybinding = (e) => {
 			// Left Key
 			if (e.key === "ArrowLeft" && !atStart) {
-				rendition.prev();
+				rendition.prev()
 			}
 			// Right Key
 			if (e.key === "ArrowRight" && !atEnd) {
-				rendition.next();
+				rendition.next()
 			}
 		}
-		let mouseDown = false;
+		let mouseDown = false
 		rendition.on("keyup", keybinding)
 		document.addEventListener("keyup", keybinding, false)
 		book.ready.then(() => {
 			// Load in stored locations from json or local storage
-			const key = book.key() + '-locations';
-			const stored = localStorage.getItem(key);
+			const key = book.key() + '-locations'
+			const stored = localStorage.getItem(key)
 			if (stored) {
-				return book.locations.load(stored);
+				return book.locations.load(stored)
 			} else {
 				// Or generate the locations on the fly
 				// Can pass an option number of chars to break sections by
@@ -88,11 +88,11 @@
 			}
 		}).then((locations) => {
 
-			controls.style.display = "block";
+			controls.style.display = "block"
 			currentPage.onchange = (e) => {
 				const value = parseInt(e.target.value) / 100
 				const cfi = book.locations.cfiFromPercentage(value)
-				rendition.display(cfi);
+				rendition.display(cfi)
 			}
 			slider.onchange = (e) => {
 				const value = parseInt(e.target.value) / 100
@@ -108,11 +108,11 @@
 			// Wait for book to be rendered to get current page
 			displayed.then(() => {
 				// Get the current CFI
-				const currentLocation = rendition.currentLocation();
+				const currentLocation = rendition.currentLocation()
 				// Get the Percentage (or location) from that CFI
 				const page = book.locations.percentageFromCfi(currentLocation.start.cfi)
-				slider.value = page;
-				currentPage.value = page;
+				slider.value = page
+				currentPage.value = page
 			})
 			// Listen for location changed event, get percentage from CFI
 			rendition.on("relocated", (location) => {
