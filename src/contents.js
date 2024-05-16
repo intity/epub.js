@@ -30,6 +30,11 @@ class Contents {
 		this.epubcfi = new EpubCFI();
 		this.document = doc;
 		this.documentElement = this.document.documentElement;
+		/**
+		 * @member {object} content document.body by current location
+		 * @memberof Contents
+		 * @readonly
+		 */
 		this.content = content || this.document.body;
 		this.content.style.overflow = "hidden";
 		/**
