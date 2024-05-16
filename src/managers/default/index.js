@@ -63,6 +63,12 @@ class DefaultViewManager {
 			this.updateLayout();
 		});
 		/**
+		 * @member {boolean} isPaginated
+		 * @memberof DefaultViewManager
+		 * @readonly
+		 */
+		this.isPaginated = this.layout.flow === "paginated";
+		/**
 		 * @member {object[]} location
 		 * @memberof DefaultViewManager
 		 * @readonly
