@@ -1,5 +1,6 @@
 import assert from "assert"
 import ePub from "../src/epub"
+import request from "../src/utils/request"
 
 const bookPath = "./fixtures/alice/"
 const settings = { width: 400, height: 400 }
@@ -9,7 +10,7 @@ describe("Section", () => {
         const book = ePub(bookPath, settings)
         return book.ready.then(() => {
             const section = book.section("chapter_001.xhtml")
-            return section.load().then(() => {
+            return section.load(request).then(() => {
                 const queryString = "they were filled with cupboards and book-shelves"
                 const results = [
                     section.find(queryString),
@@ -27,7 +28,7 @@ describe("Section", () => {
         const book = ePub(bookPath, settings)
         return book.ready.then(() => {
             const section = book.section("chapter_001.xhtml")
-            return section.load().then(() => {
+            return section.load(request).then(() => {
                 const queryString = "white rabbit"
                 const results = [
                     section.find(queryString),
@@ -47,7 +48,7 @@ describe("Section", () => {
         const book = ePub(bookPath, settings)
         return book.ready.then(() => {
             const section = book.section("chapter_010.xhtml")
-            return section.load().then(() => {
+            return section.load(request).then(() => {
                 const queryString = "I beg"
                 const findResult = section.find(queryString)
                 assert.equal(findResult.length, 0)
@@ -62,7 +63,7 @@ describe("Section", () => {
         const book = ePub(bookPath, settings)
         return book.ready.then(() => {
             var section = book.section("chapter_010.xhtml")
-            return section.load().then(() => {
+            return section.load(request).then(() => {
                 const queryString = "I beg your pardon"
                 const findResult = section.find(queryString)
                 assert.equal(findResult.length, 0)
