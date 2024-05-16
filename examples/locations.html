@@ -1,139 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>EPUB.js Spreads Example</title>
-
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-	<script src="../dist/epub.js"></script>
-
 	<link rel="stylesheet" type="text/css" href="examples.css">
-
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="../dist/epub.js"></script>
 </head>
+
 <body>
 	<div id="title"></div>
-	<div id="viewer" class="spreads"></div>
+	<div id="content">
+		<div id="viewer" class="spreads">
+			<div id="divider"></div>
+		</div>
+	</div>
 	<a id="prev" href="#prev" class="arrow">‹</a>
 	<a id="next" href="#next" class="arrow">›</a>
 	<div id="controls">
-			<input id="current-percent" size="3" value="0" /> %
+		<input type="number" min="0" max="100" value="0" id="current-percent"/> %
+		<input type="range" min="0" max="100" value="0" id="slider"/>
 	</div>
 	<script>
-
-		var controls = document.getElementById("controls");
-		var currentPage = document.getElementById("current-percent");
-		var slider = document.createElement("input");
-		var slide = function(){
-				var cfi = book.locations.cfiFromPercentage(slider.value / 100);
-				rendition.display(cfi);
-		};
-		var mouseDown = false;
-
-		// Load the opf
-		var book = ePub("https://s3.amazonaws.com/moby-dick/moby-dick.epub");
-		var rendition = book.renderTo("viewer", {
+		const title = document.getElementById("title")
+		const controls = document.getElementById("controls")
+		const currentPage = document.getElementById("current-percent")
+		const slider = document.getElementById("slider")
+		const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+		const rendition = book.renderTo("viewer", {
 			width: "100%",
-			height: 600
-		});
-
-		var displayed = rendition.display();
-
-		var title = document.getElementById("title");
-
-		var next = document.getElementById("next");
-		next.addEventListener("click", function(e){
-			rendition.next();
-			e.preventDefault();
-		}, false);
-
-		var prev = document.getElementById("prev");
-		prev.addEventListener("click", function(e){
+			height: "100%"
+		})
+		const displayed = rendition.display();
+		const prev = document.getElementById("prev")
+		prev.onclick = (e) => {
 			rendition.prev();
 			e.preventDefault();
-		}, false);
-
-		var keyListener = function(e){
-
+		}
+		const next = document.getElementById("next")
+		next.onclick = (e) => {
+			rendition.next();
+			e.preventDefault();
+		}
+		let atStart = false, atEnd = false;
+		const update = (location) => {
+            if (location.atStart) {
+            	prev.style.display = "none"
+				atStart = true
+			} else {
+				prev.style.display = "block"
+				atStart = false
+			}
+			if (location.atEnd) {
+            	next.style.display = "none"
+				atEnd = true
+			} else {
+				next.style.display = "block"
+				atEnd = false
+			}
+        }
+		const keybinding = (e) => {
 			// Left Key
-			if ((e.keyCode || e.which) == 37) {
+			if (e.key === "ArrowLeft" && !atStart) {
 				rendition.prev();
 			}
-
 			// Right Key
-			if ((e.keyCode || e.which) == 39) {
+			if (e.key === "ArrowRight" && !atEnd) {
 				rendition.next();
 			}
-
-		};
-
-		rendition.on("keyup", keyListener);
-		document.addEventListener("keyup", keyListener, false);
-
-		book.ready.then(function(){
+		}
+		let mouseDown = false;
+		rendition.on("keyup", keybinding)
+		document.addEventListener("keyup", keybinding, false)
+		book.ready.then(() => {
 			// Load in stored locations from json or local storage
-			var key = book.key()+'-locations';
-			var stored = localStorage.getItem(key);
+			const key = book.key() + '-locations';
+			const stored = localStorage.getItem(key);
 			if (stored) {
-				 return book.locations.load(stored);
+				return book.locations.load(stored);
 			} else {
 				// Or generate the locations on the fly
 				// Can pass an option number of chars to break sections by
 				// default is 150 chars
-				return book.locations.generate(1600);
+				return book.locations.generate(1600)
 			}
+		}).then((locations) => {
+
+			controls.style.display = "block";
+			currentPage.onchange = (e) => {
+				const value = parseInt(e.target.value) / 100
+				const cfi = book.locations.cfiFromPercentage(value)
+				rendition.display(cfi);
+			}
+			slider.onchange = (e) => {
+				const value = parseInt(e.target.value) / 100
+				const cfi = book.locations.cfiFromPercentage(value)
+				rendition.display(cfi)
+			}
+			slider.onmousedown = () => {
+				mouseDown = true
+			}
+			slider.onmouseup = () => {
+				mouseDown = false
+			}
+			// Wait for book to be rendered to get current page
+			displayed.then(() => {
+				// Get the current CFI
+				const currentLocation = rendition.currentLocation();
+				// Get the Percentage (or location) from that CFI
+				const page = book.locations.percentageFromCfi(currentLocation.start.cfi)
+				slider.value = page;
+				currentPage.value = page;
+			})
+			// Listen for location changed event, get percentage from CFI
+			rendition.on("relocated", (location) => {
+
+				update(location)
+				const percent = book.locations.percentageFromCfi(location.start.cfi)
+				const percentage = Math.floor(percent * 100)
+				if (!mouseDown) {
+					slider.value = percentage
+				}
+				currentPage.value = percentage
+				console.log(location)
+			})
+			// Save out the generated locations to JSON
+			localStorage.setItem(book.key() + '-locations', book.locations.save())
 		})
-		.then(function(locations){
-				controls.style.display = "block";
-				slider.setAttribute("type", "range");
-				slider.setAttribute("min", 0);
-				slider.setAttribute("max", 100);
-				// slider.setAttribute("max", book.locations.total+1);
-				slider.setAttribute("step", 1);
-				slider.setAttribute("value", 0);
-
-				slider.addEventListener("change", slide, false);
-				slider.addEventListener("mousedown", function(){
-						mouseDown = true;
-				}, false);
-				slider.addEventListener("mouseup", function(){
-						mouseDown = false;
-				}, false);
-
-				// Wait for book to be rendered to get current page
-				displayed.then(function(){
-						// Get the current CFI
-						var currentLocation = rendition.currentLocation();
-						// Get the Percentage (or location) from that CFI
-						var currentPage = book.locations.percentageFromCfi(currentLocation.start.cfi);
-						slider.value = currentPage;
-						currentPage.value = currentPage;
-				});
-
-				controls.appendChild(slider);
-
-				currentPage.addEventListener("change", function(){
-					var cfi = book.locations.cfiFromPercentage(currentPage.value/100);
-					rendition.display(cfi);
-				}, false);
-
-				// Listen for location changed event, get percentage from CFI
-				rendition.on('relocated', function(location){
-						var percent = book.locations.percentageFromCfi(location.start.cfi);
-						var percentage = Math.floor(percent * 100);
-						if(!mouseDown) {
-								slider.value = percentage;
-						}
-						currentPage.value = percentage;
-						console.log(location);
-				});
-
-				// Save out the generated locations to JSON
-				localStorage.setItem(book.key()+'-locations', book.locations.save());
-
-		});
-
 	</script>
-
 </body>
+
 </html>
