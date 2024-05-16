@@ -52,8 +52,8 @@ class DefaultViewManager {
 		this.layout = layout;
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			if (changed.flow) {
-				this.isPaginated = changed.flow === "paginated";
-				if (this.isPaginated) {
+				this.paginated = changed.flow === "paginated";
+				if (this.paginated) {
 					this.updateAxis(AXIS_H);
 				} else {
 					this.updateAxis(AXIS_V);
@@ -63,11 +63,11 @@ class DefaultViewManager {
 			this.updateLayout();
 		});
 		/**
-		 * @member {boolean} isPaginated
+		 * @member {boolean} paginated
 		 * @memberof DefaultViewManager
 		 * @readonly
 		 */
-		this.isPaginated = this.layout.flow === "paginated";
+		this.paginated = this.layout.flow === "paginated";
 		/**
 		 * @member {object[]} location
 		 * @memberof DefaultViewManager
@@ -442,7 +442,7 @@ class DefaultViewManager {
 
 		let distX = 0, distY = 0;
 
-		if (this.isPaginated) {
+		if (this.paginated) {
 			distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
 
 			if (distX + this.layout.delta > this.container.scrollWidth) {
@@ -553,7 +553,7 @@ class DefaultViewManager {
 
 		if (this.views.length === 0) {
 			return null;
-		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "ltr") {
+		} else if (this.paginated && this.settings.axis === AXIS_H && dir === "ltr") {
 
 			this.scrollLeft = this.container.scrollLeft;
 
@@ -564,7 +564,7 @@ class DefaultViewManager {
 			} else {
 				section = this.views.last().section.next();
 			}
-		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "rtl") {
+		} else if (this.paginated && this.settings.axis === AXIS_H && dir === "rtl") {
 
 			this.scrollLeft = this.container.scrollLeft;
 
@@ -586,7 +586,7 @@ class DefaultViewManager {
 				}
 			}
 
-		} else if (this.isPaginated && this.settings.axis === AXIS_V) {
+		} else if (this.paginated && this.settings.axis === AXIS_V) {
 
 			this.scrollTop = this.container.scrollTop;
 			const top = this.container.scrollTop + this.container.offsetHeight;
@@ -622,7 +622,7 @@ class DefaultViewManager {
 			}).then(() => {
 
 				// Reset position to start for scrolled-doc vertical-rl in default mode
-				if (!this.isPaginated &&
+				if (!this.paginated &&
 					this.settings.axis === AXIS_H &&
 					this.layout.direction === "rtl" &&
 					this.settings.rtlScrollType === "default") {
@@ -645,7 +645,7 @@ class DefaultViewManager {
 
 		if (this.views.length === 0) {
 			return null;
-		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "ltr") {
+		} else if (this.paginated && this.settings.axis === AXIS_H && dir === "ltr") {
 
 			this.scrollLeft = this.container.scrollLeft;
 
@@ -657,7 +657,7 @@ class DefaultViewManager {
 				section = this.views.first().section.prev();
 			}
 
-		} else if (this.isPaginated && this.settings.axis === AXIS_H && dir === "rtl") {
+		} else if (this.paginated && this.settings.axis === AXIS_H && dir === "rtl") {
 
 			this.scrollLeft = this.container.scrollLeft;
 
@@ -680,7 +680,7 @@ class DefaultViewManager {
 				}
 			}
 
-		} else if (this.isPaginated && this.settings.axis === AXIS_V) {
+		} else if (this.paginated && this.settings.axis === AXIS_V) {
 
 			this.scrollTop = this.container.scrollTop;
 			const top = this.container.scrollTop;
@@ -720,7 +720,7 @@ class DefaultViewManager {
 			}, (err) => {
 				return err;
 			}).then(() => {
-				if (this.isPaginated && this.settings.axis === AXIS_H) {
+				if (this.paginated && this.settings.axis === AXIS_H) {
 					if (this.layout.direction === "rtl") {
 						if (this.settings.rtlScrollType === "default") {
 							this.scrollTo(0, 0, true);
@@ -770,7 +770,7 @@ class DefaultViewManager {
 	currentLocation() {
 
 		this.updateLayout();
-		if (this.isPaginated && this.settings.axis === AXIS_H) {
+		if (this.paginated && this.settings.axis === AXIS_H) {
 			this.location = this.paginatedLocation();
 		} else {
 			this.location = this.scrolledLocation();
@@ -1081,7 +1081,7 @@ class DefaultViewManager {
 
 		this.stageSize = this.stage.size();
 
-		if (this.isPaginated) {
+		if (this.paginated) {
 			this.layout.calculate(
 				this.stageSize.width,
 				this.stageSize.height,
