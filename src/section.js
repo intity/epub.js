@@ -1,8 +1,6 @@
 import EpubCFI from "./epubcfi";
-import Hook from "./utils/hook";
 import { defer, sprint } from "./utils/core";
 import { replaceBase } from "./utils/replacements";
-import { DOMParser as XMLDOMSerializer } from "@xmldom/xmldom";
 
 /**
  * Represents a Section of the Book
@@ -75,15 +73,7 @@ class Section {
 		 * @readonly
 		 */
 		this.properties = item.properties;
-
-		if (hooks) {
-			this.hooks = hooks;
-		} else {
-			this.hooks = {};
-			this.hooks.serialize = new Hook(this);
-			this.hooks.content = new Hook(this);
-		}
-
+		this.hooks = hooks;
 		this.document = undefined;
 		this.contents = undefined;
 		this.output = undefined;
