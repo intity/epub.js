@@ -36,7 +36,6 @@ class Contents {
 		 * @readonly
 		 */
 		this.content = content || this.document.body;
-		this.content.style.overflow = "hidden";
 		/**
 		 * @member {object} contentRect
 		 * @memberof Contents

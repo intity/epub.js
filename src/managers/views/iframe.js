@@ -317,6 +317,7 @@ class IframeView {
 		} else if (this.settings.axis === "vertical") {
 			// Expand Vertically
 			height = this.contents.textSize().height;
+
 			if (this.layout.flow === "paginated" &&
 				height % this.layout.height > 0) {
 				height = Math.ceil(height / this.layout.height) * this.layout.height;
@@ -431,6 +432,7 @@ class IframeView {
 
 		this.window = this.iframe.contentWindow;
 		this.document = this.iframe.contentDocument;
+		this.document.body.style.overflow = "hidden";
 		this.contents = new Contents(this.document, this.document.body, this.section);
 		this.rendering = false;
 
