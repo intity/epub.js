@@ -1,6 +1,5 @@
 import EpubCFI from "./epubcfi";
 import Hook from "./utils/hook";
-import Request from "./utils/request";
 import { defer, sprint } from "./utils/core";
 import { replaceBase } from "./utils/replacements";
 import { DOMParser as XMLDOMSerializer } from "@xmldom/xmldom";
@@ -92,12 +91,11 @@ class Section {
 
 	/**
 	 * Load the section from its url
-	 * @param {function} [req] a request method to use for loading
+	 * @param {function} request a request method to use for loading
 	 * @return {Promise} a promise with the xml document
 	 */
-	load(req) {
+	load(request) {
 
-		const request = req || this.request || Request;
 		const loading = new defer();
 		const loaded = loading.promise;
 
@@ -129,7 +127,7 @@ class Section {
 
 	/**
 	 * Render the contents of a section
-	 * @param {function} [request] a request method to use for loading
+	 * @param {function} request a request method to use for loading
 	 * @return {Promise} output a serialized XML Document
 	 */
 	render(request) {
