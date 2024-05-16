@@ -138,16 +138,7 @@ class Section {
 		const rendered = rendering.promise;
 		this.output; // TODO: better way to return this from hooks?
 		this.load(request).then((contents) => {
-
-			const userAgent = (typeof navigator !== "undefined" && navigator.userAgent) || "";
-			const isIE = userAgent.indexOf("Trident") >= 0;
-			let Serializer;
-			if (typeof XMLSerializer === "undefined" || isIE) {
-				Serializer = XMLDOMSerializer;
-			} else {
-				Serializer = XMLSerializer;
-			}
-			const serializer = new Serializer();
+			const serializer = new XMLSerializer();
 			this.output = serializer.serializeToString(contents);
 			return this.output;
 		}).then(() => {
