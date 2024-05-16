@@ -140,7 +140,7 @@ class Contents {
 	 */
 	contentHeight(h) {
 
-		const content = this.content || this.document.body;
+		const content = this.content;
 
 		if (h && isNumber(h)) {
 			h = h + "px";
@@ -160,7 +160,7 @@ class Contents {
 	textSize() {
 
 		const range = this.document.createRange();
-		const content = this.content || this.document.body;
+		const content = this.content;
 		// Select the contents of frame
 		range.selectNodeContents(content);
 		// get rect of the text content
@@ -248,7 +248,7 @@ class Contents {
 	 */
 	css(property, value, priority) {
 
-		const content = this.content || this.document.body;
+		const content = this.content;
 
 		if (value) {
 			content.style.setProperty(property, value, priority ? "important" : "");
@@ -670,7 +670,7 @@ class Contents {
 
 		if (!this.document) return;
 
-		const content = this.content || this.document.body;
+		const content = this.content;
 
 		if (content) {
 			content.classList.add(className);
@@ -685,7 +685,7 @@ class Contents {
 
 		if (!this.document) return;
 
-		const content = this.content || this.document.body;
+		const content = this.content;
 
 		if (content) {
 			content.classList.remove(className);
