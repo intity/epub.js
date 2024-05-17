@@ -25,8 +25,8 @@ describe("Locations", () => {
 		const book = new Book("/fixtures/alice/OPS/package.opf")
 		it("generate locations", async () => {
 			await book.opened
-			await book.locations.generate(826).then((locations) => {
-				assert.equal(locations.length, 68)
+			await book.locations.generate(549).then((locations) => {
+				assert.equal(locations.length, 101)
 			})
 		})
 	})
