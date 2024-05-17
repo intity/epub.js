@@ -303,7 +303,7 @@ class Rendition {
 		this.displaying = displaying;
 
 		// Check if this is a book percentage
-		if (this.book.locations.length() && isFloat(target)) {
+		if (this.book.locations.length && isFloat(target)) {
 			target = this.book.locations.cfiFromPercentage(parseFloat(target));
 		}
 
