@@ -336,10 +336,10 @@ class Locations extends Array {
 			}
 		} else if (typeof value == "string") {
 			if (EpubCFI.prototype.isCfiString(value)) {
-				this.currentCfi = value;
 				const loc = this.locationFromCfi(value);
 				if (this.index !== loc) {
 					this.index = loc;
+					this.currentCfi = this[loc];
 					changed = true;
 				}
 			} else {
