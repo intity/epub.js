@@ -18,15 +18,15 @@ class Locations extends Array {
 
 		super();
 		this.spine = spine;
-		this.request = request;
 		this.pause = pause || 100;
-		this.q = new Queue(this);
-		this.epubcfi = new EpubCFI();
 		this.break = 150;
-		this.current = 0;
+		this.index = 0;
+		this.epubcfi = new EpubCFI();
+		this.request = request;
 		this.currentCfi = "";
-		this.currentLocation = "";
+		this.currentLocation = undefined;
 		this.processingTimeout = undefined;
+		this.q = new Queue(this);
 	}
 
 	/**
@@ -50,10 +50,7 @@ class Locations extends Array {
 
 		return this.q.run().then(() => {
 
-			if (this.currentCfi) {
-				this.currentLocation = this.currentCfi;
-			}
-
+			this.currentLocation = this.index;
 			return this;
 		});
 	}
@@ -273,15 +270,20 @@ class Locations extends Array {
 
 	/**
 	 * Load locations from JSON
-	 * @param {json} locations
+	 * @param {string} locations
 	 */
 	load(locations) {
-
+		
 		if (typeof locations === "string") {
-			locations = JSON.parse(locations);
+			this.splice(0);
+			const data = JSON.parse(locations);
+			data.items.forEach(i => this.push(i));
+			this.break = data.break;
+			this.pause = data.pause;
+			this.currentLocation = data.index;
+		} else {
+			console.error("Invalid argument type");
 		}
-		this.splice(0);
-		locations.forEach(i => this.push(i));
 
 		return this;
 	}
@@ -292,7 +294,12 @@ class Locations extends Array {
 	 */
 	save() {
 
-		return JSON.stringify(this);
+		return JSON.stringify({
+			items: this,
+			index: this.index,
+			break: this.break,
+			pause: this.pause
+		});
 	}
 
 	/**
@@ -301,7 +308,7 @@ class Locations extends Array {
 	 */
 	getCurrent() {
 
-		return this.current;
+		return this.index;
 	}
 
 	/**
@@ -310,28 +317,44 @@ class Locations extends Array {
 	 */
 	setCurrent(value) {
 
-		if (typeof value == "string") {
-			this.currentCfi = value;
-		} else if (typeof value == "number") {
-			this.current = value;
-		} else {
-			return;
-		}
-
+		let changed = false;
+		
 		if (this.length === 0) {
 			return;
-		}
-
-		let loc;
-		if (typeof value == "string") {
-			loc = this.locationFromCfi(value);
-			this.current = loc;
+		} else if (typeof value == "number") {
+			if (value < 0) {
+				console.error("The value cannot be less than zero");
+			} else if (value >= this.length) {
+				console.error("The value cannot be greater than locations.length");
+			} else if (!Number.isInteger(value)) {
+				console.error("The value is not an integer");
+			} else if (this.index === value) {
+				this.currentCfi = this[value];
+			} else {
+				this.index = value;
+				changed = true;
+			}
+		} else if (typeof value == "string") {
+			if (EpubCFI.prototype.isCfiString(value)) {
+				this.currentCfi = value;
+				const loc = this.locationFromCfi(value);
+				if (this.index !== loc) {
+					this.index = loc;
+					changed = true;
+				}
+			} else {
+				console.error("Invalid EpubCFI string");
+			}
 		} else {
-			loc = value;
+			console.error("Invalid argument type");
+			return;
 		}
 
+		if (!changed) return;
+		
 		this.emit(EVENTS.LOCATIONS.CHANGED, {
-			percentage: this.percentageFromLocation(loc)
+			index: this.index,
+			percentage: this.percentageFromLocation(this.index)
 		});
 	}
 
@@ -340,7 +363,7 @@ class Locations extends Array {
 	 */
 	get currentLocation() {
 
-		return this.current;
+		return this.index;
 	}
 
 	/**
@@ -356,12 +379,12 @@ class Locations extends Array {
 		this.spine = undefined;
 		this.pause = undefined;
 		this.break = undefined;
+		this.index = undefined;
 		this.request = undefined;
+		this.epubcfi = undefined;
 		this.q.stop();
 		this.q = undefined;
-		this.epubcfi = undefined;
 		this.splice(0);
-		this.current = undefined;
 		this.currentCfi = undefined;
 		this.currentLocation = undefined;
 		clearTimeout(this.processingTimeout);
