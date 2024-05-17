@@ -84,7 +84,7 @@
 				// Or generate the locations on the fly
 				// Can pass an option number of chars to break sections by
 				// default is 150 chars
-				return book.locations.generate(1600)
+				return book.locations.generate(826)
 			}
 		}).then((locations) => {
 
@@ -128,6 +128,7 @@
 			})
 			// Save out the generated locations to JSON
 			localStorage.setItem(book.key() + '-locations', book.locations.save())
+			console.log("locations.length: " + locations.length)
 		})
 	</script>
 </body>
