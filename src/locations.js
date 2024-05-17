@@ -332,6 +332,7 @@ class Locations extends Array {
 				this.currentCfi = this[value];
 			} else {
 				this.index = value;
+				this.currentCfi = this[value];
 				changed = true;
 			}
 		} else if (typeof value == "string") {
