@@ -353,6 +353,7 @@ class Locations extends Array {
 		if (!changed) return;
 		
 		this.emit(EVENTS.LOCATIONS.CHANGED, {
+			cfi: this.currentCfi,
 			index: this.index,
 			percentage: this.percentageFromLocation(this.index)
 		});
