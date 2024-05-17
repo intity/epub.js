@@ -20,8 +20,8 @@
 	<a id="prev" href="#prev" class="arrow">‹</a>
 	<a id="next" href="#next" class="arrow">›</a>
 	<div id="controls">
-		<input type="number" min="0" max="100" value="0" id="current-percent"/> %
-		<input type="range" min="0" max="100" value="0" id="slider"/>
+		<input type="text" value="0" disabled="disabled" size="3" id="current-percent" /> %
+		<input type="range" min="0" max="100" value="0" id="slider" />
 	</div>
 	<script>
 		const title = document.getElementById("title")
@@ -36,42 +36,57 @@
 		const displayed = rendition.display()
 		const prev = document.getElementById("prev")
 		prev.onclick = (e) => {
+
 			rendition.prev()
 			e.preventDefault()
 		}
 		const next = document.getElementById("next")
 		next.onclick = (e) => {
+
 			rendition.next()
 			e.preventDefault()
 		}
+		const locationFrom = (value) => {
+
+			const val = parseInt(value) / 100
+			const cfi = book.locations.cfiFromPercentage(val)
+			const loc = book.locations.locationFromCfi(cfi)
+			return { cfi, loc }
+		}
 		let atStart = false, atEnd = false
 		const update = (location) => {
-            if (location.atStart) {
-            	prev.style.display = "none"
+
+			if (location.atStart) {
+				prev.style.display = "none"
 				atStart = true
 			} else {
 				prev.style.display = "block"
 				atStart = false
 			}
 			if (location.atEnd) {
-            	next.style.display = "none"
+				next.style.display = "none"
 				atEnd = true
 			} else {
 				next.style.display = "block"
 				atEnd = false
 			}
-        }
+
+			const percentage = book.locations.percentageFromCfi(location.start.cfi)
+			const percent = Math.floor(percentage * 100)
+			slider.value = percent
+			currentPage.value = percent
+			book.locations.currentLocation = locationFrom(percent).loc
+		}
 		const keybinding = (e) => {
-			// Left Key
+
 			if (e.key === "ArrowLeft" && !atStart) {
 				rendition.prev()
 			}
-			// Right Key
+
 			if (e.key === "ArrowRight" && !atEnd) {
 				rendition.next()
 			}
 		}
-		let mouseDown = false
 		rendition.on("keyup", keybinding)
 		document.addEventListener("keyup", keybinding, false)
 		book.ready.then(() => {
@@ -84,51 +99,49 @@
 				// Or generate the locations on the fly
 				// Can pass an option number of chars to break sections by
 				// default is 150 chars
-				return book.locations.generate(826)
+				// test: [break:549,items:100] (sections:2-12)
+				//  2:[0]
+				//  3:[1-4-8-12]
+				//  4:[14-18-21-24]
+				//  5:[25-28-31-34-35]
+				//  6:[36-41-44-48]
+				//  7:[50-53-56-60]
+				//  8:[61-65-69]
+				//  9:[71-74-76]
+				// 10:[77-81-84-88]
+				// 11:[89-92]
+				// 12:[95-98-100]
+				return book.locations.generate(549)
 			}
 		}).then((locations) => {
 
 			controls.style.display = "block"
 			currentPage.onchange = (e) => {
-				const value = parseInt(e.target.value) / 100
-				const cfi = book.locations.cfiFromPercentage(value)
-				rendition.display(cfi)
+
+				rendition.display(locationFrom(e.target.value).cfi)
 			}
 			slider.onchange = (e) => {
-				const value = parseInt(e.target.value) / 100
-				const cfi = book.locations.cfiFromPercentage(value)
-				rendition.display(cfi)
-			}
-			slider.onmousedown = () => {
-				mouseDown = true
-			}
-			slider.onmouseup = () => {
-				mouseDown = false
+
+				rendition.display(locationFrom(e.target.value).cfi)
 			}
 			// Wait for book to be rendered to get current page
 			displayed.then(() => {
-				// Get the current CFI
-				const currentLocation = rendition.currentLocation()
-				// Get the Percentage (or location) from that CFI
-				const page = book.locations.percentageFromCfi(currentLocation.start.cfi)
-				slider.value = page
-				currentPage.value = page
+
+				update(rendition.currentLocation())
 			})
 			// Listen for location changed event, get percentage from CFI
 			rendition.on("relocated", (location) => {
 
 				update(location)
-				const percent = book.locations.percentageFromCfi(location.start.cfi)
-				const percentage = Math.floor(percent * 100)
-				if (!mouseDown) {
-					slider.value = percentage
-				}
-				currentPage.value = percentage
 				console.log(location)
 			})
 			// Save out the generated locations to JSON
 			localStorage.setItem(book.key() + '-locations', book.locations.save())
 			console.log("locations.length: " + locations.length)
+		})
+		book.locations.on("changed", (loc) => {
+
+			console.log(loc)
 		})
 	</script>
 </body>
