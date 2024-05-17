@@ -22,7 +22,6 @@ class Locations extends Array {
 		this.pause = pause || 100;
 		this.q = new Queue(this);
 		this.epubcfi = new EpubCFI();
-		this.total = 0;
 		this.break = 150;
 		this.current = 0;
 		this.currentCfi = "";
@@ -43,14 +42,13 @@ class Locations extends Array {
 
 		this.q.pause();
 		this.spine.each(section => {
+
 			if (section.linear) {
 				this.q.enqueue(this.process.bind(this), section);
 			}
 		});
 
 		return this.q.run().then(() => {
-
-			this.total = this.length - 1;
 
 			if (this.currentCfi) {
 				this.currentLocation = this.currentCfi;
@@ -195,8 +193,8 @@ class Locations extends Array {
 		}
 
 		const loc = locationOf(cfi, this, this.epubcfi.compare);
-		if (loc > this.total) {
-			return this.total;
+		if (loc > this.length - 1) {
+			return this.length - 1;
 		}
 
 		return loc;
@@ -210,7 +208,7 @@ class Locations extends Array {
 	percentageFromCfi(cfi) {
 
 		if (this.length === 0) {
-			return null;
+			return 0;
 		}
 		// Find closest cfi
 		const loc = this.locationFromCfi(cfi);
@@ -225,10 +223,10 @@ class Locations extends Array {
 	 */
 	percentageFromLocation(loc) {
 
-		if (!loc || !this.total) {
+		if (!loc || this.length === 0) {
 			return 0;
 		}
-		return (loc / this.total);
+		return (loc / (this.length -1));
 	}
 
 	/**
@@ -264,12 +262,12 @@ class Locations extends Array {
 
 		// Make sure 1 goes to very end
 		if (percentage >= 1) {
-			const cfi = new EpubCFI(this[this.total]);
+			const cfi = new EpubCFI(this[this.length - 1]);
 			cfi.collapse();
 			return cfi.toString();
 		}
 
-		const loc = Math.ceil(this.total * percentage);
+		const loc = Math.ceil((this.length - 1) * percentage);
 		return this.cfiFromLocation(loc);
 	}
 
@@ -284,7 +282,6 @@ class Locations extends Array {
 		}
 		this.splice(0);
 		locations.forEach(i => this.push(i));
-		this.total = this.length - 1;
 
 		return this;
 	}
@@ -364,7 +361,6 @@ class Locations extends Array {
 		this.q = undefined;
 		this.epubcfi = undefined;
 		this.splice(0);
-		this.total = undefined;
 		this.current = undefined;
 		this.currentCfi = undefined;
 		this.currentLocation = undefined;
