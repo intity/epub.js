@@ -371,7 +371,6 @@ class Locations extends Array {
 		this.pause = undefined;
 		this.break = undefined;
 		this.request = undefined;
-		this.epubcfi = undefined;
 		this.current.cfi = null;
 		this.current.index = -1;
 		this.current.percentage = 0;
