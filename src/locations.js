@@ -36,8 +36,11 @@ class Locations extends Array {
 	 */
 	async generate(chars) {
 
-		if (chars) {
-			this.break = Math.round(chars);
+		if (Number.isInteger(chars)) {
+			this.break = chars;
+		} else {
+			this.break = parseInt(chars)
+			console.warn("The input value type is not an integer")
 		}
 
 		this.q.pause();
