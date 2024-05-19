@@ -20,7 +20,7 @@ class Locations extends Array {
 		this.spine = spine;
 		this.pause = pause || 100;
 		this.break = 150;
-		this.index = 0;
+		this.index = -1;
 		this.epubcfi = new EpubCFI();
 		this.request = request;
 		this.currentCfi = "";
@@ -50,7 +50,7 @@ class Locations extends Array {
 
 		return this.q.run().then(() => {
 
-			this.currentLocation = this.index;
+			this.currentLocation = this.length ? 0 : this.index;
 			return this;
 		});
 	}
