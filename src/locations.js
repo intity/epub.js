@@ -179,8 +179,8 @@ class Locations extends Array {
 
 	/**
 	 * Get a location from an EpubCFI
-	 * @param {EpubCFI|string} cfi
-	 * @return {number}
+	 * @param {string} cfi EpubCFI string format
+	 * @return {number} Location index
 	 */
 	locationFromCfi(cfi) {
 
@@ -202,8 +202,8 @@ class Locations extends Array {
 
 	/**
 	 * Get a percentage position in locations from an EpubCFI
-	 * @param {EpubCFI} cfi
-	 * @return {number}
+	 * @param {string} cfi EpubCFI string format
+	 * @return {number} Percentage
 	 */
 	percentageFromCfi(cfi) {
 
@@ -218,8 +218,8 @@ class Locations extends Array {
 
 	/**
 	 * Get a percentage position from a location index
-	 * @param {number} loc
-	 * @return {number}
+	 * @param {number} loc Location index
+	 * @return {number} Percentage
 	 */
 	percentageFromLocation(loc) {
 
@@ -231,8 +231,8 @@ class Locations extends Array {
 
 	/**
 	 * Get an EpubCFI from location index
-	 * @param {number} loc
-	 * @return {EpubCFI} cfi
+	 * @param {number} loc Location index
+	 * @return {string} EpubCFI string format
 	 */
 	cfiFromLocation(loc) {
 
@@ -252,7 +252,7 @@ class Locations extends Array {
 	/**
 	 * Get an EpubCFI from location percentage
 	 * @param {number} percentage
-	 * @return {EpubCFI} cfi
+	 * @return {string} EpubCFI string format
 	 */
 	cfiFromPercentage(percentage) {
 
@@ -307,7 +307,7 @@ class Locations extends Array {
 
 	/**
 	 * Get current location index
-	 * @returns {number}
+	 * @returns {number} Location index
 	 */
 	getCurrent() {
 
@@ -379,6 +379,9 @@ class Locations extends Array {
 		this.setCurrent(value);
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
 
 		this.spine = undefined;
