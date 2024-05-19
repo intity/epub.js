@@ -179,25 +179,17 @@ class Locations extends Array {
 
 	/**
 	 * Get a location from an EpubCFI
-	 * @param {string} cfi EpubCFI string format
+	 * @param {string} value EpubCFI string format
 	 * @return {number} Location index
 	 */
-	locationFromCfi(cfi) {
-
-		if (EpubCFI.prototype.isCfiString(cfi)) {
-			cfi = new EpubCFI(cfi);
-		}
-		// Check if the location has not been set yet
-		if (this.length === 0) {
-			return -1;
-		}
-
-		const loc = locationOf(cfi, this, this.epubcfi.compare);
-		if (loc > this.length - 1) {
-			return this.length - 1;
-		}
-
-		return loc;
+	locationFromCfi(value) {
+		
+		if (this.length === 0) return -1;
+		const cmp = EpubCFI.prototype.compare;
+		const cfi = new EpubCFI(value);
+		const loc = locationOf(cfi, this, cmp);
+		const ind = this.length - 1;
+		return loc > ind ? ind : loc;
 	}
 
 	/**
