@@ -116,10 +116,6 @@
 		}).then((locations) => {
 
 			controls.style.display = "block"
-			currentPage.onchange = (e) => {
-
-				rendition.display(locationFrom(e.target.value).cfi)
-			}
 			slider.onchange = (e) => {
 
 				rendition.display(locationFrom(e.target.value).cfi)
