@@ -20,11 +20,20 @@ class Locations extends Array {
 		this.spine = spine;
 		this.pause = pause || 100;
 		this.break = 150;
-		this.index = -1;
-		this.epubcfi = new EpubCFI();
 		this.request = request;
-		this.currentCfi = "";
-		this.currentLocation = undefined;
+		/**
+		 * @member {object} current Current Location
+		 * @property {string} current.cfi
+		 * @property {number} current.index
+		 * @property {number} current.percentage
+		 * @memberof Locations
+		 * @readonly
+		 */
+		this.current = {
+			cfi: null,
+			index: -1,
+			percentage: 0
+		};
 		this.processingTimeout = undefined;
 		this.q = new Queue(this);
 	}
@@ -53,7 +62,11 @@ class Locations extends Array {
 
 		return this.q.run().then(() => {
 
-			this.currentLocation = this.length ? 0 : this.index;
+			if (this.length) {
+				this.current.cfi = [0];
+				this.current.index = 0;
+				this.current.percentage = 0;
+			}
 			return this;
 		});
 	}
@@ -275,7 +288,9 @@ class Locations extends Array {
 			data.items.forEach(i => this.push(i));
 			this.break = data.break;
 			this.pause = data.pause;
-			this.currentLocation = data.index;
+			this.current.cfi = this[data.index];
+			this.current.index = data.index;
+			this.current.percentage = this.percentageFromLocation(data.index);
 		} else {
 			console.error("Invalid argument type");
 		}
@@ -291,84 +306,60 @@ class Locations extends Array {
 
 		return JSON.stringify({
 			items: this,
-			index: this.index,
+			index: this.current.index,
 			break: this.break,
 			pause: this.pause
 		});
 	}
 
 	/**
-	 * Get current location index
-	 * @returns {number} Location index
-	 */
-	getCurrent() {
-
-		return this.index;
-	}
-
-	/**
 	 * Set current location
-	 * @param {number|string} value Location index OR EpubCFI string format
+	 * @param {object} options
+	 * @param {string} [options.cfi] EpubCFI string format
+	 * @param {number} [options.index] Location index
+	 * @param {number} [options.percentage] Percentage
 	 */
-	setCurrent(value) {
+	set(options) {
 
-		let changed = false;
-		
-		if (this.length === 0) {
-			return;
-		} else if (typeof value == "number") {
-			if (value < 0) {
-				console.error("The value cannot be less than zero");
-			} else if (value >= this.length) {
-				console.error("The value cannot be greater than locations.length");
-			} else if (!Number.isInteger(value)) {
-				console.error("The value is not an integer");
-			} else if (this.index === value) {
-				this.currentCfi = this[value];
-			} else {
-				this.index = value;
-				this.currentCfi = this[value];
-				changed = true;
-			}
-		} else if (typeof value == "string") {
-			if (EpubCFI.prototype.isCfiString(value)) {
-				const loc = this.locationFromCfi(value);
-				if (this.index !== loc) {
-					this.index = loc;
-					this.currentCfi = this[loc];
-					changed = true;
+		if (this.length === 0) return;
+
+		Object.keys(options).forEach(opt => {
+			const value = options[opt];
+			if (this.current[opt] === value || typeof value === "undefined") {
+				delete options[opt];
+			} else if (opt === "cfi" && typeof value === "string") {
+				if (EpubCFI.prototype.isCfiString(value)) {
+					const index = this.locationFromCfi(value);
+					this.current.cfi = this[index];
+					this.current.index = index;
+					this.current.percentage = this.percentageFromLocation(index);
 				}
-			} else {
-				console.error("Invalid EpubCFI string");
+			} else if (opt === "index" && typeof value === "number") {
+				const index = parseInt(value);
+				if (index >= 0 && index < this.length) {
+					this.current.cfi = this[index];
+					this.current.index = index;
+					this.current.percentage = this.percentageFromLocation(index);
+				}
+			} else if (opt === "percentage" && typeof value === "number") {
+				const percentage = parseFloat(value);
+				const cfi = this.cfiFromPercentage(percentage);
+				this.current.cfi = cfi;
+				this.current.index = this.locationFromCfi(cfi);
+				this.current.percentage = percentage;
 			}
-		} else {
-			console.error("Invalid argument type");
-			return;
-		}
-
-		if (!changed) return;
-		
-		this.emit(EVENTS.LOCATIONS.CHANGED, {
-			cfi: this.currentCfi,
-			index: this.index,
-			percentage: this.percentageFromLocation(this.index)
 		});
-	}
 
-	/**
-	 * Get the current location
-	 */
-	get currentLocation() {
-
-		return this.index;
-	}
-
-	/**
-	 * Set the current location
-	 */
-	set currentLocation(value) {
-
-		this.setCurrent(value);
+		if (Object.keys(options).length) {
+			/**
+			 * Current location changed
+			 * @event changed
+			 * @param {object} current Current location
+			 * @param {object} changed Changed properties
+			 * @memberof Locations
+			 */
+			this.emit(EVENTS.LOCATIONS.CHANGED, this.current, options);
+		}
 	}
 
 	/**
@@ -379,14 +370,14 @@ class Locations extends Array {
 		this.spine = undefined;
 		this.pause = undefined;
 		this.break = undefined;
-		this.index = undefined;
 		this.request = undefined;
 		this.epubcfi = undefined;
+		this.current.cfi = null;
+		this.current.index = -1;
+		this.current.percentage = 0;
 		this.q.stop();
 		this.q = undefined;
 		this.splice(0);
-		this.currentCfi = undefined;
-		this.currentLocation = undefined;
 		clearTimeout(this.processingTimeout);
 	}
 }
