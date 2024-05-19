@@ -26,7 +26,7 @@
 	<script>
 		const title = document.getElementById("title")
 		const controls = document.getElementById("controls")
-		const currentPage = document.getElementById("current-percent")
+		const currentPos = document.getElementById("current-percent")
 		const slider = document.getElementById("slider")
 		const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
 		const rendition = book.renderTo("viewer", {
@@ -46,14 +46,7 @@
 			rendition.next()
 			e.preventDefault()
 		}
-		const locationFrom = (value) => {
-
-			const val = parseInt(value) / 100
-			const cfi = book.locations.cfiFromPercentage(val)
-			const loc = book.locations.locationFromCfi(cfi)
-			return { cfi, loc }
-		}
-		let atStart = false, atEnd = false
+		let atStart = false, atEnd = false, percentage
 		const update = (location) => {
 
 			if (location.atStart) {
@@ -71,11 +64,15 @@
 				atEnd = false
 			}
 
-			const percentage = book.locations.percentageFromCfi(location.start.cfi)
-			const percent = Math.floor(percentage * 100)
-			slider.value = percent
-			currentPage.value = percent
-			book.locations.currentLocation = locationFrom(percent).loc
+			if (typeof percentage === "undefined") {
+				book.locations.set({ cfi: location.start.cfi })
+				percentage = book.locations.current.percentage
+			}
+
+			const value = Math.floor(percentage * 100)
+			slider.value = value
+			currentPos.value = value
+			percentage = undefined
 		}
 		const keybinding = (e) => {
 
@@ -118,16 +115,13 @@
 			controls.style.display = "block"
 			slider.onchange = (e) => {
 
-				rendition.display(locationFrom(e.target.value).cfi)
+				percentage = parseInt(e.target.value) / 100
+				book.locations.set({ percentage: percentage })
+				rendition.display(book.locations.current.cfi)
 			}
-			// Wait for book to be rendered to get current page
-			displayed.then(() => {
-
-				update(rendition.currentLocation())
-			})
 			// Listen for location changed event, get percentage from CFI
 			rendition.on("relocated", (location) => {
-
+				
 				update(location)
 				console.log(location)
 			})
@@ -135,9 +129,9 @@
 			localStorage.setItem(book.key() + '-locations', book.locations.save())
 			console.log("locations.length: " + locations.length)
 		})
-		book.locations.on("changed", (loc) => {
+		book.locations.on("changed", (current, changed) => {
 
-			console.log(loc)
+			console.log(current, changed)
 		})
 	</script>
 </body>
