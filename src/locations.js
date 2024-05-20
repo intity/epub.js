@@ -196,7 +196,7 @@ class Locations extends Array {
 	 * @return {number} Location index
 	 */
 	locationFromCfi(value) {
-		
+
 		if (this.length === 0) return -1;
 		const cmp = EpubCFI.prototype.compare;
 		const cfi = new EpubCFI(value);
@@ -228,36 +228,32 @@ class Locations extends Array {
 	 */
 	percentageFromLocation(loc) {
 
-		if (!loc || this.length === 0) {
+		if (this.length === 0 ||
+			this.length >= loc && loc < 0) {
 			return 0;
 		}
-		return (loc / (this.length -1));
+		return (loc / (this.length - 1));
 	}
 
 	/**
 	 * Get an EpubCFI from location index
 	 * @param {number} loc Location index
-	 * @return {string} EpubCFI string format
+	 * @return {string|null} EpubCFI string format
 	 */
 	cfiFromLocation(loc) {
 
-		let cfi = -1;
-		// check that pg is an int
-		if (typeof loc !== "number") {
-			loc = parseInt(loc);
+		if (this.length === 0 ||
+			this.length >= loc && loc < 0) {
+			return null;
 		}
 
-		if (loc >= 0 && loc < this.length) {
-			cfi = this[loc];
-		}
-
-		return cfi;
+		return this[loc];
 	}
 
 	/**
 	 * Get an EpubCFI from location percentage
 	 * @param {number} percentage
-	 * @return {string} EpubCFI string format
+	 * @return {string|null} EpubCFI string format
 	 */
 	cfiFromPercentage(percentage) {
 
@@ -281,7 +277,7 @@ class Locations extends Array {
 	 * @param {string} locations
 	 */
 	load(locations) {
-		
+
 		if (typeof locations === "string") {
 			this.splice(0);
 			const data = JSON.parse(locations);
@@ -323,30 +319,42 @@ class Locations extends Array {
 
 		if (this.length === 0) return;
 
+		const setup = (index, value) => {
+
+			if (index >= 0 && index < this.length) {
+				this.current.cfi = this[index];
+				this.current.index = index;
+				this.current.percentage = value || index / (this.length - 1);
+			}
+		};
+
 		Object.keys(options).forEach(opt => {
 			const value = options[opt];
 			if (this.current[opt] === value || typeof value === "undefined") {
 				delete options[opt];
-			} else if (opt === "cfi" && typeof value === "string") {
-				if (EpubCFI.prototype.isCfiString(value)) {
+			} else if (typeof value === "string") {
+				if (opt === "cfi" && EpubCFI.prototype.isCfiString(value)) {
 					const index = this.locationFromCfi(value);
-					this.current.cfi = this[index];
-					this.current.index = index;
-					this.current.percentage = this.percentageFromLocation(index);
+					setup(index);
 				}
-			} else if (opt === "index" && typeof value === "number") {
-				const index = parseInt(value);
-				if (index >= 0 && index < this.length) {
-					this.current.cfi = this[index];
-					this.current.index = index;
-					this.current.percentage = this.percentageFromLocation(index);
+			} else if (typeof value === "number") {
+				if (opt === "index") {
+					setup(value);
+				} else if (opt === "percentage") {
+					if (value >= 0 && value <= 1) {
+						const index = Math.ceil((this.length - 1) * value);
+						setup(index, value);
+					} else if (value > 1) {
+						const cfi = new EpubCFI(this[this.length - 1]);
+						cfi.collapse();
+						this.current.cfi = cfi.toString();
+						this.current.index = this.locationFromCfi(this.current.cfi);
+						this.current.percentage = value;
+						console.warn("The input value must be normalized in the range 0-1");
+					}
 				}
-			} else if (opt === "percentage" && typeof value === "number") {
-				const percentage = parseFloat(value);
-				const cfi = this.cfiFromPercentage(percentage);
-				this.current.cfi = cfi;
-				this.current.index = this.locationFromCfi(cfi);
-				this.current.percentage = percentage;
+			} else {
+				console.error("Invalid value type to " + opt);
 			}
 		});
 
