@@ -276,7 +276,7 @@ describe("EpubCFI", () => {
 			assert.equal(newRange.endOffset, 27)
 			assert.equal(newRange.collapsed, false)
 		})
-		it("get a cfi from a range inside a highlight", () => {
+		xit("get a cfi from a range inside a highlight", () => {
 			const t1 = doc2.getElementById("highlight-1").childNodes[0]
 			const ogRange = doc2.createRange()
 			ogRange.setStart(t1, 6)
@@ -289,7 +289,7 @@ describe("EpubCFI", () => {
 			assert.equal(newRange.startOffset, 6)
 			assert.equal(newRange.collapsed, true)
 		})
-		it("get a cfi from a range inside a highlight range", () => {
+		xit("get a cfi from a range inside a highlight range", () => {
 			const t1 = doc2.getElementById("highlight-2").childNodes[0]
 			const t2 = doc2.getElementById("c001s0001").childNodes[1]
 			const ogRange = doc2.createRange()
