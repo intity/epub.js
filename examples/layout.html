@@ -35,7 +35,7 @@
         </div>
         <div class="box">
             <label for="minSpreadWidth">Min spread width:</label>
-            <input type="number" id="minSpreadWidth" value="800" min="0" max="9999"/>
+            <input type="number" id="minSpreadWidth" value="800" min="0" max="9999" />
         </div>
         <div class="box">
             <label for="direction">Direction:</label>
@@ -61,24 +61,46 @@
         const divider = document.getElementById("divider")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%"
+        })
         const update = (location) => {
             const loc = location || rendition.currentLocation()
             prev.style.display = loc.atStart ? "none" : "block"
             next.style.display = loc.atEnd ? "none" : "block"
         }
-        const book = ePub("https://s3.amazonaws.com/moby-dick/moby-dick.epub")
-        const rendition = book.renderTo("viewer", {
-            width: "100%",
-            height: "100%"
-        })
+        const navPrev = () => {
+            rendition.layout.direction === "ltr" ? rendition.prev() : rendition.next()
+        }
+        const navNext = () => {
+            rendition.layout.direction === "ltr" ? rendition.next() : rendition.prev()
+        }
+        const keybinding = (e) => {
+            const loc = rendition.currentLocation()
+            switch (e.key) {
+                case "ArrowLeft":
+                    if (!loc.start.atStart) {
+                        navPrev()
+                    }
+                    break;
+                case "ArrowRight":
+                    if (!loc.start.atEnd) {
+                        navNext()
+                    }
+                    break;
+            }
+        }
         rendition.display()
+        rendition.on("keyup", keybinding)
         book.ready.then(() => {
             prev.onclick = (e) => {
-                rendition.layout.direction === "rtl" ? rendition.next() : rendition.prev()
+                navPrev()
                 e.preventDefault()
             }
             next.onclick = (e) => {
-                rendition.layout.direction === "rtl" ? rendition.prev() : rendition.next()
+                navNext()
                 e.preventDefault()
             }
             layout.onchange = (e) => {
@@ -113,6 +135,7 @@
                     direction: e.target.value
                 })
             }
+            document.onkeyup = keybinding
             console.log(rendition)
         })
         rendition.on("rendered", (section, view) => {
