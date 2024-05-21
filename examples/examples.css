@@ -112,6 +112,7 @@ body {
 }
 
 #divider {
+  display: none;
   position: absolute;
   width: 1px;
   border-right: 1px #000 dashed;
