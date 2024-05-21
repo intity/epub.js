@@ -45,14 +45,15 @@
             </select>
         </div>
     </div>
-    <div id="content">
+    <div id="content" dir="ltr">
         <div id="viewer" class="spreads">
             <div id="divider"></div>
         </div>
-        <a id="prev" href="#prev" class="arrow">‹</a>
-        <a id="next" href="#next" class="arrow">›</a>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
     </div>
     <script>
+        const content = document.getElementById("content")
         const layout = document.getElementById("layout")
         const flow = document.getElementById("flow")
         const spread = document.getElementById("spread")
@@ -67,28 +68,20 @@
             height: "100%"
         })
         const update = (location) => {
+            const dir = rendition.layout.direction
             const loc = location || rendition.currentLocation()
             prev.style.display = loc.atStart ? "none" : "block"
             next.style.display = loc.atEnd ? "none" : "block"
-        }
-        const navPrev = () => {
-            rendition.layout.direction === "ltr" ? rendition.prev() : rendition.next()
-        }
-        const navNext = () => {
-            rendition.layout.direction === "ltr" ? rendition.next() : rendition.prev()
+            content.dir = dir
         }
         const keybinding = (e) => {
-            const loc = rendition.currentLocation()
+            const dir = rendition.layout.direction
             switch (e.key) {
                 case "ArrowLeft":
-                    if (!loc.start.atStart) {
-                        navPrev()
-                    }
+                    dir === "ltr" ? rendition.prev() : rendition.next()
                     break;
                 case "ArrowRight":
-                    if (!loc.start.atEnd) {
-                        navNext()
-                    }
+                    dir === "ltr" ? rendition.next() : rendition.prev()
                     break;
             }
         }
@@ -96,11 +89,11 @@
         rendition.on("keyup", keybinding)
         book.ready.then(() => {
             prev.onclick = (e) => {
-                navPrev()
+                rendition.prev()
                 e.preventDefault()
             }
             next.onclick = (e) => {
-                navNext()
+                rendition.next()
                 e.preventDefault()
             }
             layout.onchange = (e) => {
@@ -154,6 +147,7 @@
         })
         rendition.on("relocated", (location) => {
             update(location)
+            //console.log(location)
         })
     </script>
 </body>
