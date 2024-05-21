@@ -728,7 +728,7 @@ class Rendition {
 
 		const cfi = new EpubCFI(epubcfi);
 		const found = this.manager.visible().filter((view) => {
-			if (cfi.spinePos === view.index) return true;
+			if (cfi.spinePos === view.section.index) return true;
 		});
 
 		// Should only every return 1 item

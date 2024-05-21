@@ -56,7 +56,7 @@ class Annotations {
 		let views = this.rendition.views();
 
 		views.forEach( (view) => {
-			if (annotation.sectionIndex === view.index) {
+			if (annotation.sectionIndex === view.section.index) {
 				annotation.attach(view);
 			}
 		});
@@ -82,7 +82,7 @@ class Annotations {
 			let views = this.rendition.views();
 			views.forEach( (view) => {
 				this._removeFromAnnotationBySectionIndex(annotation.sectionIndex, hash);
-				if (annotation.sectionIndex === view.index) {
+				if (annotation.sectionIndex === view.section.index) {
 					annotation.detach(view);
 				}
 			});
@@ -155,7 +155,7 @@ class Annotations {
 	 * @private
 	 */
 	inject (view) {
-		let sectionIndex = view.index;
+		let sectionIndex = view.section.index;
 		if (sectionIndex in this._annotationsBySectionIndex) {
 			let annotations = this._annotationsBySectionIndex[sectionIndex];
 			annotations.forEach((hash) => {
@@ -171,7 +171,7 @@ class Annotations {
 	 * @private
 	 */
 	clear (view) {
-		let sectionIndex = view.index;
+		let sectionIndex = view.section.index;
 		if (sectionIndex in this._annotationsBySectionIndex) {
 			let annotations = this._annotationsBySectionIndex[sectionIndex];
 			annotations.forEach((hash) => {
