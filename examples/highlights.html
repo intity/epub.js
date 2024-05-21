@@ -1,176 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EPUB.js Highlights Example</title>
-
-  <script src="../dist/epub.js"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="examples.css">
-
-  <style type="text/css">
-    ::selection {
-      background: yellow;
-    }
-
-    #extras {
-      width: 600px;
-      margin: 40px auto;
-    }
-
-    #highlights {
-      list-style: none;
-      margin-left: 0;
-      padding: 0;
-    }
-
-    #highlights li {
-      list-style: none;
-      margin-bottom: 20px;
-      border-top: 1px solid #E2E2E2;
-      padding: 10px;
-    }
-
-    #highlights a {
-      display: block;
-    }
-
-    #viewer.spreads {
-      top: 0;
-      margin-top: 50px;
-    }
-
-    [ref="epubjs-mk"] {
-      background: url("data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPScxLjEnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZycgeG1sbnM6eGxpbms9J2h0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsnIHg9JzBweCcgeT0nMHB4JyB2aWV3Qm94PScwIDAgNzUgNzUnPjxnIGZpbGw9JyNCREJEQkQnIGlkPSdidWJibGUnPjxwYXRoIGNsYXNzPSdzdDAnIGQ9J00zNy41LDkuNEMxOS42LDkuNCw1LDIwLjUsNSwzNC4zYzAsNS45LDIuNywxMS4zLDcuMSwxNS42TDkuNiw2NS42bDE5LTcuM2MyLjgsMC42LDUuOCwwLjksOC45LDAuOSBDNTUuNSw1OS4yLDcwLDQ4LjEsNzAsMzQuM0M3MCwyMC41LDU1LjQsOS40LDM3LjUsOS40eicvPjwvZz48L3N2Zz4=") no-repeat;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      margin-left: 0;
-    }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.js Highlights Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
 </head>
+
 <body>
-  <div id="frame">
-    <div id="viewer" class="spreads"></div>
-    <a id="prev" href="#prev" class="arrow">‹</a>
-    <a id="next" href="#next" class="arrow">›</a>
-  </div>
-  <div id="extras">
-    <ul id="highlights"></ul>
-  </div>
-
-  <script>
-    // Load the opf
-    var book = ePub("https://s3.amazonaws.com/moby-dick/OPS/package.opf");
-
-    var rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: 600,
-      ignoreClass: 'annotator-hl',
-      manager: "continuous"
-    });
-
-    var displayed = rendition.display(6);
-
-    // Navigation loaded
-    book.loaded.navigation.then(function(toc){
-      // console.log(toc);
-    });
-
-    var next = document.getElementById("next");
-    next.addEventListener("click", function(){
-      rendition.next();
-    }, false);
-
-    var prev = document.getElementById("prev");
-    prev.addEventListener("click", function(){
-      rendition.prev();
-    }, false);
-
-    var keyListener = function(e){
-
-      // Left Key
-      if ((e.keyCode || e.which) == 37) {
-        rendition.prev();
-      }
-
-      // Right Key
-      if ((e.keyCode || e.which) == 39) {
-        rendition.next();
-      }
-
-    };
-
-    rendition.on("keyup", keyListener);
-    document.addEventListener("keyup", keyListener, false);
-
-    rendition.on("relocated", function(location){
-      // console.log(location);
-    });
-
-
-    // Apply a class to selected text
-    rendition.on("selected", function(cfiRange, contents) {
-      rendition.annotations.highlight(cfiRange, {}, (e) => {
-        console.log("highlight clicked", e.target);
-      });
-      contents.window.getSelection().removeAllRanges();
-
-    });
-
-    this.rendition.themes.default({
-      '::selection': {
-        'background': 'rgba(255,255,0, 0.3)'
-      },
-      '.epubjs-hl' : {
-        'fill': 'yellow', 'fill-opacity': '0.3', 'mix-blend-mode': 'multiply'
-      }
-    });
-
-    // Illustration of how to get text from a saved cfiRange
-    var highlights = document.getElementById('highlights');
-
-    rendition.on("selected", function(cfiRange) {
-
-      book.getRange(cfiRange).then(function (range) {
-        var text;
-        var li = document.createElement('li');
-        var a = document.createElement('a');
-        var remove = document.createElement('a');
-        var textNode;
-
-        if (range) {
-          text = range.toString();
-          textNode = document.createTextNode(text);
-
-          a.textContent = cfiRange;
-          a.href = "#" + cfiRange;
-          a.onclick = function () {
-            rendition.display(cfiRange);
-          };
-
-          remove.textContent = "remove";
-          remove.href = "#" + cfiRange;
-          remove.onclick = function () {
-            rendition.annotations.remove(cfiRange);
-            return false;
-          };
-
-          li.appendChild(a);
-          li.appendChild(textNode);
-          li.appendChild(remove);
-          highlights.appendChild(li);
+    <div id="content">
+        <div id="viewer" class="spreads">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <div id="extras">
+        <ul id="highlights"></ul>
+    </div>
+    <script>
+        const highlights = document.getElementById("highlights")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%",
+            ignoreClass: "annotator-hl",
+            //manager: "continuous"
+        })
+        const displayed = rendition.display(6)
+        prev.onclick = (e) => {
+            rendition.prev()
+            e.preventDefault()
         }
+        next.onclick = (e) => {
+            rendition.next()
+            e.preventDefault()
+        }
+        const keybinding = (e) => {
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break
+            }
+        }
+        document.onkeyup = keybinding
+        rendition.on("keyup", keybinding)
+        rendition.on("selected", (cfiRange, contents) => {
 
-      })
+            rendition.annotations.highlight(cfiRange, {}, (e) => {
+                console.log(e.target)
+            })
+            book.getRange(cfiRange).then((range) => {
 
-    });
+                const list = document.createElement("li")
+                const link = document.createElement("a")
+                const ctrl = document.createElement("a")
 
-  </script>
+                if (range) {
+                    const text = range.toString()
+                    const node = document.createTextNode(text)
 
+                    link.textContent = cfiRange
+                    link.href = "#" + cfiRange
+                    link.onclick = (e) => {
+
+                        rendition.display(cfiRange)
+                        e.preventDefault()
+                    }
+
+                    ctrl.textContent = "remove"
+                    ctrl.href = "#"
+                    ctrl.onclick = (e) => {
+
+                        rendition.annotations.remove(cfiRange, "highlight")
+                        highlights.removeChild(list)
+                        e.preventDefault()
+                    }
+
+                    list.appendChild(link)
+                    list.appendChild(node)
+                    list.appendChild(ctrl)
+                    highlights.appendChild(list)
+                }
+            })
+            contents.window.getSelection().removeAllRanges()
+        })
+        rendition.on("relocated", (location) => {
+            //console.log(location)
+        })
+    </script>
 </body>
+
 </html>

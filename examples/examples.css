@@ -333,3 +333,29 @@ svg {
   stroke: #777;
   fill: #777;
 }
+
+#extras {
+  width: 600px;
+  height: 100px;
+  margin: 40px auto;
+  position: relative;
+  z-index: 10;
+}
+
+#highlights {
+  height: 100%;
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+#highlights li {
+  list-style: none;
+  border-top: 1px solid #E2E2E2;
+  padding: 10px;
+}
+
+#highlights a {
+  display: block;
+}
