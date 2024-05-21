@@ -820,7 +820,7 @@ class IframeView {
 				if (!left || rect.left < left) {
 					left = rect.left;
 					// right = rect.right;
-					right = Math.ceil(left / this.layout.props.pageWidth) * this.layout.props.pageWidth - (this.layout.gap / 2);
+					right = Math.ceil(left / this.layout.pageWidth) * this.layout.pageWidth - (this.layout.gap / 2);
 					top = rect.top;
 				}
 			}
