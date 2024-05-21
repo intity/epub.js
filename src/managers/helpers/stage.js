@@ -371,10 +371,12 @@ class Stage {
 			case "paginated":
 				this.container.style["overflow-y"] = "hidden";
 				this.container.style["overflow-x"] = "hidden";
+				this.container.style.flexWrap = "nowrap";
 				break;
 			case "scrolled":
 				this.container.style["overflow-y"] = "auto";
 				this.container.style["overflow-x"] = "hidden";
+				this.container.style.flexWrap = "wrap";
 				break;
 		}
 	}
