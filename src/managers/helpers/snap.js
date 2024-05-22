@@ -30,14 +30,14 @@ class Snap {
 	 * Constructor
 	 * @param {*} manager
 	 * @param {object} [options]
-	 * @param {number} [options.duration=80]
+	 * @param {number} [options.duration=300]
 	 * @param {number} [options.minVelocity=0.2]
 	 * @param {number} [options.minDistance=10]
 	 */
 	constructor(manager, options) {
 
 		this.settings = extend({
-			duration: 80,
+			duration: 300,
 			minVelocity: 0.2,
 			minDistance: 10,
 			easing: EASING_EQUATIONS['easeInCubic']
