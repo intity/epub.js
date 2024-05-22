@@ -30,11 +30,11 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {string} [options.direction] direction `"ltr"` OR `"rtl"`
  * @param {number} [options.minSpreadWidth] overridden by spread: none (never) / both (always)
  * @param {string} [options.stylesheet] url of stylesheet to be injected
- * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
- * @param {boolean|object} [options.snap=false] use snap scrolling
+ * @param {object} [options.snap] use snap scrolling
  * @param {boolean} [options.allowPopups=false] enable opening popup in content
  * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
+ * @param {boolean} [options.resizeOnOrientationChange=true] false to disable orientation events
  */
 class Rendition {
 	constructor(book, options) {
@@ -43,7 +43,7 @@ class Rendition {
 		 * @memberof Rendition
 		 * @readonly
 		 */
-		this.settings = extend(this.settings || {}, {
+		this.settings = extend({
 			width: null,
 			height: null,
 			manager: "default",
@@ -60,9 +60,7 @@ class Rendition {
 			allowPopups: false,
 			allowScriptedContent: false,
 			resizeOnOrientationChange: true,
-		});
-
-		extend(this.settings, options);
+		}, options || {});
 
 		if (typeof this.settings.manager === "object") {
 			this.manager = this.settings.manager;
@@ -216,10 +214,12 @@ class Rendition {
 		if (this.manager === undefined) {
 			const manager = this.requireManager(this.settings.manager);
 			const options = {
+				snap: this.settings.snap,
 				view: this.settings.view,
 				ignoreClass: this.settings.ignoreClass,
 				allowPopups: this.settings.allowPopups,
-				resizeOnOrientationChange: this.settings.resizeOnOrientationChange
+				allowScriptedContent: this.settings.allowScriptedContent,
+				resizeOnOrientationChange: this.settings.resizeOnOrientationChange,
 			};
 			this.manager = new manager(this.book, this.layout, options);
 		}
