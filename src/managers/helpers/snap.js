@@ -1,33 +1,39 @@
-import {extend, defer, requestAnimationFrame, prefixed} from "../../utils/core";
-import { EVENTS, DOM_EVENTS } from "../../utils/constants";
 import EventEmitter from "event-emitter";
+import { extend, defer } from "../../utils/core";
+import { EVENTS } from "../../utils/constants";
 
 // easing equations from https://github.com/danro/easing-js/blob/master/easing.js
 const PI_D2 = (Math.PI / 2);
 const EASING_EQUATIONS = {
-		easeOutSine: function (pos) {
-				return Math.sin(pos * PI_D2);
-		},
-		easeInOutSine: function (pos) {
-				return (-0.5 * (Math.cos(Math.PI * pos) - 1));
-		},
-		easeInOutQuint: function (pos) {
-				if ((pos /= 0.5) < 1) {
-						return 0.5 * Math.pow(pos, 5);
-				}
-				return 0.5 * (Math.pow((pos - 2), 5) + 2);
-		},
-		easeInCubic: function(pos) {
-			return Math.pow(pos, 3);
-  	}
+	easeOutSine: (pos) => {
+		return Math.sin(pos * PI_D2);
+	},
+	easeInOutSine: (pos) => {
+		return (-0.5 * (Math.cos(Math.PI * pos) - 1));
+	},
+	easeInOutQuint: (pos) => {
+		if ((pos /= 0.5) < 1) {
+			return 0.5 * Math.pow(pos, 5);
+		}
+		return 0.5 * (Math.pow((pos - 2), 5) + 2);
+	},
+	easeInCubic: (pos) => {
+		return Math.pow(pos, 3);
+	}
 };
 
 /**
  * Snap
- * @param {*} manager
- * @param {object} options
  */
 class Snap {
+	/**
+	 * Constructor
+	 * @param {*} manager
+	 * @param {object} [options]
+	 * @param {number} [options.duration=80]
+	 * @param {number} [options.minVelocity=0.2]
+	 * @param {number} [options.minDistance=10]
+	 */
 	constructor(manager, options) {
 
 		this.settings = extend({
@@ -37,9 +43,7 @@ class Snap {
 			easing: EASING_EQUATIONS['easeInCubic']
 		}, options || {});
 
-		this.supportsTouch = this.supportsTouch();
-
-		if (this.supportsTouch) {
+		if (this.supportsTouch()) {
 			this.setup(manager);
 		}
 	}
@@ -49,11 +53,11 @@ class Snap {
 	 * @param {*} manager 
 	 */
 	setup(manager) {
+
 		this.manager = manager;
-
 		this.layout = this.manager.layout;
-
 		this.fullsize = this.manager.settings.fullsize;
+
 		if (this.fullsize) {
 			this.element = this.manager.stage.element;
 			this.scroller = window;
@@ -61,26 +65,21 @@ class Snap {
 		} else {
 			this.element = this.manager.stage.container;
 			this.scroller = this.element;
-			this.element.style["WebkitOverflowScrolling"] = "touch";
 		}
-
-		// this.overflow = this.manager.overflow;
 
 		// set lookahead offset to page width
 		this.manager.settings.offset = this.layout.width;
 		this.manager.settings.afterScrolledTimeout = this.settings.duration * 2;
-
 		this.isVertical = this.manager.settings.axis === "vertical";
 
 		// disable snapping if not paginated or axis in not horizontal
-		if (!this.manager.isPaginated || this.isVertical) {
+		if (!this.manager.paginated || this.isVertical) {
 			return;
 		}
 
 		this.touchCanceler = false;
 		this.resizeCanceler = false;
 		this.snapping = false;
-
 
 		this.scrollLeft;
 		this.scrollTop;
@@ -100,85 +99,76 @@ class Snap {
 	 * @returns {boolean}
 	 */
 	supportsTouch() {
-		if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
-			return true;
-		}
 
-		return false;
+		return ("ontouchstart" in window) || window.DocumentTouch && document instanceof DocumentTouch;
 	}
 
 	/**
 	 * disableScroll
+	 * @private
 	 */
 	disableScroll() {
-		this.element.style.overflow = "hidden";
+
+		//this.element.style.overflow = "hidden";
 	}
 
 	/**
 	 * enableScroll
+	 * @private
 	 */
 	enableScroll() {
-		this.element.style.overflow = "";
+
+		//this.element.style.overflow = null;
 	}
 
 	/**
 	 * addListeners
+	 * @private
 	 */
 	addListeners() {
-		this._onResize = this.onResize.bind(this);
-		window.addEventListener('resize', this._onResize);
 
-		this._onScroll = this.onScroll.bind(this);
-		this.scroller.addEventListener('scroll', this._onScroll);
+		window.addEventListener("resize", this.onResize.bind(this));
 
-		this._onTouchStart = this.onTouchStart.bind(this);
-		this.scroller.addEventListener('touchstart', this._onTouchStart, { passive: true });
-		this.on('touchstart', this._onTouchStart);
+		this.scroller.addEventListener("scroll", this.onScroll.bind(this));
+		this.scroller.addEventListener("touchstart", this.onTouchStart.bind(this), { passive: true });
+		this.scroller.addEventListener("touchmove", this.onTouchMove.bind(this), { passive: true });
+		this.scroller.addEventListener("touchend", this.onTouchEnd.bind(this), { passive: true });
 
-		this._onTouchMove = this.onTouchMove.bind(this);
-		this.scroller.addEventListener('touchmove', this._onTouchMove, { passive: true });
-		this.on('touchmove', this._onTouchMove);
+		this.on("touchstart", this.onTouchStart.bind(this));
+		this.on("touchmove", this.onTouchMove.bind(this));
+		this.on("touchend", this.onTouchEnd.bind(this));
 
-		this._onTouchEnd = this.onTouchEnd.bind(this);
-		this.scroller.addEventListener('touchend', this._onTouchEnd, { passive: true });
-		this.on('touchend', this._onTouchEnd);
-
-		this._afterDisplayed = this.afterDisplayed.bind(this);
-		this.manager.on(EVENTS.MANAGERS.ADDED, this._afterDisplayed);
+		this.manager.on(EVENTS.MANAGERS.ADDED, this.afterDisplayed.bind(this));
 	}
 
 	/**
 	 * removeListeners
+	 * @private
 	 */
 	removeListeners() {
-		window.removeEventListener('resize', this._onResize);
-		this._onResize = undefined;
 
-		this.scroller.removeEventListener('scroll', this._onScroll);
-		this._onScroll = undefined;
+		window.removeEventListener("resize", this.onResize.bind(this));
 
-		this.scroller.removeEventListener('touchstart', this._onTouchStart, { passive: true });
-		this.off('touchstart', this._onTouchStart);
-		this._onTouchStart = undefined;
+		this.scroller.removeEventListener("scroll", this.onScroll.bind(this));
+		this.scroller.removeEventListener("touchstart", this.onTouchStart.bind(this), { passive: true });
+		this.scroller.removeEventListener("touchmove", this.onTouchMove.bind(this), { passive: true });
+		this.scroller.removeEventListener("touchend", this.onTouchEnd.bind(this), { passive: true });
 
-		this.scroller.removeEventListener('touchmove', this._onTouchMove, { passive: true });
-		this.off('touchmove', this._onTouchMove);
-		this._onTouchMove = undefined;
+		this.off("touchstart", this.onTouchStart.bind(this));
+		this.off("touchmove", this.onTouchMove.bind(this));
+		this.off("touchend", this.onTouchEnd.bind(this));
 
-		this.scroller.removeEventListener('touchend', this._onTouchEnd, { passive: true });
-		this.off('touchend', this._onTouchEnd);
-		this._onTouchEnd = undefined;
-
-		this.manager.off(EVENTS.MANAGERS.ADDED, this._afterDisplayed);
-		this._afterDisplayed = undefined;
+		this.manager.off(EVENTS.MANAGERS.ADDED, this.afterDisplayed.bind(this));
 	}
 
 	/**
 	 * afterDisplayed
-	 * @param {*} view 
+	 * @param {*} view
+	 * @private
 	 */
 	afterDisplayed(view) {
-		let contents = view.contents;
+
+		const contents = view.contents;
 		["touchstart", "touchmove", "touchend"].forEach((e) => {
 			contents.on(e, (ev) => this.triggerViewEvent(ev, contents));
 		});
@@ -186,36 +176,44 @@ class Snap {
 
 	/**
 	 * triggerViewEvent
-	 * @param {*} e 
-	 * @param {*} contents 
+	 * @param {Event} e 
+	 * @param {Contents} contents 
+	 * @private
 	 */
-	triggerViewEvent(e, contents){
+	triggerViewEvent(e, contents) {
+
 		this.emit(e.type, e, contents);
 	}
 
 	/**
 	 * onScroll
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onScroll(e) {
+
 		this.scrollLeft = this.fullsize ? window.scrollX : this.scroller.scrollLeft;
 		this.scrollTop = this.fullsize ? window.scrollY : this.scroller.scrollTop;
 	}
 
 	/**
 	 * onResize
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onResize(e) {
+
 		this.resizeCanceler = true;
 	}
 
 	/**
 	 * onTouchStart
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onTouchStart(e) {
-		let { screenX, screenY } = e.touches[0];
+
+		const { screenX, screenY } = e.touches[0];
 
 		if (this.fullsize) {
 			this.enableScroll();
@@ -226,24 +224,25 @@ class Snap {
 		if (!this.startTouchX) {
 			this.startTouchX = screenX;
 			this.startTouchY = screenY;
-			this.startTime = this.now();
+			this.startTime = new Date().getTime();
 		}
 
 		this.endTouchX = screenX;
 		this.endTouchY = screenY;
-		this.endTime = this.now();
+		this.endTime = new Date().getTime();
 	}
 
 	/**
 	 * onTouchMove
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onTouchMove(e) {
-		let { screenX, screenY } = e.touches[0];
-		let deltaY = Math.abs(screenY - this.endTouchY);
+
+		const { screenX, screenY } = e.touches[0];
+		const deltaY = Math.abs(screenY - this.endTouchY);
 
 		this.touchCanceler = true;
-
 
 		if (!this.fullsize && deltaY < 10) {
 			this.element.scrollLeft -= screenX - this.endTouchX;
@@ -251,20 +250,21 @@ class Snap {
 
 		this.endTouchX = screenX;
 		this.endTouchY = screenY;
-		this.endTime = this.now();
+		this.endTime = new Date().getTime();
 	}
 
 	/**
 	 * onTouchEnd
-	 * @param {*} e 
+	 * @param {Event} e 
+	 * @private
 	 */
 	onTouchEnd(e) {
+
 		if (this.fullsize) {
 			this.disableScroll();
 		}
 
 		this.touchCanceler = false;
-
 		let swipped = this.wasSwiped();
 
 		if (swipped !== 0) {
@@ -286,23 +286,22 @@ class Snap {
 	 * @returns {number}
 	 */
 	wasSwiped() {
-		let snapWidth = this.layout.pageWidth * this.layout.divisor;
-		let distance = (this.endTouchX - this.startTouchX);
-		let absolute = Math.abs(distance);
-		let time = this.endTime - this.startTime;
-		let velocity = (distance / time);
-		let minVelocity = this.settings.minVelocity;
+
+		const snapWidth = this.layout.pageWidth * this.layout.divisor;
+		const distance = (this.endTouchX - this.startTouchX);
+		const absolute = Math.abs(distance);
+		const time = this.endTime - this.startTime;
+		const velocity = (distance / time);
+		const minVelocity = this.settings.minVelocity;
 
 		if (absolute <= this.settings.minDistance || absolute >= snapWidth) {
 			return 0;
 		}
 
 		if (velocity > minVelocity) {
-			// previous
-			return -1;
+			return -1; // previous
 		} else if (velocity < -minVelocity) {
-			// next
-			return 1;
+			return 1; // next
 		}
 	}
 
@@ -311,8 +310,9 @@ class Snap {
 	 * @returns {boolean}
 	 */
 	needsSnap() {
-		let left = this.scrollLeft;
-		let snapWidth = this.layout.pageWidth * this.layout.divisor;
+
+		const left = this.scrollLeft;
+		const snapWidth = this.layout.pageWidth * this.layout.divisor;
 		return (left % snapWidth) !== 0;
 	}
 
@@ -321,9 +321,10 @@ class Snap {
 	 * @param {number} [howMany=0] 
 	 * @returns {Promise}
 	 */
-	snap(howMany=0) {
-		let left = this.scrollLeft;
-		let snapWidth = this.layout.pageWidth * this.layout.divisor;
+	snap(howMany = 0) {
+
+		const left = this.scrollLeft;
+		const snapWidth = this.layout.pageWidth * this.layout.divisor;
 		let snapTo = Math.round(left / snapWidth) * snapWidth;
 
 		if (howMany) {
@@ -335,25 +336,23 @@ class Snap {
 
 	/**
 	 * smoothScrollTo
-	 * @param {*} destination 
+	 * @param {number} destination 
 	 * @returns {Promise}
 	 */
 	smoothScrollTo(destination) {
+
 		const deferred = new defer();
 		const start = this.scrollLeft;
-		const startTime = this.now();
-
+		const startTime = new Date().getTime();
 		const duration = this.settings.duration;
-		const easing = this.settings.easing;
 
 		this.snapping = true;
 
 		// add animation loop
-		function tick() {
-			const now = this.now();
-			const time = Math.min(1, ((now - startTime) / duration));
-			const timeFunction = easing(time);
+		const tick = () => {
 
+			const now = new Date().getTime();
+			const time = Math.min(1, ((now - startTime) / duration));
 
 			if (this.touchCanceler || this.resizeCanceler) {
 				this.resizeCanceler = false;
@@ -363,12 +362,12 @@ class Snap {
 			}
 
 			if (time < 1) {
-					window.requestAnimationFrame(tick.bind(this));
-					this.scrollTo(start + ((destination - start) * time), 0);
+				window.requestAnimationFrame(tick.bind(this));
+				this.scrollTo(start + ((destination - start) * time), 0);
 			} else {
-					this.scrollTo(destination, 0);
-					this.snapping = false;
-					deferred.resolve();
+				this.scrollTo(destination, 0);
+				this.snapping = false;
+				deferred.resolve();
 			}
 		}
 
@@ -382,7 +381,8 @@ class Snap {
 	 * @param {number} [left=0] 
 	 * @param {number} [top=0] 
 	 */
-	scrollTo(left=0, top=0) {
+	scrollTo(left = 0, top = 0) {
+
 		if (this.fullsize) {
 			window.scroll(left, top);
 		} else {
@@ -392,19 +392,12 @@ class Snap {
 	}
 
 	/**
-	 * now
-	 * @returns {number}
-	 */
-	now() {
-		return ('now' in window.performance) ? performance.now() : new Date().getTime();
-	}
-
-	/**
 	 * destroy
 	 * @returns {void}
 	 */
 	destroy() {
-		if (!this.scroller) {
+
+		if (typeof this.scroller === "undefined") {
 			return;
 		}
 
@@ -413,7 +406,6 @@ class Snap {
 		}
 
 		this.removeListeners();
-
 		this.scroller = undefined;
 	}
 }
