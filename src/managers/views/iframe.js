@@ -369,7 +369,6 @@ class IframeView {
 			}
 		});
 
-		this.onResize(this, size);
 		this.emit(EVENTS.VIEWS.RESIZED, size);
 		this.prevBounds = size;
 		this.elementBounds = bounds(this.element);
@@ -504,7 +503,7 @@ class IframeView {
 	 * @param {string} mode 
 	 */
 	setWritingMode(mode) {
-		// this.element.style.writingMode = mode;
+
 		this.writingMode = mode;
 	}
 
@@ -529,8 +528,7 @@ class IframeView {
 
 			this.render(request).then(() => {
 
-				this.emit(EVENTS.VIEWS.DISPLAYED, this);
-				this.onDisplayed(this);
+				this.emit(EVENTS.VIEWS.DISPLAYED);
 				this.displayed = true;
 				displayed.resolve(this);
 			}, (err) => {
@@ -611,19 +609,6 @@ class IframeView {
 			"top": targetPos.top
 		};
 	}
-
-	/**
-	 * Stub, override with a custom functions
-	 * @param {*} view 
-	 */
-	onDisplayed(view) {}
-
-	/**
-	 * Stub, override with a custom functions
-	 * @param {*} view 
-	 * @param {Event} e 
-	 */
-	onResize(view, e) {}
 
 	/**
 	 * bounds

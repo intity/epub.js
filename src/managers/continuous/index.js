@@ -1,74 +1,94 @@
-import {extend, defer, requestAnimationFrame} from "../../utils/core";
+import { extend, defer, requestAnimationFrame } from "../../utils/core";
 import DefaultViewManager from "../default";
 import Snap from "../helpers/snap";
 import { EVENTS } from "../../utils/constants";
 import debounce from "lodash/debounce";
 
 /**
- * ContinuousViewManager
- * @param {object} options
+ * Continuous view manager
  * @extends {DefaultViewManager}
  */
 class ContinuousViewManager extends DefaultViewManager {
-	constructor(options) {
-		super(options);
+	/**
+	 * Constructor
+	 * @param {Book} book
+	 * @param {object} [options]
+	 * @param {string} [options.axis]
+	 * @param {object} [options.snap]
+	 * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
+	 * @param {string} [options.ignoreClass='']
+	 * @param {string|object} [options.view='iframe']
+	 */
+	constructor(book, layout, options) {
 
+		super(book, layout, options);
+		/**
+		 * @member {string} name
+		 * @memberof ContinuousViewManager
+		 * @readonly
+		 */
 		this.name = "continuous";
-
-		this.settings = extend(this.settings || {}, {
-			infinite: true,
-			overflow: undefined,
-			axis: undefined,
-			writingMode: undefined,
-			flow: "scrolled",
+		this.settings = extend({
+			axis: null,
+			snap: null,
+			view: "iframe",
+			method: null,
 			offset: 500,
 			offsetDelta: 250,
-			width: undefined,
-			height: undefined,
-			snap: false,
+			ignoreClass: "",
+			writingMode: undefined,
+			allowPopups: false,
 			afterScrolledTimeout: 10,
 			allowScriptedContent: false,
-			allowPopups: false
-		});
-
-		extend(this.settings, options.settings || {});
-
-		// Gap can be 0, but defaults doesn't handle that
-		if (options.settings.gap != "undefined" && options.settings.gap === 0) {
-			this.settings.gap = options.settings.gap;
-		}
-
-		this.viewSettings = {
-			ignoreClass: this.settings.ignoreClass,
-			axis: this.settings.axis,
-			flow: this.settings.flow,
-			layout: this.layout,
-			width: 0,
-			height: 0,
-			forceEvenPages: false,
-			allowScriptedContent: this.settings.allowScriptedContent,
-			allowPopups: this.settings.allowPopups
-		};
+			resizeOnOrientationChange: true,
+			forceEvenPages: false
+		}, options || {});
 
 		this.scrollTop = 0;
 		this.scrollLeft = 0;
 	}
 
-	display(section, target){
-		return DefaultViewManager.prototype.display.call(this, section, target)
-			.then(function () {
-				return this.fill();
-			}.bind(this));
+	/**
+	 * render
+	 * @param {Element} element 
+	 * @param {object} size 
+	 * @override
+	 */
+	render(element, size) {
+
+		super.render(element, size);
+
+		if (this.paginated && this.settings.snap) {
+			this.snapper = new Snap(this, this.settings.snap);
+		}
 	}
 
-	fill(_full){
-		var full = _full || new defer();
+	/**
+	 * display
+	 * @param {Section} section 
+	 * @param {string|number} [target] 
+	 * @returns {Promise} displaying promise
+	 * @override
+	 */
+	async display(section, target) {
+
+		return super.display(section, target).then(() => this.fill());
+	}
+
+	/**
+	 * fill
+	 * @param {defer} value
+	 * @returns {Promise}
+	 */
+	fill(value) {
+
+		const full = value || new defer();
 
 		this.q.enqueue(() => {
 			return this.check();
 		}).then((result) => {
 			if (result) {
-				this.fill(full);
+				this.fill(full); // recursive call
 			} else {
 				full.resolve();
 			}
@@ -77,21 +97,22 @@ class ContinuousViewManager extends DefaultViewManager {
 		return full.promise;
 	}
 
-	moveTo(offset){
-		// var bounds = this.stage.bounds();
-		// var dist = Math.floor(offset.top / bounds.height) * bounds.height;
-		var distX = 0,
-				distY = 0;
+	/**
+	 * moveTo
+	 * @param {object} offset 
+	 * @override
+	 */
+	moveTo(offset) {
 
-		var offsetX = 0,
-				offsetY = 0;
+		let distX = 0, distY = 0;
+		let offsetX = 0, offsetY = 0; // unused
 
-		if(!this.isPaginated) {
-			distY = offset.top;
-			offsetY = offset.top+this.settings.offsetDelta;
-		} else {
+		if (this.paginated) {
 			distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
-			offsetX = distX+this.settings.offsetDelta;
+			offsetX = distX + this.settings.offsetDelta;
+		} else {
+			distY = offset.top;
+			offsetY = offset.top + this.settings.offsetDelta;
 		}
 
 		if (distX > 0 || distY > 0) {
@@ -99,26 +120,31 @@ class ContinuousViewManager extends DefaultViewManager {
 		}
 	}
 
-	afterResized(view){
-		this.emit(EVENTS.MANAGERS.RESIZE, view.section);
+	/**
+	 * Remove Previous Listeners if present
+	 * @param {*} view 
+	 */
+	removeShownListeners(view) {
+
+		view.off(EVENTS.VIEWS.DISPLAYED);
 	}
 
-	// Remove Previous Listeners if present
-	removeShownListeners(view){
+	/**
+	 * add
+	 * @param {Section} section 
+	 * @returns {Promise}
+	 * @override
+	 */
+	add(section) {
 
-		// view.off("shown", this.afterDisplayed);
-		// view.off("shown", this.afterDisplayedAbove);
-		view.onDisplayed = function(){};
+		const view = this.createView(section);
 
-	}
-
-	add(section){
-		var view = this.createView(section);
-
-		this.views.append(view);
+		view.on(EVENTS.VIEWS.DISPLAYED, () => {
+			this.afterDisplayed(view);
+		});
 
 		view.on(EVENTS.VIEWS.RESIZED, (bounds) => {
-			view.expanded = true;
+			this.afterResized(view);
 		});
 
 		view.on(EVENTS.VIEWS.AXIS, (axis) => {
@@ -129,18 +155,27 @@ class ContinuousViewManager extends DefaultViewManager {
 			this.updateWritingMode(mode);
 		});
 
-		// view.on(EVENTS.VIEWS.SHOWN, this.afterDisplayed.bind(this));
-		view.onDisplayed = this.afterDisplayed.bind(this);
-		view.onResize = this.afterResized.bind(this);
+		this.views.append(view);
 
 		return view.display(this.request);
 	}
 
-	append(section){
-		var view = this.createView(section);
+	/**
+	 * Append view
+	 * @param {Section} section 
+	 * @returns {*} view
+	 * @override
+	 */
+	append(section) {
+
+		const view = this.createView(section);
+
+		view.on(EVENTS.VIEWS.DISPLAYED, () => {
+			this.afterDisplayed(view);
+		});
 
 		view.on(EVENTS.VIEWS.RESIZED, (bounds) => {
-			view.expanded = true;
+			this.afterResized(view);
 		});
 
 		view.on(EVENTS.VIEWS.AXIS, (axis) => {
@@ -153,17 +188,26 @@ class ContinuousViewManager extends DefaultViewManager {
 
 		this.views.append(view);
 
-		view.onDisplayed = this.afterDisplayed.bind(this);
-
 		return view;
 	}
 
-	prepend(section){
-		var view = this.createView(section);
+	/**
+	 * Prepend view
+	 * @param {Section} section 
+	 * @returns {*} view
+	 * @override
+	 */
+	prepend(section) {
+
+		const view = this.createView(section);
+
+		view.on(EVENTS.VIEWS.DISPLAYED, () => {
+			this.afterDisplayed(view);
+		});
 
 		view.on(EVENTS.VIEWS.RESIZED, (bounds) => {
 			this.counter(bounds);
-			view.expanded = true;
+			this.afterResized(view);
 		});
 
 		view.on(EVENTS.VIEWS.AXIS, (axis) => {
@@ -176,99 +220,99 @@ class ContinuousViewManager extends DefaultViewManager {
 
 		this.views.prepend(view);
 
-		view.onDisplayed = this.afterDisplayed.bind(this);
-
 		return view;
 	}
 
-	counter(bounds){
-		if(this.settings.axis === "vertical") {
-			this.scrollBy(0, bounds.heightDelta, true);
-		} else {
-			this.scrollBy(bounds.widthDelta, 0, true);
-		}
-	}
+	/**
+	 * update
+	 * @param {number} [offset] 
+	 * @returns 
+	 */
+	async update(offset) {
 
-	update(_offset){
-		var container = this.bounds();
-		var views = this.views.all();
-		var viewsLength = views.length;
-		var visible = [];
-		var offset = typeof _offset != "undefined" ? _offset : (this.settings.offset || 0);
-		var isVisible;
-		var view;
+		const rect = this.bounds();
+		const views = this.views;
+		const visible = [];
+		const _offset = typeof offset !== "undefined" ? offset : (this.settings.offset || 0);
+		const updating = new defer();
+		const promises = [];
 
-		var updating = new defer();
-		var promises = [];
-		for (var i = 0; i < viewsLength; i++) {
-			view = views[i];
+		for (let i = 0; i < views.length; i++) {
 
-			isVisible = this.isVisible(view, offset, offset, container);
+			const view = views[i];
+			const isVisible = this.isVisible(view, _offset, _offset, rect);
 
-			if(isVisible === true) {
-				// console.log("visible " + view.index, view.displayed);
-
-				if (!view.displayed) {
-					let displayed = view.display(this.request)
-						.then(function (view) {
+			if (isVisible === true) {
+				if (view.displayed) {
+					view.show();
+				} else {
+					const displayed = view.display(this.request)
+						.then((view) => {
 							view.show();
 						}, (err) => {
 							view.hide();
+							console.error(err);
 						});
 					promises.push(displayed);
-				} else {
-					view.show();
 				}
 				visible.push(view);
 			} else {
 				this.q.enqueue(view.destroy.bind(view));
-				// console.log("hidden " + view.index, view.displayed);
+				// console.log("hidden " + view.section.index, view.displayed);
 
 				clearTimeout(this.trimTimeout);
-				this.trimTimeout = setTimeout(function(){
+				this.trimTimeout = setTimeout(() => {
 					this.q.enqueue(this.trim.bind(this));
-				}.bind(this), 250);
+				}, 250);
 			}
-
 		}
 
-		if(promises.length){
-			return Promise.all(promises)
-				.catch((err) => {
-					updating.reject(err);
-				});
+		if (promises.length) {
+			return Promise.all(promises).catch((err) => {
+				updating.reject(err);
+			});
 		} else {
 			updating.resolve();
 			return updating.promise;
 		}
-
 	}
 
-	check(_offsetLeft, _offsetTop){
-		var checking = new defer();
-		var newViews = [];
+	/**
+	 * check
+	 * @param {number} [offsetLeft]
+	 * @param {number} [offsetTop]
+	 * @returns {Promise}
+	 */
+	check(offsetLeft, offsetTop) {
 
-		var horizontal = (this.settings.axis === "horizontal");
-		var delta = this.settings.offset || 0;
+		const checking = new defer();
+		const newViews = [];
+		const horizontal = (this.settings.axis === "horizontal");
+		let delta = this.settings.offset || 0;
 
-		if (_offsetLeft && horizontal) {
-			delta = _offsetLeft;
+		if (offsetLeft && horizontal) {
+			delta = offsetLeft;
 		}
 
-		if (_offsetTop && !horizontal) {
-			delta = _offsetTop;
+		if (offsetTop && !horizontal) {
+			delta = offsetTop;
 		}
 
-		var bounds = this._bounds; // bounds saved this until resize
-
+		const bounds = this.bounds(); // bounds saved this until resize
+		const visibleLength = horizontal ? Math.floor(bounds.width) : bounds.height;
+		const contentLength = horizontal ? this.container.scrollWidth : this.container.scrollHeight;
+		const writingMode = (this.writingMode && this.writingMode.indexOf("vertical") === 0) ? "vertical" : "horizontal";
+		const rtlScrollType = this.settings.rtlScrollType;
+		const rtl = this.layout.direction === "rtl";
 		let offset = horizontal ? this.scrollLeft : this.scrollTop;
-		let visibleLength = horizontal ? Math.floor(bounds.width) : bounds.height;
-		let contentLength = horizontal ? this.container.scrollWidth : this.container.scrollHeight;
-		let writingMode = (this.writingMode && this.writingMode.indexOf("vertical") === 0) ? "vertical" : "horizontal";
-		let rtlScrollType = this.settings.rtlScrollType;
-		let rtl = this.settings.direction === "rtl";
 
-		if (!this.settings.fullsize) {
+		if (this.settings.fullsize) {
+			// Scroll offset starts at 0 and goes negative
+			if ((horizontal && rtl && rtlScrollType === "negative") ||
+				(!horizontal && rtl && rtlScrollType === "default")) {
+				offset = offset * -1;
+			}
+		} else {
 			// Scroll offset starts at width of element
 			if (rtl && rtlScrollType === "default" && writingMode === "horizontal") {
 				offset = contentLength - visibleLength - offset;
@@ -277,88 +321,83 @@ class ContinuousViewManager extends DefaultViewManager {
 			if (rtl && rtlScrollType === "negative" && writingMode === "horizontal") {
 				offset = offset * -1;
 			}
-		} else {
-			// Scroll offset starts at 0 and goes negative
-			if ((horizontal && rtl && rtlScrollType === "negative") ||
-				(!horizontal && rtl && rtlScrollType === "default")) {
-				offset = offset * -1;
-			}
 		}
 
-		let prepend = () => {
-			let first = this.views.first();
-			let prev = first && first.section.prev();
+		const append = () => {
 
-			if(prev) {
+			const last = this.views.last();
+			const next = last && last.section.next();
+
+			if (next) {
+				newViews.push(this.append(next));
+			}
+		};
+
+		const prepend = () => {
+
+			const first = this.views.first();
+			const prev = first && first.section.prev();
+
+			if (prev) {
 				newViews.push(this.prepend(prev));
 			}
 		};
 
-		let append = () => {
-			let last = this.views.last();
-			let next = last && last.section.next();
-
-			if(next) {
-				newViews.push(this.append(next));
-			}
-
-		};
-
-		let end = offset + visibleLength + delta;
-		let start = offset - delta;
+		const end = offset + visibleLength + delta;
+		const start = offset - delta;
 
 		if (end >= contentLength) {
 			append();
 		}
-		
+
 		if (start < 0) {
 			prepend();
 		}
-		
 
-		let promises = newViews.map((view) => {
+		const promises = newViews.map((view) => {
 			return view.display(this.request);
 		});
 
-		if(newViews.length){
-			return Promise.all(promises)
-				.then(() => {
-					return this.check();
-				})
-				.then(() => {
-					// Check to see if anything new is on screen after rendering
-					return this.update(delta);
-				}, (err) => {
-					return err;
-				});
+		if (newViews.length) {
+			return Promise.all(promises).then(() => {
+				return this.check();
+			}).then(() => {
+				// Check to see if anything new is on screen after rendering
+				return this.update(delta);
+			}, (err) => {
+				return err;
+			});
 		} else {
-			this.q.enqueue(function(){
+			this.q.enqueue(() => {
 				this.update();
-			}.bind(this));
+			});
 			checking.resolve(false);
 			return checking.promise;
 		}
-
-
 	}
 
-	trim(){
-		var task = new defer();
-		var displayed = this.views.displayed();
-		var first = displayed[0];
-		var last = displayed[displayed.length-1];
-		var firstIndex = this.views.indexOf(first);
-		var lastIndex = this.views.indexOf(last);
-		var above = this.views.slice(0, firstIndex);
-		var below = this.views.slice(lastIndex+1);
+	/**
+	 * trim
+	 * @returns {Promise}
+	 */
+	trim() {
+
+		const task = new defer();
+		const displayed = this.views.displayed();
+		const first = displayed[0];
+		const last = displayed[displayed.length - 1];
+		const firstIndex = this.views.indexOf(first);
+		const lastIndex = this.views.indexOf(last);
+		const above = this.views.slice(0, firstIndex);
+		const below = this.views.slice(lastIndex + 1);
 
 		// Erase all but last above
-		for (var i = 0; i < above.length-1; i++) {
+		for (let i = 0; i < above.length - 1; i++) {
 			this.erase(above[i], above);
 		}
 
 		// Erase all except first below
-		for (var j = 1; j < below.length; j++) {
+		for (let j = 1; j < below.length; j++) {
 			this.erase(below[j]);
 		}
 
@@ -366,28 +405,32 @@ class ContinuousViewManager extends DefaultViewManager {
 		return task.promise;
 	}
 
-	erase(view, above){ //Trim
+	/**
+	 * erase
+	 * @param {*} view 
+	 * @param {*} above 
+	 */
+	erase(view, above) {
 
-		var prevTop;
-		var prevLeft;
+		let prevTop;
+		let prevLeft;
 
-		if(!this.settings.fullsize) {
-			prevTop = this.container.scrollTop;
-			prevLeft = this.container.scrollLeft;
-		} else {
+		if (this.settings.fullsize) {
 			prevTop = window.scrollY;
 			prevLeft = window.scrollX;
+		} else {
+			prevTop = this.container.scrollTop;
+			prevLeft = this.container.scrollLeft;
 		}
 
-		var bounds = view.bounds();
-
+		const bounds = view.bounds();
 		this.views.remove(view);
-		
-		if(above) {
+
+		if (above) {
 			if (this.settings.axis === "vertical") {
 				this.scrollTo(0, prevTop - bounds.height, true);
 			} else {
-				if(this.settings.direction === 'rtl') {
+				if (this.layout.direction === "rtl") {
 					if (!this.settings.fullsize) {
 						this.scrollTo(prevLeft, 0, true);
 					} else {
@@ -398,35 +441,43 @@ class ContinuousViewManager extends DefaultViewManager {
 				}
 			}
 		}
-
 	}
 
-	addEventListeners(stage){
+	/**
+	 * addEventListeners
+	 * @override
+	 */
+	addEventListeners() {
 
-		window.addEventListener("unload", function(e){
+		window.onpagehide = (e) => {
 			this.ignore = true;
-			// this.scrollTo(0,0);
 			this.destroy();
-		}.bind(this));
+		};
 
 		this.addScrollListeners();
-
-		if (this.isPaginated && this.settings.snap) {
-			this.snapper = new Snap(this, this.settings.snap && (typeof this.settings.snap === "object") && this.settings.snap);
-		}
 	}
 
+	/**
+	 * addScrollListeners
+	 * @private
+	 */
 	addScrollListeners() {
-		var scroller;
 
 		this.tick = requestAnimationFrame;
 
-		let dir = this.settings.direction === "rtl" && this.settings.rtlScrollType === "default" ? -1 : 1;
+		let dir;
+		if (this.layout.direction === "rtl" &&
+			this.settings.rtlScrollType === "default") {
+			dir = -1;
+		} else {
+			dir = 1;
+		}
 
 		this.scrollDeltaVert = 0;
 		this.scrollDeltaHorz = 0;
 
-		if(!this.settings.fullsize) {
+		let scroller;
+		if (!this.settings.fullsize) {
 			scroller = this.container;
 			this.scrollTop = this.container.scrollTop;
 			this.scrollLeft = this.container.scrollLeft;
@@ -436,34 +487,44 @@ class ContinuousViewManager extends DefaultViewManager {
 			this.scrollLeft = window.scrollX * dir;
 		}
 
-		this._onScroll = this.onScroll.bind(this);
-		scroller.addEventListener("scroll", this._onScroll);
+		scroller.addEventListener("scroll", this.onScroll.bind(this));
 		this._scrolled = debounce(this.scrolled.bind(this), 30);
-		// this.tick.call(window, this.onScroll.bind(this));
-
 		this.didScroll = false;
-
 	}
 
-	removeEventListeners(){
-		var scroller;
+	/**
+	 * removeEventListeners
+	 * @override
+	 */
+	removeEventListeners() {
 
-		if(!this.settings.fullsize) {
-			scroller = this.container;
-		} else {
+		let scroller;
+		if (this.settings.fullsize) {
 			scroller = window;
+		} else {
+			scroller = this.container;
 		}
 
-		scroller.removeEventListener("scroll", this._onScroll);
-		this._onScroll = undefined;
+		scroller.removeEventListener("scroll", this.onScroll.bind(this));
 	}
 
-	onScroll(){
+	/**
+	 * onScroll
+	 * @override
+	 */
+	onScroll() {
+
 		let scrollTop;
 		let scrollLeft;
-		let dir = this.settings.direction === "rtl" && this.settings.rtlScrollType === "default" ? -1 : 1;
+		let dir;
+		if (this.layout.direction === "rtl" &&
+			this.settings.rtlScrollType === "default") {
+			dir = -1;
+		} else {
+			dir = 1;
+		}
 
-		if(!this.settings.fullsize) {
+		if (!this.settings.fullsize) {
 			scrollTop = this.container.scrollTop;
 			scrollLeft = this.container.scrollLeft;
 		} else {
@@ -474,7 +535,7 @@ class ContinuousViewManager extends DefaultViewManager {
 		this.scrollTop = scrollTop;
 		this.scrollLeft = scrollLeft;
 
-		if(!this.ignore) {
+		if (!this.ignore) {
 
 			this._scrolled();
 
@@ -482,29 +543,32 @@ class ContinuousViewManager extends DefaultViewManager {
 			this.ignore = false;
 		}
 
-		this.scrollDeltaVert += Math.abs(scrollTop-this.prevScrollTop);
-		this.scrollDeltaHorz += Math.abs(scrollLeft-this.prevScrollLeft);
+		this.scrollDeltaVert += Math.abs(scrollTop - this.prevScrollTop);
+		this.scrollDeltaHorz += Math.abs(scrollLeft - this.prevScrollLeft);
 
 		this.prevScrollTop = scrollTop;
 		this.prevScrollLeft = scrollLeft;
 
 		clearTimeout(this.scrollTimeout);
-		this.scrollTimeout = setTimeout(function(){
+		this.scrollTimeout = setTimeout(() => {
 			this.scrollDeltaVert = 0;
 			this.scrollDeltaHorz = 0;
-		}.bind(this), 150);
+		}, 150);
 
 		clearTimeout(this.afterScrolled);
 
 		this.didScroll = false;
-
 	}
 
+	/**
+	 * scrolled
+	 * @private
+	 */
 	scrolled() {
 
-		this.q.enqueue(function() {
+		this.q.enqueue(() => {
 			return this.check();
-		}.bind(this));
+		});
 
 		this.emit(EVENTS.MANAGERS.SCROLL, {
 			top: this.scrollTop,
@@ -512,10 +576,12 @@ class ContinuousViewManager extends DefaultViewManager {
 		});
 
 		clearTimeout(this.afterScrolled);
-		this.afterScrolled = setTimeout(function () {
+		this.afterScrolled = setTimeout(() => {
 
 			// Don't report scroll if we are about the snap
-			if (this.snapper && this.snapper.supportsTouch && this.snapper.needsSnap()) {
+			if (this.snapper &&
+				this.snapper.supportsTouch() &&
+				this.snapper.needsSnap()) {
 				return;
 			}
 
@@ -524,74 +590,76 @@ class ContinuousViewManager extends DefaultViewManager {
 				left: this.scrollLeft
 			});
 
-		}.bind(this), this.settings.afterScrolledTimeout);
+		}, this.settings.afterScrolledTimeout);
 	}
 
-	next(){
+	/**
+	 * next
+	 * @override
+	 */
+	next() {
 
-		let delta = this.layout.props.name === "pre-paginated" &&
-								this.layout.props.spread ? this.layout.props.delta * 2 : this.layout.props.delta;
+		let delta;
+		if (this.layout.name === "pre-paginated" &&
+			this.layout.spread === "auto") {
+			delta = this.layout.delta * 2;
+		} else {
+			delta = this.layout.delta;
+		}
 
-		if(!this.views.length) return;
-
-		if(this.isPaginated && this.settings.axis === "horizontal") {
-
+		if (this.views.length === 0) return;
+		if (this.paginated &&
+			this.settings.axis === "horizontal") {
 			this.scrollBy(delta, 0, true);
-
 		} else {
-
 			this.scrollBy(0, this.layout.height, true);
-
 		}
 
-		this.q.enqueue(function() {
+		this.q.enqueue(() => {
 			return this.check();
-		}.bind(this));
+		});
 	}
 
-	prev(){
+	/**
+	 * prev
+	 * @override
+	 */
+	prev() {
 
-		let delta = this.layout.props.name === "pre-paginated" &&
-								this.layout.props.spread ? this.layout.props.delta * 2 : this.layout.props.delta;
-
-		if(!this.views.length) return;
-
-		if(this.isPaginated && this.settings.axis === "horizontal") {
-
-			this.scrollBy(-delta, 0, true);
-
+		let delta;
+		if (this.layout.name === "pre-paginated" &&
+			this.layout.spread === "auto") {
+			delta = this.layout.delta * 2;
 		} else {
+			delta = this.layout.delta;
+		}
 
+		if (this.views.length === 0) return;
+
+		if (this.paginated &&
+			this.settings.axis === "horizontal") {
+			this.scrollBy(-delta, 0, true);
+		} else {
 			this.scrollBy(0, -this.layout.height, true);
-
 		}
 
-		this.q.enqueue(function() {
+		this.q.enqueue(() => {
 			return this.check();
-		}.bind(this));
+		});
 	}
 
-	updateFlow(flow){
-		if (this.rendered && this.snapper) {
-			this.snapper.destroy();
-			this.snapper = undefined;
-		}
+	/**
+	 * destroy
+	 * @override
+	 */
+	destroy() {
 
-		super.updateFlow(flow, "scroll");
-
-		if (this.rendered && this.isPaginated && this.settings.snap) {
-			this.snapper = new Snap(this, this.settings.snap && (typeof this.settings.snap === "object") && this.settings.snap);
-		}
-	}
-
-	destroy(){
 		super.destroy();
 
 		if (this.snapper) {
 			this.snapper.destroy();
 		}
 	}
-
 }
 
 export default ContinuousViewManager;

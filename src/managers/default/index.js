@@ -2,6 +2,7 @@ import EventEmitter from "event-emitter";
 import Mapping from "../../mapping";
 import Stage from "../helpers/stage";
 import Views from "../helpers/views";
+import Queue from "../../utils/queue";
 import IframeView from "../views/iframe";
 import scrollType from "../../utils/scrolltype";
 import { EVENTS } from "../../utils/constants";
@@ -38,11 +39,12 @@ class DefaultViewManager {
 			hidden: false,
 			method: null,
 			fullsize: null,
-			allowPopups: false,
 			ignoreClass: "",
 			writingMode: undefined,
+			allowPopups: false,
 			allowScriptedContent: false,
-			resizeOnOrientationChange: false
+			resizeOnOrientationChange: true,
+			forceEvenPages: true
 		}, options || {});
 		/**
 		 * @member {Layout} layout
@@ -80,6 +82,7 @@ class DefaultViewManager {
 		 * @readonly
 		 */
 		this.rendered = false;
+		this.q = new Queue(this);
 	}
 
 	/**
@@ -143,14 +146,12 @@ class DefaultViewManager {
 		// Function to handle a resize event.
 		// Will only attach if width and height are both fixed.
 		this.stage.onResize(this.onResized.bind(this));
-
 		this.stage.onOrientationChange(this.onOrientationChange.bind(this));
+		this.rendered = true;
+		this.updateLayout();
 
 		// Add Event Listeners
 		this.addEventListeners();
-
-		this.rendered = true;
-		this.updateLayout();
 	}
 
 	/**
@@ -303,7 +304,7 @@ class DefaultViewManager {
 	/**
 	 * createView
 	 * @param {Section} section 
-	 * @param {boolean} forceRight 
+	 * @param {boolean} [forceRight]
 	 * @returns {object} View object (default: IframeView)
 	 * @private
 	 */
@@ -312,12 +313,13 @@ class DefaultViewManager {
 		const view = this.requireView(this.settings.view);
 		return new view(this.layout, section, {
 			axis: this.settings.axis,
+			snap: this.settings.snap,
 			method: this.settings.method,
 			allowPopups: this.settings.allowPopups,
 			ignoreClass: this.settings.ignoreClass,
 			allowScriptedContent: this.settings.allowScriptedContent,
 			forceRight: forceRight,
-			forceEvenPages: true
+			forceEvenPages: this.settings.forceEvenPages
 		});
 	}
 
@@ -391,7 +393,7 @@ class DefaultViewManager {
 			forceRight = true;
 		}
 
-		this.append(section, forceRight).then((view) => {
+		this.add(section, forceRight).then((view) => {
 
 			// Move to correct place within the section, if needed
 			if (target) {
@@ -401,7 +403,7 @@ class DefaultViewManager {
 		}, (err) => {
 			displaying.reject(err);
 		}).then(() => {
-			return this.handleNextPrePaginated(forceRight, section, this.append);
+			return this.handleNextPrePaginated(forceRight, section, this.add);
 		}).then(() => {
 			this.views.show();
 			displaying.resolve();
@@ -476,15 +478,18 @@ class DefaultViewManager {
 	 * @param {Section} section Section object
 	 * @param {boolean} forceRight 
 	 * @returns {Promise}
-	 * @private
 	 */
-	append(section, forceRight) {
+	add(section, forceRight) {
 
 		const view = this.createView(section, forceRight);
-		this.views.append(view);
 
-		view.onDisplayed = this.afterDisplayed.bind(this);
-		view.onResize = this.afterResized.bind(this);
+		view.on(EVENTS.VIEWS.DISPLAYED, () => {
+			this.afterDisplayed(view);
+		});
+
+		view.on(EVENTS.VIEWS.RESIZED, (bounds) => {
+			this.afterResized(view);
+		});
 
 		view.on(EVENTS.VIEWS.AXIS, (axis) => {
 			this.updateAxis(axis);
@@ -494,7 +499,21 @@ class DefaultViewManager {
 			this.updateWritingMode(mode);
 		});
 
+		this.views.append(view);
+
 		return view.display(this.request);
+	}
+
+	/**
+	 * append
+	 * @param {Section} section Section object
+	 * @param {boolean} forceRight 
+	 * @returns {Promise}
+	 * @private
+	 */
+	append(section, forceRight) {
+
+		return this.add(section, forceRight);
 	}
 
 	/**
@@ -508,14 +527,14 @@ class DefaultViewManager {
 
 		const view = this.createView(section, forceRight);
 
+		view.on(EVENTS.VIEWS.DISPLAYED, () => {
+			this.afterDisplayed(view);
+		});
+		
 		view.on(EVENTS.VIEWS.RESIZED, (bounds) => {
 			this.counter(bounds);
+			this.afterResized(view);
 		});
-
-		this.views.prepend(view);
-
-		view.onDisplayed = this.afterDisplayed.bind(this);
-		view.onResize = this.afterResized.bind(this);
 
 		view.on(EVENTS.VIEWS.AXIS, (axis) => {
 			this.updateAxis(axis);
@@ -524,6 +543,8 @@ class DefaultViewManager {
 		view.on(EVENTS.VIEWS.WRITING_MODE, (mode) => {
 			this.updateWritingMode(mode);
 		});
+
+		this.views.prepend(view);
 
 		return view.display(this.request);
 	}
@@ -616,6 +637,7 @@ class DefaultViewManager {
 			}
 
 			return this.append(section, forceRight).then(() => {
+
 				return this.handleNextPrePaginated(forceRight, section, this.append);
 			}, (err) => {
 				return err;
