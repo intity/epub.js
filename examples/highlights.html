@@ -34,30 +34,31 @@
             ignoreClass: "annotator-hl"
         })
         const displayed = rendition.display(6)
-        prev.onclick = (e) => {
-            rendition.prev()
-            e.preventDefault()
-        }
-        next.onclick = (e) => {
-            rendition.next()
-            e.preventDefault()
-        }
-        const keybinding = (e) => {
-            const dir = rendition.layout.direction
-            switch (e.key) {
-                case "ArrowLeft":
-                    dir === "ltr" ? rendition.prev() : rendition.next()
-                    break
-                case "ArrowRight":
-                    dir === "ltr" ? rendition.next() : rendition.prev()
-                    break
-            }
-        }
-        document.onkeyup = keybinding
-        rendition.on("keyup", keybinding)
         rendition.on("rendered", (section, view) => {
+
+            const dir = rendition.layout.direction
             const divisor = rendition.layout.divisor
             divider.style.display = divisor === 1 ? "none" : "block"
+            prev.onclick = (e) => {
+                rendition.prev()
+                e.preventDefault()
+            }
+            next.onclick = (e) => {
+                rendition.next()
+                e.preventDefault()
+            }
+            const keybinding = (e) => {
+                switch (e.key) {
+                    case "ArrowLeft":
+                        dir === "ltr" ? rendition.prev() : rendition.next()
+                        break
+                    case "ArrowRight":
+                        dir === "ltr" ? rendition.next() : rendition.prev()
+                        break
+                }
+            }
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
             console.log(rendition)
         })
         rendition.on("selected", (cfiRange, contents) => {
