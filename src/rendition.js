@@ -32,6 +32,7 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {string} [options.stylesheet] url of stylesheet to be injected
  * @param {string} [options.script] url of script to be injected
  * @param {object} [options.snap] use snap scrolling
+ * @param {boolean} [options.fullsize=false]
  * @param {boolean} [options.allowPopups=false] enable opening popup in content
  * @param {boolean} [options.allowScriptedContent=false] enable running scripts in content
  * @param {boolean} [options.resizeOnOrientationChange=true] false to disable orientation events
@@ -57,6 +58,7 @@ class Rendition {
 			direction: null, // TODO: implement to 'auto' detection
 			ignoreClass: "",
 			stylesheet: null,
+			fullsize: false,
 			allowPopups: false,
 			allowScriptedContent: false,
 			resizeOnOrientationChange: true,
@@ -216,6 +218,7 @@ class Rendition {
 			const options = {
 				snap: this.settings.snap,
 				view: this.settings.view,
+				fullsize: this.settings.fullsize,
 				ignoreClass: this.settings.ignoreClass,
 				allowPopups: this.settings.allowPopups,
 				allowScriptedContent: this.settings.allowScriptedContent,
