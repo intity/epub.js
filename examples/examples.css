@@ -31,7 +31,7 @@ body {
     position: absolute;
     display: flex;
     width: 100%;
-    height: 100%;
+    height: 100vh;
     align-items: center;
     overflow: hidden;
 }
@@ -331,4 +331,38 @@ svg {
 
 #highlights a {
     display: block;
+}
+
+/**
+ * iPhone 5             : 320 x 568
+ * iPhone 6/7/8         : 375 x 667
+ * iPhone 11 Pro        : 375 x 812
+ * Pixel 7              : 412 x 915
+ * iPhone 6/7/8 Plus    : 414 x 736
+ * iPhone 11            : 414 x 896
+ * iPhone 12/14         : 390 x 844
+ * iPhone 14/15 Pro Max : 430 x 932
+ */
+@media
+only screen and (min-width: 320px) and (max-width: 430px) and (orientation: portrait),
+only screen and (min-width: 568px) and (max-width: 932px) and (orientation: landscape) {
+    #viewer.scrolled {
+        width: 100%;
+    }
+}
+
+/**
+ * iPad Mini       :  768 x 1024
+ * iPad 10.2       :  810 x 1080
+ * iPad Air (2020) :  820 x 1180
+ * iPad Air        :  834 x 1112
+ * iPad Pro 11     :  834 x 1194
+ * iPad Pro 12.9   : 1024 x 1366
+ */
+@media
+only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait),
+only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    #viewer.scrolled {
+        width: 100%;
+    }
 }
