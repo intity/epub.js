@@ -1,157 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EPUB.js Spreads Example</title>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-  <script src="../dist/epub.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="examples.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS Spreads Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
 </head>
+
 <body>
-  <!-- <div id="title"></div> -->
-  <select id="toc"></select>
-  <div id="viewer" class="spreads"></div>
-  <a id="prev" href="#prev" class="arrow">‹</a>
-  <a id="next" href="#next" class="arrow">›</a>
+    <div id="toolbar">
+        <div class="box">
+            <select id="toc"></select>
+        </div>
+    </div>
+    <div id="content">
+        <div id="viewer" class="spreads">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const toc = document.getElementById("toc")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        const update = (location) => {
 
-  <script>
-    var params = URLSearchParams && new URLSearchParams(document.location.search.substring(1));
-    var url = params && params.get("url") && decodeURIComponent(params.get("url"));
-    var currentSectionIndex = (params && params.get("loc")) ? params.get("loc") : undefined;
-
-    // Load the opf
-    var book = ePub(url || "https://s3.amazonaws.com/moby-dick/moby-dick.epub");
-    var rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: 600,
-      spread: "always"
-    });
-
-    rendition.display(currentSectionIndex);
-
-    book.ready.then(function() {
-
-      var next = document.getElementById("next");
-
-      next.addEventListener("click", function(e){
-        book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
-        e.preventDefault();
-      }, false);
-
-      var prev = document.getElementById("prev");
-      prev.addEventListener("click", function(e){
-        book.package.metadata.direction === "rtl" ? rendition.next() : rendition.prev();
-        e.preventDefault();
-      }, false);
-
-      var keyListener = function(e){
-
-        // Left Key
-        if ((e.keyCode || e.which) == 37) {
-          book.package.metadata.direction === "rtl" ? rendition.next() : rendition.prev();
+            const div = rendition.layout.divisor
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+            divider.style.display = div === 1 ? "none" : "block"
         }
+        const keybinding = (e) => {
 
-        // Right Key
-        if ((e.keyCode || e.which) == 39) {
-          book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break
+            }
         }
+        book.ready.then(() => {
 
-      };
+            prev.onclick = (e) => {
+                rendition.prev()
+                e.preventDefault()
+            }
+            next.onclick = (e) => {
+                rendition.next()
+                e.preventDefault()
+            }
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+        })
+        book.loaded.navigation.then((items) => {
 
-      rendition.on("keyup", keyListener);
-      document.addEventListener("keyup", keyListener, false);
+            const fragment = document.createDocumentFragment()
 
-    })
+            items.forEach((chapter) => {
+                const option = document.createElement("option")
+                option.textContent = chapter.label
+                option.setAttribute("ref", chapter.href)
+                fragment.appendChild(option)
+            })
 
-    var title = document.getElementById("title");
+            toc.appendChild(fragment)
+            toc.onchange = (e) => {
+                const ind = e.target.selectedIndex
+                const url = e.target[ind].getAttribute("ref")
+                rendition.display(url)
+            }
+        })
+        rendition.on("rendered", (section) => {
 
-    rendition.on("rendered", function(section){
-      var current = book.navigation && book.navigation.get(section.href);
+            const current = book.navigation && book.navigation.get(section.href)
 
-      if (current) {
-        var $select = document.getElementById("toc");
-        var $selected = $select.querySelector("option[selected]");
-        if ($selected) {
-          $selected.removeAttribute("selected");
-        }
+            if (current) {
+                const selected = toc.querySelector("option[selected]")
+                if (selected) {
+                    selected.removeAttribute("selected")
+                }
 
-        var $options = $select.querySelectorAll("option");
-        for (var i = 0; i < $options.length; ++i) {
-          let selected = $options[i].getAttribute("ref") === current.href;
-          if (selected) {
-            $options[i].setAttribute("selected", "");
-          }
-        }
-      }
+                const options = toc.querySelectorAll("option")
+                for (let i = 0; i < options.length; ++i) {
+                    if (options[i].getAttribute("ref") === current.href) {
+                        options[i].setAttribute("selected", "")
+                    }
+                }
+            }
+        })
+        rendition.on("relocated", (location) => {
 
-    });
+            update(location)
+            console.log(location)
+        })
+        rendition.on("layout", (current, changed) => {
 
-    rendition.on("relocated", function(location){
-      console.log(location);
-
-      var next = book.package.metadata.direction === "rtl" ?  document.getElementById("prev") : document.getElementById("next");
-      var prev = book.package.metadata.direction === "rtl" ?  document.getElementById("next") : document.getElementById("prev");
-
-      if (location.atEnd) {
-        next.style.visibility = "hidden";
-      } else {
-        next.style.visibility = "visible";
-      }
-
-      if (location.atStart) {
-        prev.style.visibility = "hidden";
-      } else {
-        prev.style.visibility = "visible";
-      }
-
-    });
-
-    rendition.on("layout", function(layout) {
-      let viewer = document.getElementById("viewer");
-
-      if (layout.spread) {
-        viewer.classList.remove('single');
-      } else {
-        viewer.classList.add('single');
-      }
-    });
-
-    window.addEventListener("unload", function () {
-      console.log("unloading");
-      this.book.destroy();
-    });
-
-    book.loaded.navigation.then(function(toc){
-			var $select = document.getElementById("toc"),
-					docfrag = document.createDocumentFragment();
-
-			toc.forEach(function(chapter) {
-				var option = document.createElement("option");
-				option.textContent = chapter.label;
-				option.setAttribute("ref", chapter.href);
-
-				docfrag.appendChild(option);
-			});
-
-			$select.appendChild(docfrag);
-
-			$select.onchange = function(){
-					var index = $select.selectedIndex,
-							url = $select.options[index].getAttribute("ref");
-					rendition.display(url);
-					return false;
-			};
-
-		});
-
-
-
-
-  </script>
-
+            update()
+        })
+    </script>
 </body>
+
 </html>

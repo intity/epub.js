@@ -124,11 +124,6 @@ body {
     background: white;
 }
 
-#toc {
-    display: block;
-    margin: 10px auto;
-}
-
 #divider {
     display: none;
     position: absolute;
