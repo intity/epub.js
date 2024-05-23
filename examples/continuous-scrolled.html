@@ -15,6 +15,7 @@
         <div id="viewer" class="scrolled"></div>
     </div>
     <script>
+        const content = document.getElementById("content")
         const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
         const rendition = book.renderTo("viewer", {
             manager: "continuous",
@@ -25,6 +26,11 @@
         rendition.display()
         rendition.on("relocated", (location) => {
             console.log(location)
+        })
+        rendition.on("displayed", (section) => {
+            if ("ontouchstart" in window) {
+                content.className = "mobile"
+            }
         })
     </script>
 </body>

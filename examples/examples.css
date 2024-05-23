@@ -346,7 +346,7 @@ svg {
 @media
 only screen and (min-width: 320px) and (max-width: 430px) and (orientation: portrait),
 only screen and (min-width: 568px) and (max-width: 932px) and (orientation: landscape) {
-    #viewer.scrolled {
+    #content.mobile {
         width: 100%;
     }
 }
@@ -362,7 +362,7 @@ only screen and (min-width: 568px) and (max-width: 932px) and (orientation: land
 @media
 only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait),
 only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
-    #viewer.scrolled {
+    #content.mobile {
         width: 100%;
     }
 }
