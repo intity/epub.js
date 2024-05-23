@@ -12,6 +12,21 @@ body {
     margin: 10px;
 }
 
+#page {
+    width: 800px;
+    height: auto;
+    padding: 0;
+    position: relative;
+    margin: 20px auto;
+    box-shadow: 0 0 4px #ccc;
+    border-radius: 5px;
+    background: white;
+}
+
+#page .box {
+    margin: 21px;
+}
+
 #toolbar {
     display: flex;
     position: relative;
@@ -33,6 +48,11 @@ body {
     height: 100vh;
     align-items: center;
     overflow: hidden;
+}
+
+#content.scrolled {
+    height: auto;
+    overflow: auto;
 }
 
 #content:dir(ltr) #prev {
@@ -345,8 +365,15 @@ svg {
 @media
 only screen and (min-width: 320px) and (max-width: 430px) and (orientation: portrait),
 only screen and (min-width: 568px) and (max-width: 932px) and (orientation: landscape) {
+    #content.mobile #page {
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
     #content.mobile #viewer.scrolled {
         width: 100%;
+        box-shadow: none;
     }
 }
 
@@ -361,7 +388,14 @@ only screen and (min-width: 568px) and (max-width: 932px) and (orientation: land
 @media
 only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait),
 only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    #content.mobile #page {
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
     #content.mobile #viewer.scrolled {
         width: 100%;
+        box-shadow: none;
     }
 }
