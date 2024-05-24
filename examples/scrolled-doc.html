@@ -22,7 +22,8 @@
         const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
         const rendition = book.renderTo("viewer", {
             flow: "scrolled-doc",
-            width: "100%"
+            width: "100%",
+            fullsize: true
         })
         rendition.display()
         next.onclick = (e) => {
