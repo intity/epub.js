@@ -9,7 +9,9 @@ body {
 }
 
 .box {
+    display: flex;
     margin: 10px;
+    align-items: center;
 }
 
 #page {
@@ -201,17 +203,22 @@ body {
 }
 
 #controls {
+    width: 100%;
+    bottom: calc(50vh - 340px);
+    display: flex;
     position: absolute;
-    bottom: 16px;
-    left: 50%;
-    width: 400px;
-    margin-left: -200px;
-    text-align: center;
-    display: none;
+    align-items: center;
+    justify-content: center;
 }
 
-#controls>input[type=range] {
-    width: 400px;
+#controls label {
+    width: 40px;
+    font-size: small;
+    text-align: end;
+}
+
+#controls input[type=range] {
+    width: 340px;
 }
 
 #navigation {

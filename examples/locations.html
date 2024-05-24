@@ -4,65 +4,67 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>EPUB.js Spreads Example</title>
+	<title>EPUB.JS: Locations Example</title>
 	<link rel="stylesheet" type="text/css" href="examples.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 	<script src="../dist/epub.js"></script>
 </head>
 
 <body>
-	<div id="title"></div>
 	<div id="content">
-		<div id="viewer" class="spreads">
+		<div id="viewer" class="paginated">
 			<div id="divider"></div>
 		</div>
 		<a id="prev" href="#prev" class="arrow"></a>
 		<a id="next" href="#next" class="arrow"></a>
 	</div>
 	<div id="controls">
-		<input type="text" value="0" disabled="disabled" size="3" id="current-percent" /> %
-		<input type="range" min="0" max="100" value="0" id="slider" />
+		<div class="box">
+			<input type="range" min="0" max="100" value="0" id="slider" />
+			<label id="current-percent" for="slider"></label>
+		</div>
 	</div>
 	<script>
-		const title = document.getElementById("title")
+		const content = document.getElementById("content")
+		const divider = document.getElementById("divider")
 		const controls = document.getElementById("controls")
-		const currentPos = document.getElementById("current-percent")
+		const label = document.getElementById("current-percent")
 		const slider = document.getElementById("slider")
+		const prev = document.getElementById("prev")
+		const next = document.getElementById("next")
 		const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
 		const rendition = book.renderTo("viewer", {
 			width: "100%",
 			height: "100%"
 		})
-		const displayed = rendition.display()
-		const prev = document.getElementById("prev")
+		rendition.display()
+		let percentage
+		slider.onchange = (e) => {
+
+			percentage = parseInt(e.target.value) / 100
+			book.locations.set({ percentage: percentage })
+			rendition.display(book.locations.current.cfi)
+		}
 		prev.onclick = (e) => {
 
 			rendition.prev()
 			e.preventDefault()
 		}
-		const next = document.getElementById("next")
 		next.onclick = (e) => {
 
 			rendition.next()
 			e.preventDefault()
 		}
-		let atStart = false, atEnd = false, percentage
+		let atStart = false, atEnd = false
 		const update = (location) => {
 
-			if (location.atStart) {
-				prev.style.display = "none"
-				atStart = true
-			} else {
-				prev.style.display = "block"
-				atStart = false
-			}
-			if (location.atEnd) {
-				next.style.display = "none"
-				atEnd = true
-			} else {
-				next.style.display = "block"
-				atEnd = false
-			}
+			const dir = rendition.layout.direction
+			const div = rendition.layout.divisor
+			const loc = location || rendition.currentLocation()
+			prev.style.display = loc.atStart ? "none" : "block"
+			next.style.display = loc.atEnd ? "none" : "block"
+			divider.style.display = div === 1 ? "none" : "block"
+			content.dir = dir
 
 			if (typeof percentage === "undefined") {
 				book.locations.set({ cfi: location.start.cfi })
@@ -71,21 +73,21 @@
 
 			const value = Math.floor(percentage * 100)
 			slider.value = value
-			currentPos.value = value
+			label.textContent = value + " %"
 			percentage = undefined
 		}
 		const keybinding = (e) => {
 
-			if (e.key === "ArrowLeft" && !atStart) {
-				rendition.prev()
-			}
-
-			if (e.key === "ArrowRight" && !atEnd) {
-				rendition.next()
+			const dir = rendition.layout.direction
+			switch (e.key) {
+				case "ArrowLeft":
+					dir === "ltr" ? rendition.prev() : rendition.next()
+					break;
+				case "ArrowRight":
+					dir === "ltr" ? rendition.next() : rendition.prev()
+					break;
 			}
 		}
-		rendition.on("keyup", keybinding)
-		document.addEventListener("keyup", keybinding, false)
 		book.ready.then(() => {
 			// Load in stored locations from json or local storage
 			const key = book.key() + '-locations'
@@ -112,19 +114,6 @@
 			}
 		}).then((locations) => {
 
-			controls.style.display = "block"
-			slider.onchange = (e) => {
-
-				percentage = parseInt(e.target.value) / 100
-				book.locations.set({ percentage: percentage })
-				rendition.display(book.locations.current.cfi)
-			}
-			// Listen for location changed event, get percentage from CFI
-			rendition.on("relocated", (location) => {
-				
-				update(location)
-				console.log(location)
-			})
 			// Save out the generated locations to JSON
 			localStorage.setItem(book.key() + '-locations', book.locations.save())
 			console.log("locations.length: " + locations.length)
@@ -132,6 +121,16 @@
 		book.locations.on("changed", (current, changed) => {
 
 			console.log(current, changed)
+		})
+		rendition.on("rendered", (section, view) => {
+
+			document.onkeyup = keybinding
+			rendition.on("keyup", keybinding)
+		})
+		rendition.on("relocated", (location) => {
+
+			update(location)
+			console.log(location)
 		})
 	</script>
 </body>
