@@ -27,6 +27,8 @@ body {
 
 #page .box {
     margin: 21px;
+    align-items: baseline;
+    flex-wrap: wrap;
 }
 
 #toolbar {
