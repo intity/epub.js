@@ -4,18 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB.JS Spreads Example</title>
+    <title>EPUB.JS: Pagination Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../dist/epub.js"></script>
 </head>
 
 <body>
-    <div id="toolbar">
-        <div class="box">
-            <select id="toc"></select>
-        </div>
-    </div>
     <div id="content">
         <div id="viewer" class="paginated">
             <div id="divider"></div>
@@ -24,7 +19,6 @@
         <a id="next" href="#next" class="arrow"></a>
     </div>
     <script>
-        const toc = document.getElementById("toc")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
         const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
@@ -33,6 +27,14 @@
             height: "100%"
         })
         rendition.display()
+        prev.onclick = (e) => {
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+            rendition.next()
+            e.preventDefault()
+        }
         const update = (location) => {
 
             const div = rendition.layout.divisor
@@ -55,52 +57,12 @@
         }
         book.ready.then(() => {
 
-            prev.onclick = (e) => {
-                rendition.prev()
-                e.preventDefault()
-            }
-            next.onclick = (e) => {
-                rendition.next()
-                e.preventDefault()
-            }
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
         })
-        book.loaded.navigation.then((items) => {
+        rendition.on("rendered", (section, view) => {
 
-            const fragment = document.createDocumentFragment()
-
-            items.forEach((chapter) => {
-                const option = document.createElement("option")
-                option.textContent = chapter.label
-                option.setAttribute("ref", chapter.href)
-                fragment.appendChild(option)
-            })
-
-            toc.appendChild(fragment)
-            toc.onchange = (e) => {
-                const ind = e.target.selectedIndex
-                const url = e.target[ind].getAttribute("ref")
-                rendition.display(url)
-            }
-        })
-        rendition.on("rendered", (section) => {
-
-            const current = book.navigation && book.navigation.get(section.href)
-
-            if (current) {
-                const selected = toc.querySelector("option[selected]")
-                if (selected) {
-                    selected.removeAttribute("selected")
-                }
-
-                const options = toc.querySelectorAll("option")
-                for (let i = 0; i < options.length; ++i) {
-                    if (options[i].getAttribute("ref") === current.href) {
-                        options[i].setAttribute("selected", "")
-                    }
-                }
-            }
+            console.log(rendition)
         })
         rendition.on("relocated", (location) => {
 
