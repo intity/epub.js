@@ -71,6 +71,11 @@ body {
     left: 0;
 }
 
+#prev, #next {
+    top: calc(50vh - 37px);
+    position: fixed;
+}
+
 #prev::before {
     content: '<';
 }
@@ -118,6 +123,16 @@ body {
     position: relative;
     box-shadow: 0 0 4px #ccc;
     background: white;
+}
+
+#viewer.scrolled-doc {
+    width: 800px;
+    height: auto;
+    margin: 20px auto;
+    position: relative;
+    box-shadow: 0 0 4px #ccc;
+    background: white;
+    border-radius: 5px;
 }
 
 #viewer.scrolled .epub-view>iframe {
