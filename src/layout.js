@@ -9,7 +9,7 @@ class Layout {
 	 * Constructor
 	 * @param {object} options 
 	 * @param {string} [options.name='reflowable'] values: `"reflowable"` OR `"pre-paginated"`
-	 * @param {string} [options.flow='paginated'] values: `"paginated"` OR `"scrolled"`
+	 * @param {string} [options.flow='paginated'] values: `"paginated"` OR `"scrolled"` OR `"scrolled-doc"`
 	 * @param {string} [options.spread='auto'] values: `"auto"` OR `"none"`
 	 * @param {string} [options.direction='ltr'] values: `"ltr"` OR `"rtl"`
 	 * @param {string} [options.orientation='auto'] values: `"auto"` OR `"landscape"` OR `"portrait"`
@@ -130,9 +130,12 @@ class Layout {
 				if (typeof value === "string") {
 					switch (value) {
 						case "scrolled":
-						case "scrolled-doc":
 						case "scrolled-continuous":
 							this.flow = "scrolled";
+							this.spread = "none"; // autocomplete
+							break;
+						case "scrolled-doc":
+							this.flow = value;
 							this.spread = "none"; // autocomplete
 							break;
 						default:

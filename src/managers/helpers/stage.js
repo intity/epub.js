@@ -378,6 +378,11 @@ class Stage {
 				this.container.style["overflow-x"] = "hidden";
 				this.container.style.flexWrap = "wrap";
 				break;
+			case "scrolled-doc":
+				this.container.style["overflow-y"] = "hidden";
+				this.container.style["overflow-x"] = "hidden";
+				this.container.style.flexWrap = "wrap";
+				break;
 		}
 	}
 

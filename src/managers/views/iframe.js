@@ -153,7 +153,8 @@ class IframeView {
 
 			// Set the axis based on the flow and writing mode
 			let axis;
-			if (this.layout.flow === "scrolled") {
+			if (this.layout.flow === "scrolled" ||
+				this.layout.flow === "scrolled-doc") {
 				axis = hasVertical ? AXIS_H : AXIS_V;
 			} else {
 				axis = hasVertical ? AXIS_V : AXIS_H;

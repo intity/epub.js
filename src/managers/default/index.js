@@ -1101,7 +1101,12 @@ class DefaultViewManager {
 	 */
 	updateLayout() {
 
-		this.stageSize = this.stage.size();
+		let height;
+		if (this.layout.flow === "scrolled-doc") {
+			const view = this.current();
+			height = view && view.height;
+		}
+		this.stageSize = this.stage.size(null, height);
 
 		if (this.paginated) {
 			this.layout.calculate(
