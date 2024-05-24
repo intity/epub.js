@@ -24,6 +24,7 @@
             <select name="flow" id="flow">
                 <option value="paginated">paginated</option>
                 <option value="scrolled">scrolled</option>
+                <option value="scrolled-doc">scrolled-doc</option>
             </select>
         </div>
         <div class="box">
@@ -46,7 +47,7 @@
         </div>
     </div>
     <div id="content" dir="ltr">
-        <div id="viewer" class="spreads">
+        <div id="viewer" class="paginated">
             <div id="divider"></div>
         </div>
         <a id="prev" href="#prev" class="arrow"></a>
@@ -54,6 +55,7 @@
     </div>
     <script>
         const content = document.getElementById("content")
+        const viewer = document.getElementById("viewer")
         const layout = document.getElementById("layout")
         const flow = document.getElementById("flow")
         const spread = document.getElementById("spread")
@@ -76,6 +78,13 @@
             next.style.display = loc.atEnd ? "none" : "block"
             divider.style.display = div === 1 ? "none" : "block"
             content.dir = dir
+            if (rendition.layout.flow === "paginated" ||
+                rendition.layout.flow === "scrolled") {
+                content.removeAttribute("class")
+            } else {
+                content.className = "doc"
+            }
+            viewer.className = rendition.layout.flow
         }
         const keybinding = (e) => {
             const dir = rendition.layout.direction
@@ -137,19 +146,12 @@
             //console.log(view)
         })
         rendition.on("layout", (props, changed) => {
-            if (props.spread === "none" || props.divisor === 1) {
-                divider.style.display = "none";
-            } else if (props.flow === "paginated" && props.divisor > 1) {
-                divider.style.display = "block";
-            }
-            if (changed.direction) {
-                update()
-            }
+            update()
             console.log(changed)
         })
         rendition.on("relocated", (location) => {
             update(location)
-            //console.log(location)
+            console.log(location)
         })
     </script>
 </body>

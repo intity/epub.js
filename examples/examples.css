@@ -28,6 +28,8 @@ body {
 }
 
 #toolbar {
+    top: 0;
+    width: 100%;
     display: flex;
     position: relative;
     height: 40px;
@@ -50,8 +52,9 @@ body {
     overflow: hidden;
 }
 
-#content.scrolled {
+#content.doc {
     height: auto;
+    min-height: 100vh;
     overflow: auto;
 }
 
@@ -99,44 +102,34 @@ body {
 }
 
 #viewer {
-    overflow: hidden;
-}
-
-#viewer.spreads {
-    width: 900px;
-    height: 600px;
-    box-shadow: 0 0 4px #ccc;
-    border-radius: 5px;
     padding: 0;
     position: relative;
-    margin: 10px auto;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 0 4px #ccc;
+    border-radius: 5px;
 }
 
-#viewer.spreads .epub-view>iframe {
+#viewer .epub-view>iframe {
     background: white;
+}
+
+#viewer.paginated {
+    width: 900px;
+    height: 600px;
+    margin: 0 auto;
 }
 
 #viewer.scrolled {
     width: 800px;
-    height: 100vh;
-    margin: 0 auto;
-    position: relative;
-    box-shadow: 0 0 4px #ccc;
-    background: white;
+    height: calc(100vh - 80px);
+    margin: 40px auto;
 }
 
 #viewer.scrolled-doc {
     width: 800px;
     height: auto;
-    margin: 20px auto;
-    position: relative;
-    box-shadow: 0 0 4px #ccc;
-    background: white;
-    border-radius: 5px;
-}
-
-#viewer.scrolled .epub-view>iframe {
-    background: white;
+    margin: 40px auto;
 }
 
 #divider {
