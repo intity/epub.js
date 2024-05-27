@@ -19,6 +19,8 @@
         <a id="next" href="#next" class="arrow"></a>
     </div>
     <script>
+        const content = document.getElementById("content")
+        const divider = document.getElementById("divider")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
         const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
@@ -28,20 +30,24 @@
         })
         rendition.display()
         prev.onclick = (e) => {
+
             rendition.prev()
             e.preventDefault()
         }
         next.onclick = (e) => {
+
             rendition.next()
             e.preventDefault()
         }
         const update = (location) => {
 
+            const dir = rendition.layout.direction
             const div = rendition.layout.divisor
             const loc = location || rendition.currentLocation()
             prev.style.display = loc.atStart ? "none" : "block"
             next.style.display = loc.atEnd ? "none" : "block"
             divider.style.display = div === 1 ? "none" : "block"
+            content.dir = dir
         }
         const keybinding = (e) => {
 
@@ -68,10 +74,6 @@
 
             update(location)
             console.log(location)
-        })
-        rendition.on("layout", (current, changed) => {
-
-            update()
         })
     </script>
 </body>
