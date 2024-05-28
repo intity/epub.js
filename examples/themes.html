@@ -1,117 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EPUB.js Spreads Example</title>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-  <script src="../dist/epub.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="examples.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Themes Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
 </head>
+
 <body>
-  <div id="title"></div>
-  <div id="viewer" class="spreads"></div>
-  <a id="prev" href="#prev" class="arrow">‹</a>
-  <a id="next" href="#next" class="arrow">›</a>
+    <div id="toolbar">
+        <div class="box">
+            <label for="theme">Theme:</label>
+            <select name="theme" id="theme">
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="font-size">Font size (%):</label>
+            <input type="number" value="100" min="1" max="999" id="font-size">
+        </div>
+    </div>
+    <div id="content">
+        <div id="viewer" class="scrolled"></div>
+    </div>
+    <script>
+        const theme = document.getElementById("theme")
+        const fontSize = document.getElementById("font-size")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            manager: "continuous",
+            flow: "scrolled",
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        theme.onchange = (e) => {
 
-  <script>
-    var currentSectionIndex = 8;
-    // Load the opf
-    var book = ePub("https://s3.amazonaws.com/epubjs/books/alice/OPS/package.opf");
-    var rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: 600,
-      manager: "continuous"
-    });
+            rendition.themes.select(e.target.value)
+        }
+        fontSize.onchange = (e) => {
 
-    rendition.display("chapter_007.xhtml");
+            rendition.themes.fontSize(e.target.value + "%")
+        }
+        rendition.on("displayed", (section) => {
 
-    var title = document.getElementById("title");
+            rendition.themes.select("light")
+        })
+        rendition.on("relocated", (location) => {
 
-    var next = document.getElementById("next");
-    next.addEventListener("click", function(e){
-      rendition.next();
-      e.preventDefault();
-    }, false);
-
-    var prev = document.getElementById("prev");
-    prev.addEventListener("click", function(e){
-      rendition.prev();
-      e.preventDefault();
-    }, false);
-
-    var keyListener = function(e){
-
-      // Left Key
-      if ((e.keyCode || e.which) == 37) {
-        rendition.prev();
-      }
-
-      // Right Key
-      if ((e.keyCode || e.which) == 39) {
-        rendition.next();
-      }
-
-    };
-
-    rendition.on("keyup", keyListener);
-    document.addEventListener("keyup", keyListener, false);
-
-
-
-    rendition.on("rendered", function(section){
-      var nextSection = section.next();
-      var prevSection = section.prev();
-      var current = book.navigation.get(section.href);
-
-      if (current) {
-        title.textContent = current.label;
-      }
-
-      if(nextSection) {
-        next.textContent = "›";
-      } else {
-        next.textContent = "";
-      }
-
-      if(prevSection) {
-        prev.textContent = "‹";
-      } else {
-        prev.textContent = "";
-      }
-
-
-
-    });
-
-    rendition.on("relocated", function(location){
-      console.log(location);
-    });
-
-
-    rendition.themes.register("dark", "themes.css");
-    rendition.themes.register("light", "themes.css");
-    rendition.themes.register("tan", "themes.css");
-
-
-
-    rendition.themes.default({
-      h2: {
-        'font-size': '32px',
-        color: 'purple'
-      },
-      p: {
-        "margin": '10px'
-      }
-    });
-
-    rendition.themes.select("tan");
-    rendition.themes.fontSize("140%");
-
-  </script>
-
+            console.log(rendition)
+        })
+        rendition.themes.register("light", "themes.css")
+        rendition.themes.register("dark", "themes.css")
+    </script>
 </body>
+
 </html>
