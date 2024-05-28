@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB.JS: Paginated Continuous Example</title>
+    <title>EPUB.JS: Continuous paginated Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../dist/epub.js"></script>
@@ -19,29 +19,31 @@
         <div id="next" class="arrow"></div>
     </div>
     <script>
-        const isMobile = "ontouchstart" in window
+        const swipe = "ontouchstart" in window
         const content = document.getElementById("content")
         const divider = document.getElementById("divider")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
         const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
         const rendition = book.renderTo("viewer", {
-            manager: isMobile ? "continuous" : "default",
+            manager: swipe ? "continuous" : "default",
             flow: "paginated",
-            snap: isMobile ? {} : null,
+            snap: swipe ? {} : null,
             width: "100%",
             height: "100%"
         })
         rendition.display()
         prev.onclick = (e) => {
+
             rendition.prev()
             e.preventDefault()
         }
         next.onclick = (e) => {
+
             rendition.next()
             e.preventDefault()
         }
-        const update = (location) => { 
+        const update = (location) => {
 
             const dir = rendition.layout.direction
             const div = rendition.layout.divisor
@@ -56,26 +58,9 @@
             content.dir = dir
             divider.style.display = div === 1 ? "none" : "block"
         }
-        const keybinding = (e) => {
-
-            const dir = rendition.layout.direction
-            switch (e.key) {
-                case "ArrowLeft":
-                    dir === "ltr" ? rendition.prev() : rendition.next()
-                    break;
-                case "ArrowRight":
-                    dir === "ltr" ? rendition.next() : rendition.prev()
-                    break;
-            }
-        }
-        book.ready.then(() => {
-
-            rendition.on("keyup", keybinding)
-            document.onkeyup = keybinding
-        })
         rendition.on("displayed", (section) => {
 
-            if (isMobile) {
+            if (swipe) {
                 content.className = "mobile"
             }
         })
