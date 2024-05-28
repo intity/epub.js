@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB.JS: Continuous scrolling example</title>
+    <title>EPUB.JS: Continuous scrolling Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../dist/epub.js"></script>
@@ -22,15 +22,17 @@
             flow: "scrolled",
             width: "100%",
             height: "100%"
-        });
-        rendition.display()
-        rendition.on("relocated", (location) => {
-            console.log(location)
         })
+        rendition.display()
         rendition.on("displayed", (section) => {
+
             if ("ontouchstart" in window) {
                 content.className = "mobile"
             }
+        })
+        rendition.on("relocated", (location) => {
+
+            console.log(location)
         })
     </script>
 </body>
