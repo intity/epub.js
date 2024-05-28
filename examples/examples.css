@@ -25,10 +25,17 @@ body {
     background: white;
 }
 
+#page a, p, li::marker {
+    font-size: 0.9em;
+}
+
+#page code {
+    font-size: 1.25em;
+}
+
 #page .box {
+    display: block;
     margin: 21px;
-    align-items: baseline;
-    flex-wrap: wrap;
 }
 
 #toolbar {
@@ -384,9 +391,16 @@ only screen and (min-width: 568px) and (max-width: 932px) and (orientation: land
         box-shadow: none;
         border-radius: 0;
     }
+    #content.mobile #viewer.paginated {
+        width: 100%;
+        height: 100%;
+        box-shadow: none;
+        border-radius: 0;
+    }
     #content.mobile #viewer.scrolled {
         width: 100%;
         box-shadow: none;
+        border-radius: 0;
     }
 }
 
@@ -407,8 +421,15 @@ only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: la
         box-shadow: none;
         border-radius: 0;
     }
+    #content.mobile #viewer.paginated {
+        width: 100%;
+        height: 100%;
+        box-shadow: none;
+        border-radius: 0;
+    }
     #content.mobile #viewer.scrolled {
         width: 100%;
         box-shadow: none;
+        border-radius: 0;
     }
 }

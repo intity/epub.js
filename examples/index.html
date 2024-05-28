@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="epub.js example list">
-    <title>EPUB.JS Examples</title>
+    <title>EPUB.JS: Examples</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script>
         window.onload = (e) => {
@@ -22,45 +22,88 @@
     <div id="content" class="doc">
         <div id="page">
             <div class="box">
-                <h1>EPUB.JS Examples</h1>
-                <ol>
-                    <li><a href="spreads.html">Spreads</a>
-                        <p>Display an ebook two pages at a time. Also includes code to provide table-of-contents in a
-                            select
-                            object above the rendered ebook. Sections of the ebook are displayed separately so if a
-                            section
-                            has a single page or an odd number of pages it will display with a blank page on the right.
+                <h1>Examples</h1>
+                <p>
+                    This section of the documentation contains a list of links to examples that demonstrate the basic
+                    features of the epub.js library. This may be useful for developers who want to use this library in
+                    their projects. Most examples present only one feature to make it easier for developers to
+                    understand the specifics of the implementation.
+                </p>
+                <h2>Layout rendering control</h2>
+                <p>Specification section: <a href="https://www.w3.org/TR/epub/#flow">Reflowable layouts</a></p>
+                <p>Metadata property: <code>rendition:flow</code></p>
+                <ol start="1">
+                    <li><a href="spreads.html">Paginated</a>
+                        <p>Metadata value: <code>paginated</code></p>
+                        <p>Display an ebook two pages at a time. Sections of the ebook are displayed separately so if a
+                            section has a single page or an odd number of pages it will display with a blank page on the
+                            right.
                         </p>
                     </li>
-                    <li><a href="archived.html">Archived</a>
-                        <p>Display ebook from an XXXX.epub file rather than an unzipped folder. This may be
-                            substantially
-                            slower for large ebooks.</p>
+                    <li><a href="continuous-spreads.html">Continuous paginated</a>
+                        <p>Metadata value: <code>paginated</code></p>
+                        <p>This example is for devices that support the touch events API (see <a
+                                href="https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Using_Touch_Events">Using
+                                Touch Events</a>). If
+                            the device does not support this API, then the example (1) is used.</p>
+                        <p>The fundamental difference from example (1) is that the views container can include many
+                            items. This can be represented as a stack of views, in which the previous view, the current
+                            view, and the next view are arranged in a sequential chain of views. Only the current view
+                            is displayed on the screen; the others are always hidden. However, this rendering method
+                            requires more computing resources. To navigate through pages, use swipe touch.</p>
+                    </li>
+                    <li><a href="scrolled.html">Scrolled</a>
+                        <p>Metadata value: <code>scrolled-doc</code></p>
+                        <p>In this example, the "flow" option is defined as "scrolled". Each section of the book is
+                            displayed within the bounds of the container, with a scrollable hidden area. To navigate
+                            between sections, use the left and right arrows, as well as key bindings.
+                        </p>
+                    </li>
+                    <li><a href="continuous-scrolled.html">Continuous scrolling</a>
+                        <p>Metadata value: <code>scrolled-continuous</code></p>
+                        <p>The view is the same as in example (3). However, the rendering method involves a sequential
+                            chain of views that are displayed as the hidden area is scrolled. When the current section
+                            ends, the next one is loaded and so on until the last section.</p>
                     </li>
                     <li><a href="scrolled-doc.html">Scrolled Doc</a>
+                        <p>Metadata value: <code>scrolled-doc</code></p>
                         <p>Displays each "section" or "chapter" of the ebook in its entirety as a single page of
-                            variable
-                            height that you can scroll up and down. Includes code to provide navigation links above and
-                            below the rendered section to go to the previous or next section.</p>
+                            variable height that you can scroll up and down. Includes code to provide left and right
+                            navigation links to move to the previous or next section.</p>
                     </li>
-                    <li><a href="continuous-spreads.html">Spreads Continuous</a>
-                        <p>The view is the same as (1) above except that the entire document is rendered at once without
-                            breaks so if a section has one page, the next section is shown beginning on the
-                            right-hand-page
-                            rather than a blank page. </p>
+                    <li><a href="layout.html">Layout</a>
+                        <p>This example combines examples (1,3,5) in one. Basically, this example is needed to test
+                            layout features.</p>
                     </li>
-                    <li><a href="continuous-scrolled.html">Scrolled Continuous</a>
-                        <p>The view is the same as (3) except the entire ebook is rendered in the browser at once so
-                            there
-                            are no navigation links above and below each chapter. This version may take longer to render
-                            and
-                            uses more memory since the whole ebook is loaded into memory. This version has no links to
-                            navigate or jump between chapters.</p>
+                </ol>
+                <p class="note">Note: Although the <code>rendition:flow</code> property value is defined as
+                    "scrolled-doc" for the
+                    (3) and (5) examples, they are different at the layout level.</p>
+                <h2>Navigation</h2>
+                <ol start="7">
+                    <li><a href="toc.html">Table of Contents</a>
+                        <p>This example represents table of contents as a drop-down list of sections.</p>
                     </li>
-                    <li><a href="swipe.html">Swipe</a>
-                        <p>This example includes a function in the script to link "swipe" events on touchscreens,
-                            particularly mobile devices, to navigate forward and back. Note that swipes do not work in
-                            Chrome Desktop even if you turn on device emulation in the "inspect" toolbar. </p>
+                    <li><a href="locations.html">Locations</a>
+                        <p>This example demonstrates how to implement a range based on the content of a book as a
+                            percentage. First, the <code>book.locations</code> array is generated. This data is then
+                            used to calculate each location's percentage.</p>
+                    </li>
+                    <li><a href="highlights.html">Highlights</a>
+                        <p>Adds the ability to highlight text in the ebook. This version provides no mechanism for
+                            saving highlights after the browser is closed. It is an example of capability rather than a
+                            working implementation. It works as follows: When a section of text is selected a
+                            <code>rendition.on("selected"...)</code> function notes the location of the beginning and
+                            ending of the selected text. Two things happen. The code adds a new element to the outer
+                            page in a list at the bottom describing the selection and providing a "remove" link.
+                        </p>
+                    </li>
+                </ol>
+                <h2>Other</h2>
+                <ol start="10">
+                    <li><a href="archived.html">Archived</a>
+                        <p>Display ebook from an XXXX.epub file rather than an unzipped folder. This may be
+                            substantially slower for large ebooks.</p>
                     </li>
                     <li><a href="input.html">Open from File</a>
                         <p>Allows you to select an epub file from your local computer that gets rendered in the browser.
@@ -68,13 +111,10 @@
                     </li>
                     <li><a href="renderless.html">Renderless</a>
                         <p>The name for this example is misleading since the book certainly does render. What's unique
-                            in
-                            this example is that the book's table of contents is read in and a list of sections in
+                            in this example is that the book's table of contents is read in and a list of sections in
                             developed, then each section is rendered as it is called for by a
-                            <code>section.render()</code>
-                            call, but there's no master <code>book.renderTo()</code> call. Functionlly this seems
-                            exactly
-                            the same as (1) and (3).
+                            <code>section.render()</code> call, but there's no master <code>book.renderTo()</code> call.
+                            Functionlly this seems exactly the same as (3) example.
                         </p>
                     </li>
                     <li><a href="hooks.html">Hooks</a>
@@ -98,27 +138,6 @@
                             the ebook is rendered inside an iframe. This mechanism lets you inject things into the
                             iframe
                             and run them after the book is rendered.</p>
-                    </li>
-                    <li><a href="highlights.html">Highlights</a>
-                        <p>Adds the ability to highlight text in the ebook. This version provides no mechanism for
-                            saving
-                            highlights after the browser is closed. It is an example of capability rather than a working
-                            implementation. It works as follows: When a section of text is selected a
-                            <code>rendition.on("selected"...)</code> function notes the location of the beginning and
-                            ending of the
-                            selected text. Two things happen. The code adds a new element to the outer page in a list at
-                            the
-                            bottom describing the selection and providing a "remove" link. The code also paints a yellow
-                            block in an SVG overlay to highlight the selected text. Unfortunately as of 5/14/2019 the
-                            remove
-                            link does remove the yellow overlay from the highlighted text but, does not remove the
-                            annotation from the list at the bottom of the page.
-                        </p>
-                    </li>
-                    <li><a href="hypothesis.html">Hypothes.is</a>
-                        <p>Visit their site for an explanation at <a
-                                href="https://web.hypothes.is/demos/epubjs/">https://web.hypothes.is/demos/epubjs/</a>.
-                        </p>
                     </li>
                 </ol>
             </div>
