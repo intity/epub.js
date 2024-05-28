@@ -225,7 +225,12 @@ class Themes {
 		};
 
 		contents.forEach((content) => {
-			content.css(name, this._overrides[name].value, this._overrides[name].priority);
+			if (content) {
+				content.css(name, 
+					this._overrides[name].value, 
+					this._overrides[name].priority
+				);
+			}
 		});
 	}
 
