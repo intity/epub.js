@@ -196,9 +196,7 @@ class Themes {
 
 		if (!theme || !contents) {
 			return;
-		}
-
-		if (theme.url) {
+		} else if (theme.url) {
 			contents.addStylesheet(theme.url);
 		} else if (theme.serialized) {
 			contents.addStylesheetCss(theme.serialized, name);
