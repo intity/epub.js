@@ -141,8 +141,10 @@ class Themes {
 
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
-			content.removeClass(prev);
-			content.addClass(name);
+			if (content) {
+				content.removeClass(prev);
+				content.addClass(name);
+			}
 		});
 	}
 
