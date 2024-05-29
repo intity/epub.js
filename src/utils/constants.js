@@ -61,5 +61,8 @@ export const EVENTS = {
   ANNOTATION : {
     ATTACH : "attach",
     DETACH : "detach"
+  },
+  THEMES: {
+    SELECTED: "selected"
   }
 }

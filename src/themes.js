@@ -1,4 +1,6 @@
+import EventEmitter from "event-emitter";
 import Url from "./utils/url";
+import { EVENTS } from "./utils/constants";
 
 /**
  * Themes to apply to displayed content
@@ -118,6 +120,14 @@ class Themes extends Map {
 				this.add(name, theme, content);
 			}
 		});
+		/**
+		 * Emit which occurs when theme is selected
+		 * @event selected
+		 * @param {string} name Theme key
+		 * @param {object} theme Theme value
+		 * @memberof Themes
+		 */
+		this.emit(EVENTS.THEMES.SELECTED, name, theme);
 	}
 
 	/**
@@ -242,5 +252,7 @@ class Themes extends Map {
 		this.overrides = {};
 	}
 }
+
+EventEmitter(Themes.prototype);
 
 export default Themes;
