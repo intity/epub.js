@@ -48,14 +48,20 @@
         }
         rendition.on("displayed", (section) => {
 
+            console.log(rendition.themes)
             rendition.themes.select("light")
+            rendition.themes.fontSize("100%")
         })
         rendition.on("relocated", (location) => {
 
-            console.log(rendition)
+            //console.log(location)
         })
         rendition.themes.register("light", "themes.css")
         rendition.themes.register("dark", "themes.css")
+        rendition.themes.on("selected", (key, value) => {
+
+            console.log(key, value)
+        })
     </script>
 </body>
 
