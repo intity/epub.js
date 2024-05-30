@@ -6,14 +6,13 @@ Handles DOM manipulation, queries and events for View contents
 **Kind**: global class  
 
 * [Contents](#Contents)
-    * [new Contents(doc, content, cfiBase, sectionIndex)](#new_Contents_new)
+    * [new Contents(doc, content, section)](#new_Contents_new)
     * _instance_
         * [.width([w])](#Contents+width) ⇒ <code>number</code>
         * [.height([h])](#Contents+height) ⇒ <code>number</code>
         * [.contentWidth([w])](#Contents+contentWidth) ⇒ <code>number</code>
         * [.contentHeight([h])](#Contents+contentHeight) ⇒ <code>number</code>
-        * [.textWidth()](#Contents+textWidth) ⇒ <code>number</code>
-        * [.textHeight()](#Contents+textHeight) ⇒ <code>number</code>
+        * [.textSize()](#Contents+textSize) ⇒ <code>Object</code>
         * [.scrollWidth()](#Contents+scrollWidth) ⇒ <code>number</code>
         * [.scrollHeight()](#Contents+scrollHeight) ⇒ <code>number</code>
         * [.overflow([overflow])](#Contents+overflow)
@@ -23,13 +22,13 @@ Handles DOM manipulation, queries and events for View contents
         * [.viewport([options])](#Contents+viewport)
         * [.root()](#Contents+root) ⇒ <code>element</code>
         * [.locationOf(target, [ignoreClass])](#Contents+locationOf) ⇒ <code>object</code>
-        * [.addStylesheet(src)](#Contents+addStylesheet)
-        * [.addStylesheetCss(serializedCss, key)](#Contents+addStylesheetCss)
+        * [.addStylesheet(src)](#Contents+addStylesheet) ⇒ <code>Promise</code>
+        * [.addStylesheetCss(serializedCss, key)](#Contents+addStylesheetCss) ⇒ <code>boolean</code>
         * [.addStylesheetRules(rules, key)](#Contents+addStylesheetRules)
         * [.addScript(src)](#Contents+addScript) ⇒ <code>Promise</code>
         * [.addClass(className)](#Contents+addClass)
         * [.removeClass(removeClass)](#Contents+removeClass)
-        * [.range(_cfi, [ignoreClass])](#Contents+range) ⇒ <code>Range</code>
+        * [.range(cfi, [ignoreClass])](#Contents+range) ⇒ <code>Range</code>
         * [.cfiFromRange(range, [ignoreClass])](#Contents+cfiFromRange) ⇒ <code>EpubCFI</code>
         * [.cfiFromNode(node, [ignoreClass])](#Contents+cfiFromNode) ⇒ <code>EpubCFI</code>
         * [.size([width], [height])](#Contents+size)
@@ -37,20 +36,27 @@ Handles DOM manipulation, queries and events for View contents
         * [.scaler(scale, offsetX, offsetY)](#Contents+scaler)
         * [.fit(width, height)](#Contents+fit)
         * [.direction([dir])](#Contents+direction)
+        * [.mapPage(cfiBase, layout, start, end, dev)](#Contents+mapPage) ⇒ <code>any</code>
         * [.writingMode([mode])](#Contents+writingMode)
+        * [.destroy()](#Contents+destroy)
     * _static_
+        * [.epubcfi](#Contents.epubcfi) : <code>EpubCFI</code>
+        * [.content](#Contents.content) : <code>object</code>
+        * [.contentRect](#Contents.contentRect) : <code>object</code>
+        * [.section](#Contents.section) : <code>Section</code>
         * [.listenedEvents](#Contents.listenedEvents)
 
 <a name="new_Contents_new"></a>
 
-## new Contents(doc, content, cfiBase, sectionIndex)
+## new Contents(doc, content, section)
+Constructor
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | doc | <code>document</code> | Document |
 | content | <code>element</code> | Parent Element (typically Body) |
-| cfiBase | <code>string</code> | Section component of CFIs |
-| sectionIndex | <code>number</code> | Index in Spine of Conntent's Section |
+| section | <code>Section</code> | Section object reference |
 
 <a name="Contents+width"></a>
 
@@ -100,20 +106,12 @@ Get or Set height of the contents
 | --- | --- |
 | [h] | <code>number</code> | 
 
-<a name="Contents+textWidth"></a>
+<a name="Contents+textSize"></a>
 
-## contents.textWidth() ⇒ <code>number</code>
-Get the width of the text using Range
-
-**Kind**: instance method of [<code>Contents</code>](#Contents)  
-**Returns**: <code>number</code> - width  
-<a name="Contents+textHeight"></a>
-
-## contents.textHeight() ⇒ <code>number</code>
-Get the height of the text using Range
+## contents.textSize() ⇒ <code>Object</code>
+Get size of the text using Range
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
-**Returns**: <code>number</code> - height  
 <a name="Contents+scrollWidth"></a>
 
 ## contents.scrollWidth() ⇒ <code>number</code>
@@ -213,7 +211,7 @@ Get the location offset of a EpubCFI or an #id
 
 <a name="Contents+addStylesheet"></a>
 
-## contents.addStylesheet(src)
+## contents.addStylesheet(src) ⇒ <code>Promise</code>
 Append a stylesheet link to the document head
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -224,7 +222,7 @@ Append a stylesheet link to the document head
 
 <a name="Contents+addStylesheetCss"></a>
 
-## contents.addStylesheetCss(serializedCss, key)
+## contents.addStylesheetCss(serializedCss, key) ⇒ <code>boolean</code>
 Append stylesheet css
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -284,7 +282,7 @@ Remove a class from the contents container
 
 <a name="Contents+range"></a>
 
-## contents.range(_cfi, [ignoreClass]) ⇒ <code>Range</code>
+## contents.range(cfi, [ignoreClass]) ⇒ <code>Range</code>
 Get a Dom Range from EpubCFI
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -292,7 +290,7 @@ Get a Dom Range from EpubCFI
 
 | Param | Type |
 | --- | --- |
-| _cfi | <code>EpubCFI</code> | 
+| cfi | <code>EpubCFI</code> | 
 | [ignoreClass] | <code>string</code> | 
 
 <a name="Contents+cfiFromRange"></a>
@@ -381,7 +379,22 @@ Set the direction of the text
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| [dir] | <code>string</code> | <code>&quot;\&quot;ltr\&quot;&quot;</code> | "rtl" | "ltr" |
+| [dir] | <code>string</code> | <code>&quot;&#x27;ltr&#x27;&quot;</code> | values: `"ltr"` OR `"rtl"` |
+
+<a name="Contents+mapPage"></a>
+
+## contents.mapPage(cfiBase, layout, start, end, dev) ⇒ <code>any</code>
+mapPage
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+
+| Param | Type |
+| --- | --- |
+| cfiBase | <code>string</code> | 
+| layout | <code>Layout</code> | 
+| start | <code>number</code> | 
+| end | <code>number</code> | 
+| dev | <code>boolean</code> | 
 
 <a name="Contents+writingMode"></a>
 
@@ -392,8 +405,38 @@ Set the writingMode of the text
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| [mode] | <code>string</code> | <code>&quot;\&quot;horizontal-tb\&quot;&quot;</code> | "horizontal-tb" | "vertical-rl" | "vertical-lr" |
+| [mode] | <code>string</code> | <code>&quot;&#x27;horizontal-tb&#x27;&quot;</code> | `"horizontal-tb"` OR `"vertical-rl"` OR `"vertical-lr"` |
 
+<a name="Contents+destroy"></a>
+
+## contents.destroy()
+destroy
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+<a name="Contents.epubcfi"></a>
+
+## Contents.epubcfi : <code>EpubCFI</code>
+Blank Cfi for Parsing
+
+**Kind**: static property of [<code>Contents</code>](#Contents)  
+**Read only**: true  
+<a name="Contents.content"></a>
+
+## Contents.content : <code>object</code>
+document.body by current location
+
+**Kind**: static property of [<code>Contents</code>](#Contents)  
+**Read only**: true  
+<a name="Contents.contentRect"></a>
+
+## Contents.contentRect : <code>object</code>
+**Kind**: static property of [<code>Contents</code>](#Contents)  
+**Read only**: true  
+<a name="Contents.section"></a>
+
+## Contents.section : <code>Section</code>
+**Kind**: static property of [<code>Contents</code>](#Contents)  
+**Read only**: true  
 <a name="Contents.listenedEvents"></a>
 
 ## Contents.listenedEvents

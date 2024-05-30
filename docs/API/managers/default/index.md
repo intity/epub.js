@@ -6,12 +6,12 @@ Default View Manager
 **Kind**: global class  
 
 * [DefaultViewManager](#DefaultViewManager)
-    * [new DefaultViewManager(options)](#new_DefaultViewManager_new)
+    * [new DefaultViewManager(book, layout, [options])](#new_DefaultViewManager_new)
     * _instance_
         * [.render(element, size)](#DefaultViewManager+render)
         * [.destroy()](#DefaultViewManager+destroy)
         * [.resize([width], [height], [epubcfi])](#DefaultViewManager+resize)
-        * [.display(section, target)](#DefaultViewManager+display) ⇒ <code>Promise</code>
+        * [.display(section, [target])](#DefaultViewManager+display) ⇒ <code>Promise</code>
         * [.add(section, forceRight)](#DefaultViewManager+add) ⇒ <code>Promise</code>
         * [.next()](#DefaultViewManager+next) ⇒ <code>Promise</code>
         * [.prev()](#DefaultViewManager+prev) ⇒ <code>Promise</code>
@@ -20,35 +20,36 @@ Default View Manager
         * [.currentLocation()](#DefaultViewManager+currentLocation) ⇒ <code>Array.&lt;object&gt;</code>
         * [.visible()](#DefaultViewManager+visible) ⇒ <code>Array.&lt;object&gt;</code>
         * [.bounds()](#DefaultViewManager+bounds) ⇒ <code>DOMRect</code>
-        * [.applyLayout(layout)](#DefaultViewManager+applyLayout)
         * [.updateLayout()](#DefaultViewManager+updateLayout)
-        * [.updateAxis(axis, forceUpdate)](#DefaultViewManager+updateAxis)
-        * [.updateFlow(flow, [defaultScrolledOverflow])](#DefaultViewManager+updateFlow)
-        * [.getContents()](#DefaultViewManager+getContents) ⇒ <code>Array.&lt;Contents&gt;</code>
-        * [.direction([dir])](#DefaultViewManager+direction)
+        * [.getContents()](#DefaultViewManager+getContents) ⇒ <code>Array.&lt;object&gt;</code>
         * [.isRendered()](#DefaultViewManager+isRendered) ⇒ <code>boolean</code>
     * _static_
         * [.name](#DefaultViewManager.name) : <code>string</code>
+        * [.layout](#DefaultViewManager.layout) : <code>Layout</code>
+        * [.paginated](#DefaultViewManager.paginated) : <code>boolean</code>
         * [.location](#DefaultViewManager.location) : <code>Array.&lt;object&gt;</code>
         * [.rendered](#DefaultViewManager.rendered) : <code>boolean</code>
         * [.stage](#DefaultViewManager.stage) : <code>Stage</code>
         * [.container](#DefaultViewManager.container) : <code>Element</code>
         * [.views](#DefaultViewManager.views) : <code>Views</code>
-        * [._bounds](#DefaultViewManager._bounds) : <code>object</code>
         * [.stageSize](#DefaultViewManager.stageSize) : <code>object</code>
-        * [.layout](#DefaultViewManager.layout) : <code>Layout</code>
         * [.mapping](#DefaultViewManager.mapping) : <code>Mapping</code>
 
 <a name="new_DefaultViewManager_new"></a>
 
-## new DefaultViewManager(options)
+## new DefaultViewManager(book, layout, [options])
 Constructor
 
 
-| Param | Type | Default |
-| --- | --- | --- |
-| options | <code>object</code> |  | 
-| [options.view] | <code>string</code> \| <code>object</code> | <code>&quot;&#x27;iframe&#x27;&quot;</code> | 
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| book | <code>Book</code> |  |  |
+| layout | <code>Layout</code> |  |  |
+| [options] | <code>object</code> |  |  |
+| [options.axis] | <code>string</code> |  |  |
+| [options.method] | <code>string</code> |  | values: `"blobUrl"` OR `"srcdoc"` OR `"write"` |
+| [options.ignoreClass] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> |  |
+| [options.view] | <code>string</code> \| <code>object</code> | <code>&quot;&#x27;iframe&#x27;&quot;</code> |  |
 
 <a name="DefaultViewManager+render"></a>
 
@@ -85,7 +86,7 @@ resize
 
 <a name="DefaultViewManager+display"></a>
 
-## defaultViewManager.display(section, target) ⇒ <code>Promise</code>
+## defaultViewManager.display(section, [target]) ⇒ <code>Promise</code>
 display
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
@@ -94,19 +95,19 @@ display
 | Param | Type |
 | --- | --- |
 | section | <code>Section</code> | 
-| target | <code>string</code> \| <code>number</code> | 
+| [target] | <code>string</code> \| <code>number</code> | 
 
 <a name="DefaultViewManager+add"></a>
 
 ## defaultViewManager.add(section, forceRight) ⇒ <code>Promise</code>
-add
+append
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 
-| Param | Type |
-| --- | --- |
-| section | <code>Section</code> | 
-| forceRight | <code>boolean</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| section | <code>Section</code> | Section object |
+| forceRight | <code>boolean</code> |  |
 
 <a name="DefaultViewManager+next"></a>
 
@@ -123,7 +124,7 @@ prev
 <a name="DefaultViewManager+current"></a>
 
 ## defaultViewManager.current() ⇒ <code>\*</code>
-current
+Get current visible view
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Returns**: <code>\*</code> - view  
@@ -150,68 +151,22 @@ Get array of visible views
 <a name="DefaultViewManager+bounds"></a>
 
 ## defaultViewManager.bounds() ⇒ <code>DOMRect</code>
-bounds
+Get bounds
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-<a name="DefaultViewManager+applyLayout"></a>
-
-## defaultViewManager.applyLayout(layout)
-applyLayout
-
-**Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| layout | <code>Layout</code> | Layout object |
-
 <a name="DefaultViewManager+updateLayout"></a>
 
 ## defaultViewManager.updateLayout()
-updateLayout
+Update Layout
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-<a name="DefaultViewManager+updateAxis"></a>
-
-## defaultViewManager.updateAxis(axis, forceUpdate)
-updateAxis
-
-**Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-
-| Param | Type |
-| --- | --- |
-| axis | <code>string</code> | 
-| forceUpdate | <code>boolean</code> | 
-
-<a name="DefaultViewManager+updateFlow"></a>
-
-## defaultViewManager.updateFlow(flow, [defaultScrolledOverflow])
-updateFlow
-
-**Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-
-| Param | Type | Default |
-| --- | --- | --- |
-| flow | <code>string</code> |  | 
-| [defaultScrolledOverflow] | <code>string</code> | <code>&quot;&#x27;auto&#x27;&quot;</code> | 
-
 <a name="DefaultViewManager+getContents"></a>
 
-## defaultViewManager.getContents() ⇒ <code>Array.&lt;Contents&gt;</code>
+## defaultViewManager.getContents() ⇒ <code>Array.&lt;object&gt;</code>
 Get contents array from views
 
 **Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-**Returns**: <code>Array.&lt;Contents&gt;</code> - [view.contents]  
-<a name="DefaultViewManager+direction"></a>
-
-## defaultViewManager.direction([dir])
-direction
-
-**Kind**: instance method of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-
-| Param | Type | Default |
-| --- | --- | --- |
-| [dir] | <code>string</code> | <code>&quot;&#x27;ltr&#x27;&quot;</code> | 
-
+**Returns**: <code>Array.&lt;object&gt;</code> - [view.contents]  
 <a name="DefaultViewManager+isRendered"></a>
 
 ## defaultViewManager.isRendered() ⇒ <code>boolean</code>
@@ -223,6 +178,16 @@ isRendered
 ## DefaultViewManager.name : <code>string</code>
 Manager name
 
+**Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
+**Read only**: true  
+<a name="DefaultViewManager.layout"></a>
+
+## DefaultViewManager.layout : <code>Layout</code>
+**Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
+**Read only**: true  
+<a name="DefaultViewManager.paginated"></a>
+
+## DefaultViewManager.paginated : <code>boolean</code>
 **Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Read only**: true  
 <a name="DefaultViewManager.location"></a>
@@ -245,10 +210,8 @@ Manager name
 | Name | Type |
 | --- | --- |
 | axis | <code>string</code> | 
-| direction | <code>string</code> | 
 | width | <code>string</code> \| <code>number</code> | 
 | height | <code>string</code> \| <code>number</code> | 
-| overflow | <code>string</code> | 
 | hidden | <code>boolean</code> | 
 | fullsize | <code>boolean</code> | 
 
@@ -264,21 +227,9 @@ Stage container
 ## DefaultViewManager.views : <code>Views</code>
 **Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Read only**: true  
-<a name="DefaultViewManager._bounds"></a>
-
-## DefaultViewManager.\_bounds : <code>object</code>
-Calculate Stage Size
-
-**Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-**Read only**: true  
 <a name="DefaultViewManager.stageSize"></a>
 
 ## DefaultViewManager.stageSize : <code>object</code>
-**Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
-**Read only**: true  
-<a name="DefaultViewManager.layout"></a>
-
-## DefaultViewManager.layout : <code>Layout</code>
 **Kind**: static property of [<code>DefaultViewManager</code>](#DefaultViewManager)  
 **Read only**: true  
 <a name="DefaultViewManager.mapping"></a>

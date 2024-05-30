@@ -8,15 +8,18 @@ Figures out the CSS values to apply for a layout
 * [Layout](#Layout)
     * [new Layout(options)](#new_Layout_new)
     * _instance_
-        * [.flow(str)](#Layout+flow) ⇒ <code>string</code>
-        * [.spread([spread], [min])](#Layout+spread) ⇒ <code>boolean</code>
-        * [.calculate(width, height, [gap])](#Layout+calculate)
-        * [.format(contents)](#Layout+format) ⇒ <code>Promise</code>
-        * [.count(totalLength, pageLength)](#Layout+count) ⇒ <code>Object</code>
+        * [.set(options)](#Layout+set)
+        * [.calculate([width], [height], [gap])](#Layout+calculate)
+        * [.format(contents, [section], [axis])](#Layout+format) ⇒ <code>Promise</code>
+        * [.count(totalLength, [pageLength])](#Layout+count) ⇒ <code>Object</code>
     * _static_
         * [.name](#Layout.name) : <code>string</code>
+        * [.flow](#Layout.flow) : <code>string</code>
+        * [.spread](#Layout.spread) : <code>boolean</code>
+        * [.direction](#Layout.direction) : <code>string</code>
+        * [.orientation](#Layout.orientation) : <code>string</code>
+        * [.viewport](#Layout.viewport) : <code>string</code>
         * [.minSpreadWidth](#Layout.minSpreadWidth) : <code>number</code>
-        * [.evenSpreads](#Layout.evenSpreads) : <code>boolean</code>
         * [.width](#Layout.width) : <code>number</code>
         * [.height](#Layout.height) : <code>number</code>
         * [.spreadWidth](#Layout.spreadWidth) : <code>number</code>
@@ -34,53 +37,40 @@ Constructor
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | options | <code>object</code> |  |  |
-| [options.layout] | <code>string</code> | <code>&quot;&#x27;reflowable&#x27;&quot;</code> | values: `"reflowable"` OR `"pre-paginated"` |
-| [options.spread] | <code>string</code> |  | values: `"none"` OR `"auto"` |
+| [options.name] | <code>string</code> | <code>&quot;&#x27;reflowable&#x27;&quot;</code> | values: `"reflowable"` OR `"pre-paginated"` |
+| [options.flow] | <code>string</code> | <code>&quot;&#x27;paginated&#x27;&quot;</code> | values: `"paginated"` OR `"scrolled"` OR `"scrolled-doc"` |
+| [options.spread] | <code>string</code> | <code>&quot;&#x27;auto&#x27;&quot;</code> | values: `"auto"` OR `"none"` |
+| [options.direction] | <code>string</code> | <code>&quot;&#x27;ltr&#x27;&quot;</code> | values: `"ltr"` OR `"rtl"` |
+| [options.orientation] | <code>string</code> | <code>&quot;&#x27;auto&#x27;&quot;</code> | values: `"auto"` OR `"landscape"` OR `"portrait"` |
 | [options.minSpreadWidth] | <code>number</code> | <code>800</code> |  |
-| [options.evenSpreads] | <code>boolean</code> | <code>false</code> |  |
 
-<a name="Layout+flow"></a>
+<a name="Layout+set"></a>
 
-## layout.flow(str) ⇒ <code>string</code>
-Switch the flow between paginated and scrolled
-
-**Kind**: instance method of [<code>Layout</code>](#Layout)  
-**Returns**: <code>string</code> - Simplified flow  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| str | <code>string</code> | `"paginated"` OR `"scrolled"` |
-
-<a name="Layout+spread"></a>
-
-## layout.spread([spread], [min]) ⇒ <code>boolean</code>
-Switch between using spreads or not, and set the
-width at which they switch to single.
+## layout.set(options)
+Set options
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
-**Returns**: <code>boolean</code> - true OR false  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [spread] | <code>string</code> | `"none"` OR `"always"` OR `"auto"` |
-| [min] | <code>number</code> | integer in pixels |
+| Param | Type |
+| --- | --- |
+| options | <code>object</code> | 
 
 <a name="Layout+calculate"></a>
 
-## layout.calculate(width, height, [gap])
+## layout.calculate([width], [height], [gap])
 Calculate the dimensions of the pagination
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| width | <code>number</code> | width of the rendering |
-| height | <code>number</code> | height of the rendering |
+| [width] | <code>number</code> | width of the rendering |
+| [height] | <code>number</code> | height of the rendering |
 | [gap] | <code>number</code> | width of the gap between columns |
 
 <a name="Layout+format"></a>
 
-## layout.format(contents) ⇒ <code>Promise</code>
+## layout.format(contents, [section], [axis]) ⇒ <code>Promise</code>
 Apply Css to a Document
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
@@ -88,10 +78,12 @@ Apply Css to a Document
 | Param | Type |
 | --- | --- |
 | contents | <code>Contents</code> | 
+| [section] | <code>Section</code> | 
+| [axis] | <code>string</code> | 
 
 <a name="Layout+count"></a>
 
-## layout.count(totalLength, pageLength) ⇒ <code>Object</code>
+## layout.count(totalLength, [pageLength]) ⇒ <code>Object</code>
 Count number of pages
 
 **Kind**: instance method of [<code>Layout</code>](#Layout)  
@@ -99,7 +91,7 @@ Count number of pages
 | Param | Type |
 | --- | --- |
 | totalLength | <code>number</code> | 
-| pageLength | <code>number</code> | 
+| [pageLength] | <code>number</code> | 
 
 <a name="Layout.name"></a>
 
@@ -108,16 +100,40 @@ Layout name
 
 **Kind**: static property of [<code>Layout</code>](#Layout)  
 **Access**: protected  
+<a name="Layout.flow"></a>
+
+## Layout.flow : <code>string</code>
+**Kind**: static property of [<code>Layout</code>](#Layout)  
+**Read only**: true  
+<a name="Layout.spread"></a>
+
+## Layout.spread : <code>boolean</code>
+**Kind**: static property of [<code>Layout</code>](#Layout)  
+**Read only**: true  
+<a name="Layout.direction"></a>
+
+## Layout.direction : <code>string</code>
+**Kind**: static property of [<code>Layout</code>](#Layout)  
+**Read only**: true  
+<a name="Layout.orientation"></a>
+
+## Layout.orientation : <code>string</code>
+no implementation
+
+**Kind**: static property of [<code>Layout</code>](#Layout)  
+**Read only**: true  
+<a name="Layout.viewport"></a>
+
+## Layout.viewport : <code>string</code>
+no implementation
+
+**Kind**: static property of [<code>Layout</code>](#Layout)  
+**Read only**: true  
 <a name="Layout.minSpreadWidth"></a>
 
 ## Layout.minSpreadWidth : <code>number</code>
 **Kind**: static property of [<code>Layout</code>](#Layout)  
 **Read only**: true  
-<a name="Layout.evenSpreads"></a>
-
-## Layout.evenSpreads : <code>boolean</code>
-**Kind**: static property of [<code>Layout</code>](#Layout)  
-**Readonlys**:   
 <a name="Layout.width"></a>
 
 ## Layout.width : <code>number</code>

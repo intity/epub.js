@@ -20,17 +20,15 @@ the section content.
         * [.clear()](#Rendition+clear)
         * [.next()](#Rendition+next) ⇒ <code>Promise</code>
         * [.prev()](#Rendition+prev) ⇒ <code>Promise</code>
-        * [.flow(flow)](#Rendition+flow)
-        * [.layout(settings)](#Rendition+layout) ⇒ <code>Layout</code>
-        * [.spread(spread, [min])](#Rendition+spread)
-        * [.direction(dir)](#Rendition+direction)
-        * [.reportLocation()](#Rendition+reportLocation)
+        * [.updateLayout(options)](#Rendition+updateLayout)
+        * [.reportLocation()](#Rendition+reportLocation) ⇒ <code>Promise</code>
         * [.currentLocation()](#Rendition+currentLocation) ⇒ <code>displayedLocation</code> \| <code>Promise</code>
         * [.destroy()](#Rendition+destroy)
         * [.getRange(epubcfi, ignoreClass)](#Rendition+getRange) ⇒ <code>Range</code>
         * [.getContents()](#Rendition+getContents) ⇒ <code>Array.&lt;object&gt;</code>
         * [.views()](#Rendition+views) ⇒ <code>Array.&lt;object&gt;</code>
     * _static_
+        * [.settings](#Rendition.settings) : <code>object</code>
         * [.hooks](#Rendition.hooks) : <code>object</code>
         * [.annotations](#Rendition.annotations) : <code>Annotations</code>
         * [.themes](#Rendition.themes) : <code>Themes</code>
@@ -43,7 +41,6 @@ the section content.
         * ["removed" (section, view)](#Rendition.event_removed)
         * ["resized" (width, height, [epubcfi])](#Rendition.event_resized)
         * ["orientationchange" (orientation)](#Rendition.event_orientationchange)
-        * ~~["locationChanged"](#Rendition.event_locationChanged)~~
         * ["relocated"](#Rendition.event_relocated)
         * ["selected" (cfirange, contents)](#Rendition.event_selected)
         * ["markClicked" (cfiRange, data, contents)](#Rendition.event_markClicked)
@@ -64,14 +61,15 @@ the section content.
 | [options.view] | <code>string</code> \| <code>function</code> | <code>&quot;&#x27;iframe&#x27;&quot;</code> |  |
 | [options.layout] | <code>string</code> |  | layout to force |
 | [options.spread] | <code>string</code> |  | force spread value |
+| [options.direction] | <code>string</code> |  | direction `"ltr"` OR `"rtl"` |
 | [options.minSpreadWidth] | <code>number</code> |  | overridden by spread: none (never) / both (always) |
 | [options.stylesheet] | <code>string</code> |  | url of stylesheet to be injected |
-| [options.resizeOnOrientationChange] | <code>boolean</code> |  | false to disable orientation events |
 | [options.script] | <code>string</code> |  | url of script to be injected |
-| [options.snap] | <code>boolean</code> \| <code>object</code> | <code>false</code> | use snap scrolling |
-| [options.direction] | <code>string</code> |  | direction `"ltr"` OR `"rtl"` (TODO: implement to `"auto"` detection) |
-| [options.allowScriptedContent] | <code>boolean</code> | <code>false</code> | enable running scripts in content |
+| [options.snap] | <code>object</code> |  | use snap scrolling |
+| [options.fullsize] | <code>boolean</code> | <code>false</code> |  |
 | [options.allowPopups] | <code>boolean</code> | <code>false</code> | enable opening popup in content |
+| [options.allowScriptedContent] | <code>boolean</code> | <code>false</code> | enable running scripts in content |
+| [options.resizeOnOrientationChange] | <code>boolean</code> | <code>true</code> | false to disable orientation events |
 
 <a name="Rendition+setManager"></a>
 
@@ -170,60 +168,24 @@ Go to the next "page" in the rendition
 Go to the previous "page" in the rendition
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-<a name="Rendition+flow"></a>
+<a name="Rendition+updateLayout"></a>
 
-## rendition.flow(flow)
-Adjust the flow of the rendition to paginated or scrolled
-(scrolled-continuous vs scrolled-doc are handled by different view managers)
-
-**Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| flow | <code>string</code> | values: `"paginated"` OR `"scrolled"` |
-
-<a name="Rendition+layout"></a>
-
-## rendition.layout(settings) ⇒ <code>Layout</code>
-Adjust the layout of the rendition to reflowable or pre-paginated
-
-**Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-**Returns**: <code>Layout</code> - Layout object  
-
-| Param | Type |
-| --- | --- |
-| settings | <code>object</code> | 
-
-<a name="Rendition+spread"></a>
-
-## rendition.spread(spread, [min])
-Adjust if the rendition uses spreads
-
-**Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| spread | <code>string</code> | none | auto (TODO: implement landscape, portrait, both) |
-| [min] | <code>int</code> | min width to use spreads at |
-
-<a name="Rendition+direction"></a>
-
-## rendition.direction(dir)
-Adjust the direction of the rendition
+## rendition.updateLayout(options)
+Layout configuration
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
 
 | Param | Type |
 | --- | --- |
-| dir | <code>string</code> | 
+| options | <code>object</code> | 
 
 <a name="Rendition+reportLocation"></a>
 
-## rendition.reportLocation()
+## rendition.reportLocation() ⇒ <code>Promise</code>
 Report the current location
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
-**Emits**: <code>event:relocated</code>, <code>event:locationChanged</code>  
+**Emits**: <code>event:relocated</code>  
 <a name="Rendition+currentLocation"></a>
 
 ## rendition.currentLocation() ⇒ <code>displayedLocation</code> \| <code>Promise</code>
@@ -261,6 +223,11 @@ Get the Contents object of each rendered view
 Get the views member from the manager
 
 **Kind**: instance method of [<code>Rendition</code>](#Rendition)  
+<a name="Rendition.settings"></a>
+
+## Rendition.settings : <code>object</code>
+**Kind**: static property of [<code>Rendition</code>](#Rendition)  
+**Read only**: true  
 <a name="Rendition.hooks"></a>
 
 ## Rendition.hooks : <code>object</code>
@@ -374,23 +341,7 @@ Emit that the rendition has been rotated
 
 | Param | Type |
 | --- | --- |
-| orientation | <code>string</code> | 
-
-<a name="Rendition.event_locationChanged"></a>
-
-## ~~"locationChanged"~~
-***Deprecated***
-
-**Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
-**Properties**
-
-| Name | Type |
-| --- | --- |
-| index | <code>number</code> | 
-| href | <code>string</code> | 
-| start | <code>EpubCFI</code> | 
-| end | <code>EpubCFI</code> | 
-| percentage | <code>number</code> | 
+| orientation | <code>ScreenOrientation</code> | 
 
 <a name="Rendition.event_relocated"></a>
 

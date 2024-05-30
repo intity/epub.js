@@ -1,85 +1,74 @@
 <a name="IframeView"></a>
 
 # IframeView
-IframeView
+IframeView class
 
 **Kind**: global class  
 
 * [IframeView](#IframeView)
-    * [new IframeView(section, [options])](#new_IframeView_new)
-    * [.container(axis)](#IframeView+container) ⇒ <code>Element</code>
-    * [.create()](#IframeView+create) ⇒ <code>Element</code>
-    * [.render(request, show)](#IframeView+render) ⇒ <code>object</code>
-    * [.reset()](#IframeView+reset)
-    * [.size(_width, _height)](#IframeView+size)
-    * [.lock(what, width, height)](#IframeView+lock)
-    * [.expand(force)](#IframeView+expand)
-    * [.reframe(width, height)](#IframeView+reframe)
-    * [.load(contents)](#IframeView+load) ⇒ <code>Promise</code>
-    * [.onLoad(event, promise)](#IframeView+onLoad)
-    * [.setLayout(layout)](#IframeView+setLayout)
-    * [.setAxis(axis)](#IframeView+setAxis)
-    * [.setWritingMode(mode)](#IframeView+setWritingMode)
-    * [.display(request)](#IframeView+display) ⇒ <code>Promise</code>
-    * [.show()](#IframeView+show)
-    * [.hide()](#IframeView+hide)
-    * [.offset()](#IframeView+offset) ⇒ <code>object</code>
-    * [.width()](#IframeView+width) ⇒ <code>number</code>
-    * [.height()](#IframeView+height) ⇒ <code>number</code>
-    * [.position()](#IframeView+position) ⇒ <code>DOMRect</code>
-    * [.locationOf(target)](#IframeView+locationOf) ⇒ <code>object</code>
-    * [.bounds(force)](#IframeView+bounds) ⇒ <code>Element</code>
-    * [.highlight(cfiRange, [data], cb, [className], [styles])](#IframeView+highlight) ⇒ <code>object</code>
-    * [.underline(cfiRange, [data], cb, [className], [styles])](#IframeView+underline) ⇒ <code>object</code>
-    * [.mark(cfiRange, [data], cb)](#IframeView+mark) ⇒ <code>object</code>
-    * [.placeMark(element, range)](#IframeView+placeMark)
-    * [.unhighlight(cfiRange)](#IframeView+unhighlight)
-    * [.ununderline(cfiRange)](#IframeView+ununderline)
-    * [.unmark(cfiRange)](#IframeView+unmark)
-    * [.destroy()](#IframeView+destroy)
+    * [new IframeView(layout, section, [options])](#new_IframeView_new)
+    * _instance_
+        * [.create()](#IframeView+create) ⇒ <code>Element</code>
+        * [.render(request)](#IframeView+render) ⇒ <code>object</code>
+        * [.reset()](#IframeView+reset)
+        * [.size([width], [height])](#IframeView+size)
+        * [.lock(what, width, height)](#IframeView+lock)
+        * [.expand()](#IframeView+expand)
+        * [.reframe(width, height)](#IframeView+reframe)
+        * [.load(contents)](#IframeView+load) ⇒ <code>Promise</code>
+        * [.onLoad(event, promise)](#IframeView+onLoad)
+        * [.setAxis(value)](#IframeView+setAxis)
+        * [.setWritingMode(mode)](#IframeView+setWritingMode)
+        * [.display(request)](#IframeView+display) ⇒ <code>Promise</code>
+        * [.show()](#IframeView+show)
+        * [.hide()](#IframeView+hide)
+        * [.offset()](#IframeView+offset) ⇒ <code>object</code>
+        * [.position()](#IframeView+position) ⇒ <code>DOMRect</code>
+        * [.locationOf(target)](#IframeView+locationOf) ⇒ <code>object</code>
+        * [.bounds([force])](#IframeView+bounds) ⇒ <code>Element</code>
+        * [.highlight(cfiRange, [data], cb, [className], [styles])](#IframeView+highlight) ⇒ <code>object</code>
+        * [.underline(cfiRange, [data], cb, [className], [styles])](#IframeView+underline) ⇒ <code>object</code>
+        * [.mark(cfiRange, [data], cb)](#IframeView+mark) ⇒ <code>object</code>
+        * [.placeMark(element, range)](#IframeView+placeMark)
+        * [.unhighlight(cfiRange)](#IframeView+unhighlight)
+        * [.ununderline(cfiRange)](#IframeView+ununderline)
+        * [.unmark(cfiRange)](#IframeView+unmark)
+        * [.destroy()](#IframeView+destroy)
+    * _static_
+        * [.settings](#IframeView.settings) : <code>object</code>
+        * [.id](#IframeView.id) : <code>string</code>
+        * [.section](#IframeView.section) : <code>Section</code>
+        * [.epubcfi](#IframeView.epubcfi) : <code>EpubCFI</code>
+        * [.layout](#IframeView.layout) : <code>Layout</code>
 
 <a name="new_IframeView_new"></a>
 
-## new IframeView(section, [options])
+## new IframeView(layout, section, [options])
+Constructor
 
-| Param | Type | Default |
-| --- | --- | --- |
-| section | <code>\*</code> |  | 
-| [options] | <code>object</code> |  | 
-| [options.allowPopups] | <code>boolean</code> | <code>false</code> | 
-| [options.allowScriptedContent] | <code>boolean</code> | <code>false</code> | 
-| [options.axis] | <code>\*</code> |  | 
-| [options.direction] | <code>\*</code> |  | 
-| [options.forceRight] | <code>boolean</code> | <code>false</code> | 
-| [options.globalLayoutProperties] | <code>object</code> | <code>{}</code> | 
-| [options.width] | <code>number</code> |  | 
-| [options.height] | <code>number</code> |  | 
-| [options.ignoreClass] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> | 
-| [options.layout] | <code>\*</code> |  | 
-| [options.method] | <code>\*</code> |  | 
 
-<a name="IframeView+container"></a>
-
-## iframeView.container(axis) ⇒ <code>Element</code>
-container
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-**Returns**: <code>Element</code> - HTML element  
-
-| Param | Type |
-| --- | --- |
-| axis | <code>\*</code> | 
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| layout | <code>Layout</code> |  |  |
+| section | <code>Section</code> |  |  |
+| [options] | <code>object</code> |  |  |
+| [options.axis] | <code>string</code> |  | values: `"horizontal"` OR `"vertical"` |
+| [options.method] | <code>string</code> |  | values: `"blobUrl"` OR `"srcdoc"` OR `"write"` |
+| [options.ignoreClass] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> |  |
+| [options.allowPopups] | <code>boolean</code> | <code>false</code> |  |
+| [options.allowScriptedContent] | <code>boolean</code> | <code>false</code> |  |
+| [options.forceRight] | <code>boolean</code> | <code>false</code> |  |
 
 <a name="IframeView+create"></a>
 
 ## iframeView.create() ⇒ <code>Element</code>
-create
+Create iframe element
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 **Returns**: <code>Element</code> - iframe  
 <a name="IframeView+render"></a>
 
-## iframeView.render(request, show) ⇒ <code>object</code>
+## iframeView.render(request) ⇒ <code>object</code>
 render
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
@@ -87,8 +76,7 @@ render
 
 | Param | Type |
 | --- | --- |
-| request | <code>\*</code> | 
-| show | <code>\*</code> | 
+| request | <code>function</code> | 
 
 <a name="IframeView+reset"></a>
 
@@ -98,7 +86,7 @@ reset
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+size"></a>
 
-## iframeView.size(_width, _height)
+## iframeView.size([width], [height])
 size
 Determine locks base on settings
 
@@ -106,8 +94,8 @@ Determine locks base on settings
 
 | Param | Type |
 | --- | --- |
-| _width | <code>\*</code> | 
-| _height | <code>\*</code> | 
+| [width] | <code>number</code> | 
+| [height] | <code>number</code> | 
 
 <a name="IframeView+lock"></a>
 
@@ -119,22 +107,17 @@ Lock an axis to element dimensions, taking borders into account
 
 | Param | Type |
 | --- | --- |
-| what | <code>\*</code> | 
-| width | <code>\*</code> | 
-| height | <code>\*</code> | 
+| what | <code>string</code> | 
+| width | <code>number</code> | 
+| height | <code>number</code> | 
 
 <a name="IframeView+expand"></a>
 
-## iframeView.expand(force)
+## iframeView.expand()
 expand
 Resize a single axis based on content dimensions
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-
-| Param | Type |
-| --- | --- |
-| force | <code>\*</code> | 
-
 <a name="IframeView+reframe"></a>
 
 ## iframeView.reframe(width, height)
@@ -144,8 +127,8 @@ reframe
 
 | Param | Type |
 | --- | --- |
-| width | <code>\*</code> | 
-| height | <code>\*</code> | 
+| width | <code>number</code> | 
+| height | <code>number</code> | 
 
 <a name="IframeView+load"></a>
 
@@ -157,7 +140,7 @@ load
 
 | Param | Type |
 | --- | --- |
-| contents | <code>\*</code> | 
+| contents | <code>string</code> | 
 
 <a name="IframeView+onLoad"></a>
 
@@ -168,41 +151,30 @@ onLoad
 
 | Param | Type |
 | --- | --- |
-| event | <code>\*</code> | 
-| promise | <code>\*</code> | 
-
-<a name="IframeView+setLayout"></a>
-
-## iframeView.setLayout(layout)
-setLayout
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-
-| Param | Type |
-| --- | --- |
-| layout | <code>\*</code> | 
+| event | <code>Event</code> | 
+| promise | <code>defer</code> | 
 
 <a name="IframeView+setAxis"></a>
 
-## iframeView.setAxis(axis)
-setAxis
+## iframeView.setAxis(value)
+Set axis
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
 | Param | Type |
 | --- | --- |
-| axis | <code>\*</code> | 
+| value | <code>string</code> | 
 
 <a name="IframeView+setWritingMode"></a>
 
 ## iframeView.setWritingMode(mode)
-setWritingMode
+Set writing mode
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
 | Param | Type |
 | --- | --- |
-| mode | <code>\*</code> | 
+| mode | <code>string</code> | 
 
 <a name="IframeView+display"></a>
 
@@ -214,7 +186,7 @@ display
 
 | Param | Type |
 | --- | --- |
-| request | <code>\*</code> | 
+| request | <code>function</code> | 
 
 <a name="IframeView+show"></a>
 
@@ -232,18 +204,6 @@ hide
 
 ## iframeView.offset() ⇒ <code>object</code>
 offset
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-<a name="IframeView+width"></a>
-
-## iframeView.width() ⇒ <code>number</code>
-width
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-<a name="IframeView+height"></a>
-
-## iframeView.height() ⇒ <code>number</code>
-height
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 <a name="IframeView+position"></a>
@@ -265,14 +225,14 @@ locationOf
 
 <a name="IframeView+bounds"></a>
 
-## iframeView.bounds(force) ⇒ <code>Element</code>
+## iframeView.bounds([force]) ⇒ <code>Element</code>
 bounds
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
-| Param | Type |
-| --- | --- |
-| force | <code>\*</code> | 
+| Param | Type | Default |
+| --- | --- | --- |
+| [force] | <code>boolean</code> | <code>false</code> | 
 
 <a name="IframeView+highlight"></a>
 
@@ -281,13 +241,13 @@ highlight
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
-| Param | Type | Default |
-| --- | --- | --- |
-| cfiRange | <code>\*</code> |  | 
-| [data] | <code>\*</code> | <code>{}</code> | 
-| cb | <code>\*</code> |  | 
-| [className] | <code>\*</code> | <code>&#x27;epubjs-hl&#x27;</code> | 
-| [styles] | <code>\*</code> | <code>{}</code> | 
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| cfiRange | <code>string</code> \| <code>EpubCFI</code> |  |  |
+| [data] | <code>object</code> | <code>{}</code> |  |
+| cb | <code>function</code> |  | callback function |
+| [className] | <code>string</code> | <code>&quot;&#x27;epubjs-hl&#x27;&quot;</code> |  |
+| [styles] | <code>object</code> | <code>{}</code> |  |
 
 <a name="IframeView+underline"></a>
 
@@ -368,3 +328,30 @@ unmark
 destroy
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
+<a name="IframeView.settings"></a>
+
+## IframeView.settings : <code>object</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.id"></a>
+
+## IframeView.id : <code>string</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.section"></a>
+
+## IframeView.section : <code>Section</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.epubcfi"></a>
+
+## IframeView.epubcfi : <code>EpubCFI</code>
+Blank Cfi for Parsing
+
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.layout"></a>
+
+## IframeView.layout : <code>Layout</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  

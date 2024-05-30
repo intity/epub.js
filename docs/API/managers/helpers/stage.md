@@ -6,7 +6,7 @@ Stage
 **Kind**: global class  
 
 * [Stage](#Stage)
-    * [new Stage(options)](#new_Stage_new)
+    * [new Stage(layout, options)](#new_Stage_new)
     * _instance_
         * [.create(options)](#Stage+create) ⇒ <code>Element</code>
         * [.wrap(container)](#Stage+wrap) ⇒ <code>Element</code>
@@ -19,9 +19,7 @@ Stage
         * [.bounds()](#Stage+bounds) ⇒ <code>DOMRect</code> \| <code>object</code>
         * [.getSheet()](#Stage+getSheet) ⇒ <code>CSSStyleSheet</code>
         * [.addStyleRules(selector, rulesArray)](#Stage+addStyleRules)
-        * [.axis(axis)](#Stage+axis)
-        * [.direction(dir)](#Stage+direction)
-        * [.overflow(overflow)](#Stage+overflow)
+        * [.axis(value)](#Stage+axis)
         * [.destroy()](#Stage+destroy)
     * _static_
         * [.settings](#Stage.settings) : <code>object</code>
@@ -30,15 +28,15 @@ Stage
 
 <a name="new_Stage_new"></a>
 
-## new Stage(options)
+## new Stage(layout, options)
 Constructor
 
 
 | Param | Type |
 | --- | --- |
+| layout | <code>Layout</code> | 
 | options | <code>object</code> | 
 | options.axis | <code>string</code> | 
-| options.direction | <code>string</code> | 
 | options.fullsize | <code>boolean</code> | 
 | options.width | <code>string</code> \| <code>number</code> | 
 | options.height | <code>string</code> \| <code>number</code> | 
@@ -157,36 +155,14 @@ addStyleRules
 
 <a name="Stage+axis"></a>
 
-## stage.axis(axis)
-axis
+## stage.axis(value)
+Set axis
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 
-| Param | Type |
-| --- | --- |
-| axis | <code>string</code> | 
-
-<a name="Stage+direction"></a>
-
-## stage.direction(dir)
-direction
-
-**Kind**: instance method of [<code>Stage</code>](#Stage)  
-
-| Param | Type |
-| --- | --- |
-| dir | <code>string</code> | 
-
-<a name="Stage+overflow"></a>
-
-## stage.overflow(overflow)
-overflow
-
-**Kind**: instance method of [<code>Stage</code>](#Stage)  
-
-| Param | Type |
-| --- | --- |
-| overflow | <code>string</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>string</code> | values: `"horizontal"` OR `"vertical"` |
 
 <a name="Stage+destroy"></a>
 

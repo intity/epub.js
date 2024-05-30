@@ -6,31 +6,39 @@ Map text locations to CFI ranges
 **Kind**: global class  
 
 * [Mapping](#Mapping)
-    * [new Mapping(layout, [direction], [axis], [dev])](#new_Mapping_new)
-    * [.section()](#Mapping+section)
-    * [.page(contents, cfiBase, start, end)](#Mapping+page)
-    * [.axis(axis)](#Mapping+axis) ⇒ <code>boolean</code>
+    * [new Mapping(layout, [axis], [dev])](#new_Mapping_new)
+    * [.section(view)](#Mapping+section) ⇒ <code>Array.&lt;object&gt;</code>
+    * [.page(contents, cfiBase, start, end)](#Mapping+page) ⇒ <code>any</code>
+    * [.findRanges(view)](#Mapping+findRanges) ⇒ <code>Array.&lt;object&gt;</code>
+    * [.rangeListToCfiList(cfiBase, columns)](#Mapping+rangeListToCfiList) ⇒ <code>Array.&lt;object&gt;</code>
+    * [.axis(value)](#Mapping+axis) ⇒ <code>boolean</code>
 
 <a name="new_Mapping_new"></a>
 
-## new Mapping(layout, [direction], [axis], [dev])
+## new Mapping(layout, [axis], [dev])
+Constructor
+
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | layout | <code>Layout</code> |  | Layout to apply |
-| [direction] | <code>string</code> | <code>&quot;\&quot;ltr\&quot;&quot;</code> | Text direction |
-| [axis] | <code>string</code> | <code>&quot;\&quot;horizontal\&quot;&quot;</code> | vertical or horizontal axis |
-| [dev] | <code>boolean</code> |  | toggle developer highlighting |
+| [axis] | <code>string</code> | <code>&quot;\&quot;horizontal\&quot;&quot;</code> | values: `"horizontal"` OR `"vertical"` |
+| [dev] | <code>boolean</code> | <code>false</code> | toggle developer highlighting |
 
 <a name="Mapping+section"></a>
 
-## mapping.section()
+## mapping.section(view) ⇒ <code>Array.&lt;object&gt;</code>
 Find CFI pairs for entire section at once
 
 **Kind**: instance method of [<code>Mapping</code>](#Mapping)  
+
+| Param | Type |
+| --- | --- |
+| view | <code>\*</code> | 
+
 <a name="Mapping+page"></a>
 
-## mapping.page(contents, cfiBase, start, end)
+## mapping.page(contents, cfiBase, start, end) ⇒ <code>any</code>
 Find CFI pairs for a page
 
 **Kind**: instance method of [<code>Mapping</code>](#Mapping)  
@@ -42,9 +50,33 @@ Find CFI pairs for a page
 | start | <code>number</code> | position to start at |
 | end | <code>number</code> | position to end at |
 
+<a name="Mapping+findRanges"></a>
+
+## mapping.findRanges(view) ⇒ <code>Array.&lt;object&gt;</code>
+findRanges
+
+**Kind**: instance method of [<code>Mapping</code>](#Mapping)  
+**Returns**: <code>Array.&lt;object&gt;</code> - columns  
+
+| Param | Type |
+| --- | --- |
+| view | <code>\*</code> | 
+
+<a name="Mapping+rangeListToCfiList"></a>
+
+## mapping.rangeListToCfiList(cfiBase, columns) ⇒ <code>Array.&lt;object&gt;</code>
+rangeListToCfiList
+
+**Kind**: instance method of [<code>Mapping</code>](#Mapping)  
+
+| Param | Type |
+| --- | --- |
+| cfiBase | <code>\*</code> | 
+| columns | <code>\*</code> | 
+
 <a name="Mapping+axis"></a>
 
-## mapping.axis(axis) ⇒ <code>boolean</code>
+## mapping.axis(value) ⇒ <code>boolean</code>
 Set the axis for mapping
 
 **Kind**: instance method of [<code>Mapping</code>](#Mapping)  
@@ -52,5 +84,5 @@ Set the axis for mapping
 
 | Param | Type | Description |
 | --- | --- | --- |
-| axis | <code>string</code> | horizontal | vertical |
+| value | <code>string</code> | `"horizontal"` OR `"vertical"` |
 
