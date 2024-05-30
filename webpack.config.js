@@ -7,6 +7,7 @@ let filename = "[name]"
 let sourceMapFilename = "[name]"
 if (LEGACY) {
 	filename += ".legacy"
+	sourceMapFilename += ".legacy"
 }
 if (MINIMIZE) {
 	filename += ".min.js"
@@ -52,9 +53,7 @@ module.exports = {
 	devServer: {
 		hot: false,
 		liveReload: true,
-		static: {
-			directory: path.resolve("examples")
-		}
+		static: ["./"]
 	},
 	module: {
 		rules: [
@@ -66,7 +65,7 @@ module.exports = {
 					options: {
 						presets: [["@babel/preset-env", {
 							targets: LEGACY ? "defaults" : "last 2 Chrome versions, last 2 Safari versions, last 2 ChromeAndroid versions, last 2 iOS versions, last 2 Firefox versions, last 2 Edge versions",
-							corejs: 3,
+							corejs: "3.37",
 							useBuiltIns: "usage",
 							bugfixes: true,
 							modules: false
