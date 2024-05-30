@@ -1,5 +1,6 @@
 import EventEmitter from "event-emitter";
 import EpubCFI from "./epubcfi";
+import { EVENTS } from "./utils/constants";
 
 /**
 	* Handles managing adding & removing Annotations
@@ -26,10 +27,12 @@ class Annotations {
 	 * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
 	 * @param {object} data Data to assign to annotation
 	 * @param {function} [cb] Callback after annotation is added
+	 * @param {string} className CSS class to assign to annotation
+	 * @param {object} styles CSS styles to assign to annotation
 	 * @returns {Annotation} annotation
 	 */
-	add (type, cfiRange, data, cb) {
-		let hash = encodeURI(cfiRange);
+	add (type, cfiRange, data, cb, className, styles) {
+		let hash = encodeURI(cfiRange + type);
 		let cfi = new EpubCFI(cfiRange);
 		let sectionIndex = cfi.spinePos;
 		let annotation = new Annotation({
@@ -37,7 +40,9 @@ class Annotations {
 			cfiRange,
 			data,
 			sectionIndex,
-			cb
+			cb,
+			className,
+			styles
 		});
 
 		this._annotations[hash] = annotation;
@@ -51,7 +56,7 @@ class Annotations {
 		let views = this.rendition.views();
 
 		views.forEach( (view) => {
-			if (annotation.sectionIndex === view.index) {
+			if (annotation.sectionIndex === view.section.index) {
 				annotation.attach(view);
 			}
 		});
@@ -65,7 +70,7 @@ class Annotations {
 	 * @param {string} type Type of annotation to add: "highlight", "underline", "mark"
 	 */
 	remove (cfiRange, type) {
-		let hash = encodeURI(cfiRange);
+		let hash = encodeURI(cfiRange + type);
 
 		if (hash in this._annotations) {
 			let annotation = this._annotations[hash];
@@ -77,7 +82,7 @@ class Annotations {
 			let views = this.rendition.views();
 			views.forEach( (view) => {
 				this._removeFromAnnotationBySectionIndex(annotation.sectionIndex, hash);
-				if (annotation.sectionIndex === view.index) {
+				if (annotation.sectionIndex === view.section.index) {
 					annotation.detach(view);
 				}
 			});
@@ -107,30 +112,34 @@ class Annotations {
 	 * Add a highlight to the store
 	 * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
 	 * @param {object} data Data to assign to annotation
-	 * @param {function} cb Callback after annotation is added
+	 * @param {function} cb Callback after annotation is clicked
+	 * @param {string} className CSS class to assign to annotation
+	 * @param {object} styles CSS styles to assign to annotation
 	 */
-	highlight (cfiRange, data, cb) {
-		this.add("highlight", cfiRange, data, cb);
+	highlight (cfiRange, data, cb, className, styles) {
+		return this.add("highlight", cfiRange, data, cb, className, styles);
 	}
 
 	/**
 	 * Add a underline to the store
 	 * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
 	 * @param {object} data Data to assign to annotation
-	 * @param {function} cb Callback after annotation is added
+	 * @param {function} cb Callback after annotation is clicked
+	 * @param {string} className CSS class to assign to annotation
+	 * @param {object} styles CSS styles to assign to annotation
 	 */
-	underline (cfiRange, data, cb) {
-		this.add("underline", cfiRange, data, cb);
+	underline (cfiRange, data, cb, className, styles) {
+		return this.add("underline", cfiRange, data, cb, className, styles);
 	}
 
 	/**
 	 * Add a mark to the store
 	 * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
 	 * @param {object} data Data to assign to annotation
-	 * @param {function} cb Callback after annotation is added
+	 * @param {function} cb Callback after annotation is clicked
 	 */
 	mark (cfiRange, data, cb) {
-		this.add("mark", cfiRange, data, cb);
+		return this.add("mark", cfiRange, data, cb);
 	}
 
 	/**
@@ -146,7 +155,7 @@ class Annotations {
 	 * @private
 	 */
 	inject (view) {
-		let sectionIndex = view.index;
+		let sectionIndex = view.section.index;
 		if (sectionIndex in this._annotationsBySectionIndex) {
 			let annotations = this._annotationsBySectionIndex[sectionIndex];
 			annotations.forEach((hash) => {
@@ -162,7 +171,7 @@ class Annotations {
 	 * @private
 	 */
 	clear (view) {
-		let sectionIndex = view.index;
+		let sectionIndex = view.section.index;
 		if (sectionIndex in this._annotationsBySectionIndex) {
 			let annotations = this._annotationsBySectionIndex[sectionIndex];
 			annotations.forEach((hash) => {
@@ -198,7 +207,9 @@ class Annotations {
  * @param {EpubCFI} options.cfiRange EpubCFI range to attach annotation to
  * @param {object} options.data Data to assign to annotation
  * @param {int} options.sectionIndex Index in the Spine of the Section annotation belongs to
- * @param {function} [options.cb] Callback after annotation is added
+ * @param {function} [options.cb] Callback after annotation is clicked
+ * @param {string} className CSS class to assign to annotation
+ * @param {object} styles CSS styles to assign to annotation
  * @returns {Annotation} annotation
  */
 class Annotation {
@@ -208,7 +219,9 @@ class Annotation {
 		cfiRange,
 		data,
 		sectionIndex,
-		cb
+		cb,
+		className,
+		styles
 	}) {
 		this.type = type;
 		this.cfiRange = cfiRange;
@@ -216,6 +229,8 @@ class Annotation {
 		this.sectionIndex = sectionIndex;
 		this.mark = undefined;
 		this.cb = cb;
+		this.className = className;
+		this.styles = styles;
 	}
 
 	/**
@@ -231,19 +246,19 @@ class Annotation {
 	 * @param {View} view
 	 */
 	attach (view) {
-		let {cfiRange, data, type, mark, cb} = this;
+		let {cfiRange, data, type, mark, cb, className, styles} = this;
 		let result;
 
 		if (type === "highlight") {
-			result = view.highlight(cfiRange, data, cb);
+			result = view.highlight(cfiRange, data, cb, className, styles);
 		} else if (type === "underline") {
-			result = view.underline(cfiRange, data, cb);
+			result = view.underline(cfiRange, data, cb, className, styles);
 		} else if (type === "mark") {
 			result = view.mark(cfiRange, data, cb);
 		}
 
 		this.mark = result;
-
+		this.emit(EVENTS.ANNOTATION.ATTACH, result);
 		return result;
 	}
 
@@ -266,7 +281,7 @@ class Annotation {
 		}
 
 		this.mark = undefined;
-
+		this.emit(EVENTS.ANNOTATION.DETACH, result);
 		return result;
 	}
 

@@ -1,391 +1,442 @@
 import EventEmitter from "event-emitter";
-import {extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl} from "../../utils/core";
 import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
+import { extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl } from "../../utils/core";
 import { Pane, Highlight, Underline } from "marks-pane";
 
+const AXIS_H = "horizontal";
+const AXIS_V = "vertical";
+
+/**
+ * IframeView class
+ */
 class IframeView {
-	constructor(section, options) {
+	/**
+	 * Constructor
+	 * @param {Layout} layout
+	 * @param {Section} section
+	 * @param {object} [options]
+	 * @param {string} [options.axis] values: `"horizontal"` OR `"vertical"`
+	 * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
+	 * @param {string} [options.ignoreClass='']
+	 * @param {boolean} [options.allowPopups=false]
+	 * @param {boolean} [options.allowScriptedContent=false]
+	 * @param {boolean} [options.forceRight=false]
+	 */
+	constructor(layout, section, options) {
+		/**
+		 * @member {object} settings
+		 * @memberof IframeView
+		 * @readonly
+		 */
 		this.settings = extend({
-			ignoreClass : "",
-			axis: options.layout && options.layout.props.flow === "scrolled" ? "vertical" : "horizontal",
-			direction: undefined,
-			width: 0,
-			height: 0,
-			layout: undefined,
-			globalLayoutProperties: {},
-			method: undefined
+			axis: null,
+			method: null,
+			forceRight: false,
+			forceEvenPages: false,
+			ignoreClass: "",
+			allowPopups: false,
+			allowScriptedContent: false,
 		}, options || {});
-
+		/**
+		 * @member {string} id
+		 * @memberof IframeView
+		 * @readonly
+		 */
 		this.id = "epubjs-view-" + uuid();
+		/**
+		 * @member {Section} section
+		 * @memberof IframeView
+		 * @readonly
+		 */
 		this.section = section;
-		this.index = section.index;
-
-		this.element = this.container(this.settings.axis);
-
+		this.element = this.container();
 		this.added = false;
 		this.displayed = false;
 		this.rendered = false;
-
-		// this.width  = this.settings.width;
-		// this.height = this.settings.height;
-
-		this.fixedWidth  = 0;
-		this.fixedHeight = 0;
-
-		// Blank Cfi for Parsing
+		this.fixedWidth = 0; // unused
+		this.fixedHeight = 0; // unused
+		/**
+		 * @member {EpubCFI} epubcfi Blank Cfi for Parsing
+		 * @memberof IframeView
+		 * @readonly
+		 */
 		this.epubcfi = new EpubCFI();
-
-		this.layout = this.settings.layout;
-		// Dom events to listen for
-		// this.listenedEvents = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
-
+		/**
+		 * @member {Layout} layout
+		 * @memberof IframeView
+		 * @readonly
+		 */
+		this.layout = layout;
+		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+			this.updateLayout();
+		});
 		this.pane = undefined;
 		this.highlights = {};
 		this.underlines = {};
 		this.marks = {};
-
+		this.setAxis(this.settings.axis);
 	}
 
-	container(axis) {
-		var element = document.createElement("div");
+	/**
+	 * Create view container
+	 * @returns {Element} HTML element
+	 * @private
+	 */
+	container() {
 
+		const element = document.createElement("div");
 		element.classList.add("epub-view");
-
-		// this.element.style.minHeight = "100px";
-		element.style.height = "0px";
-		element.style.width = "0px";
+		element.style.height = "0";
+		element.style.width = "0";
 		element.style.overflow = "hidden";
 		element.style.position = "relative";
-		element.style.display = "block";
-
-		if(axis && axis == "horizontal"){
-			element.style.flex = "none";
-		} else {
-			element.style.flex = "initial";
-		}
-
 		return element;
 	}
 
+	/**
+	 * Create iframe element
+	 * @returns {Element} iframe
+	 */
 	create() {
-
-		if(this.iframe) {
-			return this.iframe;
-		}
-
-		if(!this.element) {
-			this.element = this.createContainer();
-		}
 
 		this.iframe = document.createElement("iframe");
 		this.iframe.id = this.id;
-		this.iframe.scrolling = "no"; // Might need to be removed: breaks ios width calculations
-		this.iframe.style.overflow = "hidden";
 		this.iframe.seamless = "seamless";
-		// Back up if seamless isn't supported
+		this.iframe.style.overflow = "hidden";
 		this.iframe.style.border = "none";
-
-		this.iframe.setAttribute("enable-annotation", "true");
-
-		this.resizing = true;
-
-		// this.iframe.style.display = "none";
-		this.element.style.visibility = "hidden";
-		this.iframe.style.visibility = "hidden";
-
 		this.iframe.style.width = "0";
 		this.iframe.style.height = "0";
-		this._width = 0;
-		this._height = 0;
 
-		this.element.setAttribute("ref", this.index);
+		// sandbox
+		this.iframe.sandbox = "allow-same-origin";
+		if (this.settings.allowPopups) {
+			this.iframe.sandbox += " allow-popups";
+		}
+		if (this.settings.allowScriptedContent) {
+			this.iframe.sandbox += " allow-scripts";
+		}
 
-		this.element.appendChild(this.iframe);
-		this.added = true;
-
+		this.iframe.setAttribute("enable-annotation", "true");
+		this.element.setAttribute("ref", this.section.index);
 		this.elementBounds = bounds(this.element);
 
-		// if(width || height){
-		//   this.resize(width, height);
-		// } else if(this.width && this.height){
-		//   this.resize(this.width, this.height);
-		// } else {
-		//   this.iframeBounds = bounds(this.iframe);
-		// }
-
-
-		if(("srcdoc" in this.iframe)) {
-			this.supportsSrcdoc = true;
-		} else {
-			this.supportsSrcdoc = false;
+		if (this.settings.method === null) {
+			this.settings.method = ("srcdoc" in this.iframe) ? "srcdoc" : "write";
 		}
 
-		if (!this.settings.method) {
-			this.settings.method = this.supportsSrcdoc ? "srcdoc" : "write";
-		}
+		this.added = true;
+		this.resizing = true;
+		this.width = 0;
+		this.height = 0;
 
 		return this.iframe;
 	}
 
-	render(request, show) {
+	/**
+	 * render
+	 * @param {function} request 
+	 * @returns {object} section render object
+	 */
+	render(request) {
 
-		// view.onLayout = this.layout.format.bind(this.layout);
 		this.create();
 
-		// Fit to size of the container, apply padding
-		this.size();
+		const sectionRender = this.section.render(request);
+		return sectionRender.then((contents) => {
+			return this.load(contents);
+		}).then(() => {
+			// find and report the writingMode axis
+			const writingMode = this.contents.writingMode();
+			const hasVertical = writingMode.indexOf(AXIS_V) === 0;
 
-		if(!this.sectionRender) {
-			this.sectionRender = this.section.render(request);
-		}
+			// Set the axis based on the flow and writing mode
+			let axis;
+			if (this.layout.flow === "scrolled" ||
+				this.layout.flow === "scrolled-doc") {
+				axis = hasVertical ? AXIS_H : AXIS_V;
+			} else {
+				axis = hasVertical ? AXIS_V : AXIS_H;
+			}
 
-		// Render Chain
-		return this.sectionRender
-			.then(function(contents){
-				return this.load(contents);
-			}.bind(this))
-			.then(function(){
+			if (hasVertical && this.layout.flow === "paginated") {
+				this.layout.delta = this.layout.height;
+			}
 
-				// apply the layout function to the contents
-				this.layout.format(this.contents);
+			this.setAxis(axis);
+			this.emit(EVENTS.VIEWS.AXIS, axis);
 
-				// find and report the writingMode axis
-				let writingMode = this.contents.writingMode();
-				let axis = (writingMode.indexOf("vertical") === 0) ? "vertical" : "horizontal";
+			this.setWritingMode(writingMode);
+			this.emit(EVENTS.VIEWS.WRITING_MODE, writingMode);
 
-				this.setAxis(axis);
-				this.emit(EVENTS.VIEWS.AXIS, axis);
+			// apply the layout function to the contents
+			this.layout.format(this.contents, this.section, this.axis);
 
+			// Listen for events that require an expansion of the iframe
+			this.addListeners();
 
-				// Listen for events that require an expansion of the iframe
-				this.addListeners();
+			return new Promise((resolve, reject) => {
+				// Expand the iframe to the full size of the content
+				this.expand();
 
-				return new Promise((resolve, reject) => {
-					// Expand the iframe to the full size of the content
-					this.expand();
-					resolve();
-				});
+				if (this.settings.forceRight) {
+					this.element.style.marginLeft = this.width + "px";
+				}
+				resolve();
+			});
 
-			}.bind(this), function(e){
-				this.emit(EVENTS.VIEWS.LOAD_ERROR, e);
-				return new Promise((resolve, reject) => {
-					reject(e);
-				});
-			}.bind(this))
-			.then(function() {
-				this.emit(EVENTS.VIEWS.RENDERED, this.section);
-			}.bind(this));
-
+		}, (err) => {
+			this.emit(EVENTS.VIEWS.LOAD_ERROR, err);
+			return new Promise((resolve, reject) => {
+				reject(err);
+			});
+		}).then(() => {
+			this.emit(EVENTS.VIEWS.RENDERED, this.section);
+		});
 	}
 
-	reset () {
+	/**
+	 * reset
+	 */
+	reset() {
+
 		if (this.iframe) {
 			this.iframe.style.width = "0";
 			this.iframe.style.height = "0";
-			this._width = 0;
-			this._height = 0;
-			this._textWidth = undefined;
-			this._contentWidth = undefined;
-			this._textHeight = undefined;
-			this._contentHeight = undefined;
+			this.width = 0;
+			this.height = 0;
+			this.textWidth = undefined;
+			this.textHeight = undefined;
+			this.contentWidth = undefined; // unused
+			this.contentHeight = undefined; // unused
 		}
-		this._needsReframe = true;
+		this.needsReframe = true;
 	}
 
-	// Determine locks base on settings
-	size(_width, _height) {
-		var width = _width || this.settings.width;
-		var height = _height || this.settings.height;
+	/**
+	 * size
+	 * Determine locks base on settings
+	 * @param {number} [width] 
+	 * @param {number} [height] 
+	 */
+	size(width, height) {
+		
+		width = width || this.layout.width;
+		height = height || this.layout.height;
 
-		if(this.layout.name === "pre-paginated") {
-			this.lock("both", width, height);
-		} else if(this.settings.axis === "horizontal") {
-			this.lock("height", width, height);
+		let what;
+		if (this.layout.name === "pre-paginated") {
+			what = "both";
+		} else if (this.settings.axis === AXIS_H) {
+			what = "height";
 		} else {
-			this.lock("width", width, height);
+			what = "width";
 		}
 
-		this.settings.width = width;
-		this.settings.height = height;
+		this.lock(what, width, height);
 	}
 
-	// Lock an axis to element dimensions, taking borders into account
+	/**
+	 * lock
+	 * Lock an axis to element dimensions, taking borders into account
+	 * @param {string} what 
+	 * @param {number} width 
+	 * @param {number} height 
+	 */
 	lock(what, width, height) {
-		var elBorders = borders(this.element);
-		var iframeBorders;
 
-		if(this.iframe) {
+		const elBorders = borders(this.element);
+
+		let iframeBorders;
+		if (this.iframe) {
 			iframeBorders = borders(this.iframe);
 		} else {
-			iframeBorders = {width: 0, height: 0};
+			iframeBorders = { width: 0, height: 0 };
 		}
 
-		if(what == "width" && isNumber(width)){
-			this.lockedWidth = width - elBorders.width - iframeBorders.width;
-			// this.resize(this.lockedWidth, width); //  width keeps ratio correct
+		switch (what) {
+			case "both":
+				if (isNumber(width) && isNumber(height)) {
+					this.lockedWidth = width - elBorders.width - iframeBorders.width;
+					this.lockedHeight = height - elBorders.height - iframeBorders.height;
+					// this.resize(this.lockedWidth, this.lockedHeight);
+				}
+				break;
+			case "width":
+				if (isNumber(width)) {
+					this.lockedWidth = width - elBorders.width - iframeBorders.width;
+					// this.resize(this.lockedWidth, width); // width keeps ratio correct
+				}
+				break;
+			case "height":
+				if (isNumber(height)) {
+					this.lockedHeight = height - elBorders.height - iframeBorders.height;
+					// this.resize(width, this.lockedHeight);
+				}
+				break;
 		}
 
-		if(what == "height" && isNumber(height)){
-			this.lockedHeight = height - elBorders.height - iframeBorders.height;
-			// this.resize(width, this.lockedHeight);
-		}
-
-		if(what === "both" &&
-			 isNumber(width) &&
-			 isNumber(height)){
-
-			this.lockedWidth = width - elBorders.width - iframeBorders.width;
-			this.lockedHeight = height - elBorders.height - iframeBorders.height;
-			// this.resize(this.lockedWidth, this.lockedHeight);
-		}
-
-		if(this.displayed && this.iframe) {
-
-			// this.contents.layout();
+		if (this.displayed && this.iframe) {
 			this.expand();
 		}
-
-
-
 	}
 
-	// Resize a single axis based on content dimensions
-	expand(force) {
-		var width = this.lockedWidth;
-		var height = this.lockedHeight;
-		var columns;
+	/**
+	 * expand
+	 * Resize a single axis based on content dimensions
+	 */
+	expand() {
 
-		var textWidth, textHeight;
+		let width = this.lockedWidth;
+		let height = this.lockedHeight;
 
-		if(!this.iframe || this._expanding) return;
+		if (!this.iframe || this.expanding) return;
 
-		this._expanding = true;
+		this.expanding = true;
 
-		if(this.layout.name === "pre-paginated") {
+		if (this.layout.name === "pre-paginated") {
 			width = this.layout.columnWidth;
 			height = this.layout.height;
-		}
-		// Expand Horizontally
-		else if(this.settings.axis === "horizontal") {
+		} else if (this.settings.axis === AXIS_H) {
 			// Get the width of the text
-			width = this.contents.textWidth();
+			width = this.contents.textSize().width;
 
 			if (width % this.layout.pageWidth > 0) {
 				width = Math.ceil(width / this.layout.pageWidth) * this.layout.pageWidth;
 			}
 
 			if (this.settings.forceEvenPages) {
-				columns = (width / this.layout.delta);
-				if ( this.layout.divisor > 1 &&
-						 this.layout.name === "reflowable" &&
-						(columns % 2 > 0)) {
+				const columns = (width / this.layout.pageWidth);
+				if (this.layout.divisor > 1 &&
+					this.layout.name === "reflowable" &&
+					(columns % 2 > 0)) {
 					// add a blank page
-					width += this.layout.gap + this.layout.columnWidth;
+					width += this.layout.pageWidth;
 				}
 			}
+		} else if (this.settings.axis === "vertical") {
+			// Expand Vertically
+			height = this.contents.textSize().height;
 
-		} // Expand Vertically
-		else if(this.settings.axis === "vertical") {
-			height = this.contents.textHeight();
+			if (this.layout.flow === "paginated" &&
+				height % this.layout.height > 0) {
+				height = Math.ceil(height / this.layout.height) * this.layout.height;
+			}
 		}
 
 		// Only Resize if dimensions have changed or
 		// if Frame is still hidden, so needs reframing
-		if(this._needsReframe || width != this._width || height != this._height){
+		if (this.needsReframe ||
+			this.width !== width ||
+			this.height !== height) {
 			this.reframe(width, height);
 		}
 
-		this._expanding = false;
+		this.expanding = false;
 	}
 
+	/**
+	 * reframe
+	 * @param {number} width 
+	 * @param {number} height 
+	 */
 	reframe(width, height) {
-		var size;
 
-		if(isNumber(width)){
-			this.element.style.width = width + "px";
-			this.iframe.style.width = width + "px";
-			this._width = width;
-		}
+		this.element.style.width = width + "px";
+		this.element.style.height = height + "px";
 
-		if(isNumber(height)){
-			this.element.style.height = height + "px";
-			this.iframe.style.height = height + "px";
-			this._height = height;
-		}
+		this.iframe.style.width = width + "px";
+		this.iframe.style.height = height + "px";
 
-		let widthDelta = this.prevBounds ? width - this.prevBounds.width : width;
-		let heightDelta = this.prevBounds ? height - this.prevBounds.height : height;
+		this.width = width;
+		this.height = height;
 
-		size = {
+		const size = {
 			width: width,
 			height: height,
-			widthDelta: widthDelta,
-			heightDelta: heightDelta,
+			widthDelta: this.prevBounds ? width - this.prevBounds.width : width,
+			heightDelta: this.prevBounds ? height - this.prevBounds.height : height,
 		};
 
 		this.pane && this.pane.render();
 
-		this.onResize(this, size);
+		requestAnimationFrame(() => {
+			for (let m in this.marks) {
+				if (this.marks.hasOwnProperty(m)) {
+					const mark = this.marks[m];
+					this.placeMark(mark.element, mark.range);
+				}
+			}
+		});
 
 		this.emit(EVENTS.VIEWS.RESIZED, size);
-
 		this.prevBounds = size;
-
 		this.elementBounds = bounds(this.element);
-
 	}
 
-
+	/**
+	 * load
+	 * @param {string} contents 
+	 * @returns {Promise} loading promise
+	 */
 	load(contents) {
-		var loading = new defer();
-		var loaded = loading.promise;
 
-		if(!this.iframe) {
+		const loading = new defer();
+		const loaded = loading.promise;
+
+		if (!this.iframe) {
 			loading.reject(new Error("No Iframe Available"));
 			return loaded;
 		}
 
-		this.iframe.onload = function(event) {
-
-			this.onLoad(event, loading);
-
-		}.bind(this);
+		this.iframe.onload = (e) => this.onLoad(e, loading);
 
 		if (this.settings.method === "blobUrl") {
 			this.blobUrl = createBlobUrl(contents, "application/xhtml+xml");
 			this.iframe.src = this.blobUrl;
-		} else if(this.settings.method === "srcdoc"){
+			this.element.appendChild(this.iframe);
+		} else if (this.settings.method === "srcdoc") {
 			this.iframe.srcdoc = contents;
+			this.element.appendChild(this.iframe);
 		} else {
-
+			this.element.appendChild(this.iframe);
 			this.document = this.iframe.contentDocument;
 
-			if(!this.document) {
+			if (!this.document) {
 				loading.reject(new Error("No Document Available"));
 				return loaded;
 			}
 
 			this.iframe.contentDocument.open();
-			this.iframe.contentDocument.write(contents);
+			if (window.MSApp && MSApp.execUnsafeLocalFunction) {
+				// For Cordova windows platform
+				MSApp.execUnsafeLocalFunction(() => {
+					this.iframe.contentDocument.write(contents);
+				});
+			} else {
+				this.iframe.contentDocument.write(contents);
+			}
 			this.iframe.contentDocument.close();
-
 		}
 
 		return loaded;
 	}
 
+	/**
+	 * onLoad
+	 * @param {Event} event 
+	 * @param {defer} promise 
+	 */
 	onLoad(event, promise) {
 
 		this.window = this.iframe.contentWindow;
 		this.document = this.iframe.contentDocument;
-
-		this.contents = new Contents(this.document, this.document.body, this.section.cfiBase, this.section.index);
-
+		this.document.body.style.overflow = "hidden";
+		this.contents = new Contents(this.document, this.document.body, this.section);
 		this.rendering = false;
 
-		var link = this.document.querySelector("link[rel='canonical']");
+		let link = this.document.querySelector("link[rel='canonical']");
 		if (link) {
 			link.setAttribute("href", this.section.canonical);
 		} else {
@@ -396,7 +447,7 @@ class IframeView {
 		}
 
 		this.contents.on(EVENTS.CONTENTS.EXPAND, () => {
-			if(this.displayed && this.iframe) {
+			if (this.displayed && this.iframe) {
 				this.expand();
 				if (this.contents) {
 					this.layout.format(this.contents);
@@ -404,8 +455,8 @@ class IframeView {
 			}
 		});
 
-		this.contents.on(EVENTS.CONTENTS.RESIZE, (e) => {
-			if(this.displayed && this.iframe) {
+		this.contents.on(EVENTS.CONTENTS.RESIZE, (rect) => {
+			if (this.displayed && this.iframe) {
 				this.expand();
 				if (this.contents) {
 					this.layout.format(this.contents);
@@ -416,8 +467,11 @@ class IframeView {
 		promise.resolve(this.contents);
 	}
 
-	setLayout(layout) {
-		this.layout = layout;
+	/**
+	 * Update Layout
+	 * @private
+	 */
+	updateLayout() {
 
 		if (this.contents) {
 			this.layout.format(this.contents);
@@ -425,23 +479,33 @@ class IframeView {
 		}
 	}
 
-	setAxis(axis) {
+	/**
+	 * Set axis
+	 * @param {string} value 
+	 */
+	setAxis(value) {
 
-		// Force vertical for scrolled
-		if (this.layout.props.flow === "scrolled") {
-			axis = "vertical";
+		if (value === null) {
+			value = this.layout.flow === "paginated" ? AXIS_H : AXIS_V;
 		}
 
-		this.settings.axis = axis;
-
-		if(axis == "horizontal"){
+		if (value == AXIS_H) {
 			this.element.style.flex = "none";
 		} else {
 			this.element.style.flex = "initial";
 		}
 
+		this.settings.axis = value;
 		this.size();
+	}
 
+	/**
+	 * Set writing mode
+	 * @param {string} mode 
+	 */
+	setWritingMode(mode) {
+
+		this.writingMode = mode;
 	}
 
 	addListeners() {
@@ -452,45 +516,57 @@ class IframeView {
 		//TODO: remove content listeners for expanding
 	}
 
+	/**
+	 * display
+	 * @param {function} request 
+	 * @returns {Promise} displayed promise
+	 */
 	display(request) {
-		var displayed = new defer();
 
-		if (!this.displayed) {
+		const displayed = new defer();
 
-			this.render(request)
-				.then(function () {
+		if (this.displayed === false) {
 
-					this.emit(EVENTS.VIEWS.DISPLAYED, this);
-					this.onDisplayed(this);
+			this.render(request).then(() => {
 
-					this.displayed = true;
-					displayed.resolve(this);
-
-				}.bind(this), function (err) {
-					displayed.reject(err, this);
-				});
+				this.emit(EVENTS.VIEWS.DISPLAYED);
+				this.displayed = true;
+				displayed.resolve(this);
+			}, (err) => {
+				displayed.reject(err, this);
+			});
 
 		} else {
 			displayed.resolve(this);
 		}
 
-
 		return displayed.promise;
 	}
 
+	/**
+	 * show
+	 */
 	show() {
 
 		this.element.style.visibility = "visible";
 
-		if(this.iframe){
+		if (this.iframe) {
 			this.iframe.style.visibility = "visible";
+
+			// Remind Safari to redraw the iframe
+			this.iframe.style.transform = "translateZ(0)";
+			this.iframe.offsetWidth;
+			this.iframe.style.transform = null;
 		}
 
 		this.emit(EVENTS.VIEWS.SHOWN, this);
 	}
 
+	/**
+	 * hide
+	 */
 	hide() {
-		// this.iframe.style.display = "none";
+
 		this.element.style.visibility = "hidden";
 		this.iframe.style.visibility = "hidden";
 
@@ -498,28 +574,36 @@ class IframeView {
 		this.emit(EVENTS.VIEWS.HIDDEN, this);
 	}
 
+	/**
+	 * offset
+	 * @returns {object}
+	 */
 	offset() {
+
 		return {
 			top: this.element.offsetTop,
 			left: this.element.offsetLeft
 		}
 	}
 
-	width() {
-		return this._width;
-	}
-
-	height() {
-		return this._height;
-	}
-
+	/**
+	 * position
+	 * @returns {DOMRect}
+	 */
 	position() {
+
 		return this.element.getBoundingClientRect();
 	}
 
+	/**
+	 * locationOf
+	 * @param {*} target 
+	 * @returns {object}
+	 */
 	locationOf(target) {
-		var parentPos = this.iframe.getBoundingClientRect();
-		var targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
+
+		const parentPos = this.iframe.getBoundingClientRect();
+		const targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
 
 		return {
 			"left": targetPos.left,
@@ -527,29 +611,41 @@ class IframeView {
 		};
 	}
 
-	onDisplayed(view) {
-		// Stub, override with a custom functions
-	}
+	/**
+	 * bounds
+	 * @param {boolean} [force=false] 
+	 * @returns {Element}
+	 */
+	bounds(force = false) {
 
-	onResize(view, e) {
-		// Stub, override with a custom functions
-	}
-
-	bounds(force) {
-		if(force || !this.elementBounds) {
+		if (force || !this.elementBounds) {
 			this.elementBounds = bounds(this.element);
 		}
 
 		return this.elementBounds;
 	}
 
-	highlight(cfiRange, data={}, cb) {
+	/**
+	 * highlight
+	 * @param {string|EpubCFI} cfiRange 
+	 * @param {object} [data={}] 
+	 * @param {function} cb callback function
+	 * @param {string} [className='epubjs-hl'] 
+	 * @param {object} [styles={}] 
+	 * @returns {object}
+	 */
+	highlight(cfiRange, data = {}, cb, className = "epubjs-hl", styles = {}) {
+
 		if (!this.contents) {
 			return;
 		}
-		let range = this.contents.range(cfiRange);
-
-		let emitter = () => {
+		const attributes = Object.assign({
+			"fill": "yellow",
+			"fill-opacity": "0.3",
+			"mix-blend-mode": "multiply"
+		}, styles);
+		const range = this.contents.range(cfiRange);
+		const emitter = () => {
 			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 		};
 
@@ -559,12 +655,16 @@ class IframeView {
 			this.pane = new Pane(this.iframe, this.element);
 		}
 
-		let m = new Highlight(range, "epubjs-hl", data, {'fill': 'yellow', 'fill-opacity': '0.3', 'mix-blend-mode': 'multiply'});
-		let h = this.pane.addMark(m);
+		const m = new Highlight(range, className, data, attributes);
+		const h = this.pane.addMark(m);
 
-		this.highlights[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
+		this.highlights[cfiRange] = {
+			"mark": h,
+			"element": h.element,
+			"listeners": [emitter, cb]
+		};
 
-		h.element.setAttribute("ref", "epubjs-hl");
+		h.element.setAttribute("ref", className);
 		h.element.addEventListener("click", emitter);
 		h.element.addEventListener("touchstart", emitter);
 
@@ -575,10 +675,21 @@ class IframeView {
 		return h;
 	}
 
-	underline(cfiRange, data={}, cb) {
+	/**
+	 * underline
+	 * @param {*} cfiRange 
+	 * @param {*} [data={}] 
+	 * @param {*} cb 
+	 * @param {*} [className='epubjs-ul'] 
+	 * @param {*} [styles={}] 
+	 * @returns {object}
+	 */
+	underline(cfiRange, data = {}, cb, className = "epubjs-ul", styles = {}) {
+
 		if (!this.contents) {
 			return;
 		}
+		const attributes = Object.assign({ "stroke": "black", "stroke-opacity": "0.3", "mix-blend-mode": "multiply" }, styles);
 		let range = this.contents.range(cfiRange);
 		let emitter = () => {
 			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
@@ -590,12 +701,12 @@ class IframeView {
 			this.pane = new Pane(this.iframe, this.element);
 		}
 
-		let m = new Underline(range, "epubjs-ul", data, {'stroke': 'black', 'stroke-opacity': '0.3', 'mix-blend-mode': 'multiply'});
+		let m = new Underline(range, className, data, attributes);
 		let h = this.pane.addMark(m);
 
 		this.underlines[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
 
-		h.element.setAttribute("ref", "epubjs-ul");
+		h.element.setAttribute("ref", className);
 		h.element.addEventListener("click", emitter);
 		h.element.addEventListener("touchstart", emitter);
 
@@ -606,7 +717,14 @@ class IframeView {
 		return h;
 	}
 
-	mark(cfiRange, data={}, cb) {
+	/**
+	 * mark
+	 * @param {*} cfiRange 
+	 * @param {*} [data={}] 
+	 * @param {*} cb 
+	 * @returns {object}
+	 */
+	mark(cfiRange, data = {}, cb) {
 
 		if (!this.contents) {
 			return;
@@ -636,33 +754,9 @@ class IframeView {
 			range.selectNodeContents(parent);
 		}
 
-		let top, right, left;
-
-		if(this.layout.name === "pre-paginated" ||
-			this.settings.axis !== "horizontal") {
-			let pos = range.getBoundingClientRect();
-			top = pos.top;
-			right = pos.right;
-		} else {
-			// Element might break columns, so find the left most element
-			let rects = range.getClientRects();
-			let rect;
-			for (var i = 0; i != rects.length; i++) {
-				rect = rects[i];
-				if (!left || rect.left < left) {
-					left = rect.left;
-					right = left + this.layout.columnWidth - this.layout.gap;
-					top = rect.top;
-				}
-			}
-		}
-
-
-		let mark = this.document.createElement('a');
+		let mark = this.document.createElement("a");
 		mark.setAttribute("ref", "epubjs-mk");
 		mark.style.position = "absolute";
-		mark.style.top = `${top}px`;
-		mark.style.left = `${right}px`;
 
 		mark.dataset["epubcfi"] = cfiRange;
 
@@ -680,50 +774,111 @@ class IframeView {
 		mark.addEventListener("click", emitter);
 		mark.addEventListener("touchstart", emitter);
 
+		this.placeMark(mark, range);
+
 		this.element.appendChild(mark);
 
-		this.marks[cfiRange] = { "element": mark, "listeners": [emitter, cb] };
+		this.marks[cfiRange] = { "element": mark, "range": range, "listeners": [emitter, cb] };
 
 		return parent;
 	}
 
+	/**
+	 * placeMark
+	 * @param {*} element 
+	 * @param {*} range 
+	 */
+	placeMark(element, range) {
+
+		let top, right;
+
+		if (this.layout.name === "pre-paginated" ||
+			this.settings.axis !== AXIS_H) {
+			const pos = range.getBoundingClientRect();
+			top = pos.top;
+			right = pos.right;
+		} else {
+			// Element might break columns, so find the left most element
+			const rects = range.getClientRects();
+			let left;
+			for (let i = 0; i != rects.length; i++) {
+				const rect = rects[i];
+				if (!left || rect.left < left) {
+					left = rect.left;
+					// right = rect.right;
+					right = Math.ceil(left / this.layout.pageWidth) * this.layout.pageWidth - (this.layout.gap / 2);
+					top = rect.top;
+				}
+			}
+		}
+
+		element.style.top = `${top}px`;
+		element.style.left = `${right}px`;
+	}
+
+	/**
+	 * unhighlight
+	 * @param {*} cfiRange 
+	 */
 	unhighlight(cfiRange) {
+
 		let item;
 		if (cfiRange in this.highlights) {
 			item = this.highlights[cfiRange];
-
 			this.pane.removeMark(item.mark);
 			item.listeners.forEach((l) => {
-				if (l) { item.element.removeEventListener("click", l) };
+				if (l) {
+					item.element.removeEventListener("click", l);
+					item.element.removeEventListener("touchstart", l);
+				};
 			});
 			delete this.highlights[cfiRange];
 		}
 	}
 
+	/**
+	 * ununderline
+	 * @param {*} cfiRange 
+	 */
 	ununderline(cfiRange) {
+
 		let item;
 		if (cfiRange in this.underlines) {
 			item = this.underlines[cfiRange];
 			this.pane.removeMark(item.mark);
 			item.listeners.forEach((l) => {
-				if (l) { item.element.removeEventListener("click", l) };
+				if (l) {
+					item.element.removeEventListener("click", l);
+					item.element.removeEventListener("touchstart", l);
+				};
 			});
 			delete this.underlines[cfiRange];
 		}
 	}
 
+	/**
+	 * unmark
+	 * @param {*} cfiRange 
+	 */
 	unmark(cfiRange) {
+
 		let item;
 		if (cfiRange in this.marks) {
 			item = this.marks[cfiRange];
 			this.element.removeChild(item.element);
 			item.listeners.forEach((l) => {
-				if (l) { item.element.removeEventListener("click", l) };
+				if (l) {
+					item.element.removeEventListener("click", l);
+					item.element.removeEventListener("touchstart", l);
+				};
 			});
 			delete this.marks[cfiRange];
 		}
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
 
 		for (let cfiRange in this.highlights) {
@@ -742,21 +897,29 @@ class IframeView {
 			revokeBlobUrl(this.blobUrl);
 		}
 
-		if(this.displayed){
+		if (this.displayed) {
 			this.displayed = false;
 
 			this.removeListeners();
+			this.contents.destroy();
 
 			this.stopExpanding = true;
 			this.element.removeChild(this.iframe);
 
-			this.iframe = null;
+			if (this.pane) {
+				this.pane.element.remove();
+				this.pane = undefined;
+			}
 
-			this._textWidth = null;
-			this._textHeight = null;
-			this._width = null;
-			this._height = null;
+			this.iframe = undefined;
+			this.contents = undefined;
+
+			this.textWidth = null;
+			this.textHeight = null;
+			this.width = null;
+			this.height = null;
 		}
+
 		// this.element.style.height = "0px";
 		// this.element.style.width = "0px";
 	}

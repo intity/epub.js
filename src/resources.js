@@ -1,7 +1,7 @@
 import {substitute} from "./utils/replacements";
 import {createBase64Url, createBlobUrl, blob2base64} from "./utils/core";
 import Url from "./utils/url";
-import mime from "../libs/mime/mime";
+import mime from "./utils/mime";
 import Path from "./utils/path";
 import path from "path-webpack";
 
@@ -9,10 +9,10 @@ import path from "path-webpack";
  * Handle Package Resources
  * @class
  * @param {Manifest} manifest
- * @param {[object]} options
- * @param {[string="base64"]} options.replacements
- * @param {[Archive]} options.archive
- * @param {[method]} options.resolver
+ * @param {object} [options]
+ * @param {string} [options.replacements="base64"]
+ * @param {Archive} [options.archive]
+ * @param {method} [options.resolver]
  */
 class Resources {
 	constructor(manifest, options) {
@@ -22,6 +22,15 @@ class Resources {
 			resolver: (options && options.resolver),
 			request: (options && options.request)
 		};
+
+		this.process(manifest);
+	}
+
+	/**
+	 * Process resources
+	 * @param {Manifest} manifest
+	 */
+	process(manifest){
 		this.manifest = manifest;
 		this.resources = Object.keys(manifest).
 			map(function (key){
@@ -93,6 +102,11 @@ class Resources {
 
 	}
 
+	/**
+	 * Create a url to a resource
+	 * @param {string} url
+	 * @return {Promise<string>} Promise resolves with url string
+	 */
 	createUrl (url) {
 		var parsedUrl = new Url(url);
 		var mimeType = mime.lookup(parsedUrl.filename);
@@ -127,8 +141,7 @@ class Resources {
 			}.bind(this));
 		}
 
-		var replacements = this.urls.
-			map( (url) => {
+		var replacements = this.urls.map( (url) => {
 				var absolute = this.settings.resolver(url);
 
 				return this.createUrl(absolute).
@@ -239,7 +252,7 @@ class Resources {
 	/**
 	 * Resolve all resources URLs relative to an absolute URL
 	 * @param  {string} absolute to be resolved to
-	 * @param  {[resolver]} resolver
+	 * @param  {resolver} [resolver]
 	 * @return {string[]} array with relative Urls
 	 */
 	relativeTo(absolute, resolver){

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="toolbar">
+        <div class="box">
+            <label for="layout">Layout:</label>
+            <select name="layout" id="layout">
+                <option value="reflowable">reflowable</option>
+                <option value="pre-paginated">pre-paginated</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="flow">Flow:</label>
+            <select name="flow" id="flow">
+                <option value="paginated">paginated</option>
+                <option value="scrolled">scrolled</option>
+                <option value="scrolled-doc">scrolled-doc</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="spread">Spread:</label>
+            <select name="spread" id="spread">
+                <option value="auto">auto</option>
+                <option value="none">none</option>
+            </select>
+        </div>
+        <div class="box">
+            <label for="minSpreadWidth">Min spread width:</label>
+            <input type="number" id="minSpreadWidth" value="800" min="0" max="9999" />
+        </div>
+        <div class="box">
+            <label for="direction">Direction:</label>
+            <select name="direction" id="direction">
+                <option value="ltr">ltr</option>
+                <option value="rtl">rtl</option>
+            </select>
+        </div>
+    </div>
+    <div id="content" dir="ltr">
+        <div id="viewer" class="paginated">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const content = document.getElementById("content")
+        const viewer = document.getElementById("viewer")
+        const layout = document.getElementById("layout")
+        const flow = document.getElementById("flow")
+        const spread = document.getElementById("spread")
+        const minSpreadWidth = document.getElementById("minSpreadWidth")
+        const direction = document.getElementById("direction")
+        const divider = document.getElementById("divider")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        const update = (location) => {
+            const dir = rendition.layout.direction
+            const div = rendition.layout.divisor
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+            divider.style.display = div === 1 ? "none" : "block"
+            content.dir = dir
+            if (rendition.layout.flow === "paginated" ||
+                rendition.layout.flow === "scrolled") {
+                content.removeAttribute("class")
+            } else {
+                content.className = "doc"
+            }
+            viewer.className = rendition.layout.flow
+        }
+        const keybinding = (e) => {
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break;
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break;
+            }
+        }
+        book.ready.then(() => {
+            prev.onclick = (e) => {
+                rendition.prev()
+                e.preventDefault()
+            }
+            next.onclick = (e) => {
+                rendition.next()
+                e.preventDefault()
+            }
+            layout.onchange = (e) => {
+                rendition.updateLayout({
+                    name: e.target.value
+                })
+            }
+            flow.onchange = (e) => {
+                const value = e.target.value
+                if (value === "paginated") {
+                    spread.disabled = false
+                } else {
+                    spread.value = "none"
+                    spread.disabled = true
+                }
+                rendition.updateLayout({
+                    flow: value
+                })
+            }
+            spread.onchange = (e) => {
+                rendition.updateLayout({
+                    spread: e.target.value
+                })
+            }
+            minSpreadWidth.onchange = (e) => {
+                rendition.updateLayout({
+                    minSpreadWidth: parseInt(e.target.value)
+                })
+            }
+            direction.onchange = (e) => {
+                rendition.updateLayout({
+                    direction: e.target.value
+                })
+            }
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+            console.log(rendition)
+        })
+        rendition.on("rendered", (section, view) => {
+            //console.log(view)
+        })
+        rendition.on("layout", (props, changed) => {
+            update()
+            console.log(changed)
+        })
+        rendition.on("relocated", (location) => {
+            update(location)
+            console.log(location)
+        })
+    </script>
+</body>
+
+</html>

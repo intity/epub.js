@@ -43,9 +43,8 @@ class PageList {
 
 		if(html) {
 			return this.parseNav(xml);
-		} else if(ncx){ // Not supported
-			// return this.parseNcx(xml);
-			return;
+		} else if(ncx){
+			return this.parseNcx(xml);
 		}
 
 	}
@@ -53,7 +52,7 @@ class PageList {
 	/**
 	 * Parse a Nav PageList
 	 * @private
-	 * @param  {document} navHtml
+	 * @param  {node} navHtml
 	 * @return {PageList.item[]} list
 	 */
 	parseNav(navHtml){
@@ -74,10 +73,51 @@ class PageList {
 		return list;
 	}
 
+	parseNcx(navXml) {
+		var list = [];
+		var i = 0;
+		var item;
+		var pageList;
+		var pageTargets;
+		var length = 0;
+
+		pageList = qs(navXml, "pageList");
+		if (!pageList) return list;
+
+		pageTargets = qsa(pageList, "pageTarget");
+		length = pageTargets.length;
+
+		if (!pageTargets || pageTargets.length === 0) {
+			return list;
+		}
+
+		for (i = 0; i < length; ++i) {
+			item = this.ncxItem(pageTargets[i]);
+			list.push(item);
+		}
+
+		return list;
+	}
+
+	ncxItem(item) {
+		var navLabel = qs(item, "navLabel");
+		var navLabelText = qs(navLabel, "text");
+		var pageText = navLabelText.textContent;
+		var content = qs(item, "content");
+
+		var href = content.getAttribute("src");
+		var page = parseInt(pageText, 10);
+
+		return {
+			"href": href,
+			"page": page,
+		};
+	}
+
 	/**
 	 * Page List Item
 	 * @private
-	 * @param  {object} item
+	 * @param  {node} item
 	 * @return {object} pageListItem
 	 */
 	item(item){
@@ -128,7 +168,7 @@ class PageList {
 	/**
 	 * Get a PageList result from a EpubCFI
 	 * @param  {string} cfi EpubCFI String
-	 * @return {string} page
+	 * @return {number} page
 	 */
 	pageFromCfi(cfi){
 		var pg = -1;
@@ -165,7 +205,7 @@ class PageList {
 
 	/**
 	 * Get an EpubCFI from a Page List Item
-	 * @param  {string} pg
+	 * @param  {string | number} pg
 	 * @return {string} cfi
 	 */
 	cfiFromPage(pg){
@@ -188,7 +228,7 @@ class PageList {
 	/**
 	 * Get a Page from Book percentage
 	 * @param  {number} percent
-	 * @return {string} page
+	 * @return {number} page
 	 */
 	pageFromPercentage(percent){
 		var pg = Math.round(this.totalPages * percent);
@@ -197,7 +237,7 @@ class PageList {
 
 	/**
 	 * Returns a value between 0 - 1 corresponding to the location of a page
-	 * @param  {int} pg the page
+	 * @param  {number} pg the page
 	 * @return {number} percentage
 	 */
 	percentageFromPage(pg){
@@ -216,6 +256,9 @@ class PageList {
 		return percentage;
 	}
 
+	/**
+	 * Destroy
+	 */
 	destroy() {
 		this.pages = undefined;
 		this.locations = undefined;

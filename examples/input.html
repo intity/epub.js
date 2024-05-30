@@ -1,89 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EPUB.js Input Example</title>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-  <script src="../dist/epub.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="examples.css">
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Open from File Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
 </head>
+
 <body>
-  <div id="title"><input type="file" id="input"></div>
-  <div id="viewer" class="spreads"></div>
-  <a id="prev" href="#prev" class="arrow">‹</a>
-  <a id="next" href="#next" class="arrow">›</a>
+    <div id="toolbar">
+        <input type="file" id="openbook" accept=".epub">
+    </div>
+    <div id="content">
+        <div id="viewer" class="paginated">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const openbook = document.getElementById("openbook")
+        const divider = document.getElementById("divider")
+        const next = document.getElementById("next")
+        const prev = document.getElementById("prev")
+        const book = ePub()
+        let rendition;
+        prev.onclick = (e) => {
 
-  <script>
-
-  var book = ePub();
-  var rendition;
-
-  var inputElement = document.getElementById("input");
-
-  inputElement.addEventListener('change', function (e) {
-        var file = e.target.files[0];
-        if (window.FileReader) {
-            var reader = new FileReader();
-            reader.onload = openBook;
-            reader.readAsArrayBuffer(file);
+            rendition.prev()
+            e.preventDefault()
         }
-    });
+        next.onclick = (e) => {
 
-  function openBook(e){
-    var bookData = e.target.result;
-    var title = document.getElementById("title");
-    var next = document.getElementById("next");
-    var prev = document.getElementById("prev");
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (location) => {
 
-    book.open(bookData);
+            const div = rendition.layout.divisor
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+            divider.style.display = div === 1 ? "none" : "block"
+        }
+        const keybinding = (e) => {
 
-    rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: 600
-    });
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break;
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break;
+            }
+        }
+        const onload = (e) => {
 
-    rendition.display();
+            const data = e.target.result
+            book.open(data, "binary")
+            rendition = book.renderTo("viewer", {
+                width: "100%",
+                height: "100%"
+            })
+            rendition.display()
+            rendition.on("relocated", (location) => {
 
-    rendition.on("keyup", keyListener);
-    rendition.on("relocated", function(location){
-      console.log(location);
-    });
+                update(location)
+                console.log(location)
+            })
+            rendition.on("keyup", keybinding)
+            document.onkeyup = keybinding
+        }
+        openbook.onchange = (e) => {
 
-    next.addEventListener("click", function(e){
-      rendition.next();
-      e.preventDefault();
-    }, false);
-
-    prev.addEventListener("click", function(e){
-      rendition.prev();
-      e.preventDefault();
-    }, false);
-
-    var keyListener = function(e){
-
-      // Left Key
-      if ((e.keyCode || e.which) == 37) {
-        rendition.prev();
-      }
-
-      // Right Key
-      if ((e.keyCode || e.which) == 39) {
-        rendition.next();
-      }
-
-    };
-
-
-    document.addEventListener("keyup", keyListener, false);
-  }
-
-
-
-  </script>
-
+            const file = e.target.files[0]
+            if (window.FileReader) {
+                const reader = new FileReader()
+                reader.onload = onload
+                reader.readAsArrayBuffer(file)
+            }
+        }
+    </script>
 </body>
+
 </html>

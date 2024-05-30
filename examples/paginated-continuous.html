@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Continuous paginated Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="content">
+        <div id="viewer" class="paginated">
+            <div id="divider"></div>
+        </div>
+        <div id="prev" class="arrow"></div>
+        <div id="next" class="arrow"></div>
+    </div>
+    <script>
+        const swipe = "ontouchstart" in window
+        const content = document.getElementById("content")
+        const divider = document.getElementById("divider")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            manager: swipe ? "continuous" : "default",
+            flow: "paginated",
+            snap: swipe ? {} : null,
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        prev.onclick = (e) => {
+
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (location) => {
+
+            const dir = rendition.layout.direction
+            const div = rendition.layout.divisor
+            const loc = location || rendition.currentLocation()
+            if (content.className === "mobile") {
+                prev.style.display = "none"
+                next.style.display = "none"
+            } else {
+                prev.style.display = loc.atStart ? "none" : "block"
+                next.style.display = loc.atEnd ? "none" : "block"
+            }
+            content.dir = dir
+            divider.style.display = div === 1 ? "none" : "block"
+        }
+        rendition.on("displayed", (section) => {
+
+            if (swipe) {
+                content.className = "mobile"
+            }
+        })
+        rendition.on("relocated", (location) => {
+
+            update(location)
+            console.log(location)
+        })
+    </script>
+</body>
+
+</html>

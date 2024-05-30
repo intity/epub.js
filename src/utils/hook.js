@@ -1,7 +1,7 @@
 /**
  * Hooks allow for injecting functions that must all complete in order before finishing
  * They will execute in parallel but all must finish before continuing
- * Functions may return a promise if they are asycn.
+ * Functions may return a promise if they are async.
  * @param {any} context scope of this
  * @example this.content = new EPUBJS.Hook(this);
  */
@@ -29,6 +29,21 @@ class Hook {
 	}
 
 	/**
+	 * Removes a function
+	 * @example this.content.deregister(function(){...});
+	 */
+	deregister(func){
+		let hook;
+		for (let i = 0; i < this.hooks.length; i++) {
+			hook = this.hooks[i];
+			if (hook === func) {
+				this.hooks.splice(i, 1);
+				break;
+			}
+		}
+	}
+
+	/**
 	 * Triggers a hook to run all functions
 	 * @example this.content.trigger(args).then(function(){...});
 	 */
@@ -38,7 +53,11 @@ class Hook {
 		var promises = [];
 
 		this.hooks.forEach(function(task) {
-			var executing = task.apply(context, args);
+			try {
+				var executing = task.apply(context, args);
+			} catch (err) {
+				console.log(err);
+			}
 
 			if(executing && typeof executing["then"] === "function") {
 				// Task is a function that returns a promise

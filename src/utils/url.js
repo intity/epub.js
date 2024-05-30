@@ -3,8 +3,9 @@ import path from "path-webpack";
 
 /**
  * creates a Url object for parsing and manipulation of a url string
- * @param	{string} urlString	a url string (relative or absolute)
- * @param	{string} [baseString] optional base for the url,
+ * @class
+ * @param {string} urlString a url string (relative or absolute)
+ * @param {string} [baseString] optional base for the url,
  * default to window.location.href
  */
 class Url {
@@ -44,7 +45,7 @@ class Url {
 				this.hash = this.Url.hash;
 				this.search = this.Url.search;
 
-				pathname = this.Url.pathname;
+				pathname = this.Url.pathname + (this.Url.search ? this.Url.search : '');
 			} catch (e) {
 				// Skip URL parsing
 				this.Url = undefined;
@@ -73,6 +74,7 @@ class Url {
 
 	/**
 	 * Resolves a relative path to a absolute url
+	 * @param {string} what
 	 * @returns {string} url
 	 */
 	resolve (what) {
@@ -89,6 +91,7 @@ class Url {
 
 	/**
 	 * Resolve a path relative to the url
+	 * @param {string} what
 	 * @returns {string} path
 	 */
 	relative (what) {

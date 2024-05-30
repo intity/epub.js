@@ -78,7 +78,7 @@ class Navigation {
 	/**
 	 * Get an item from the navigation
 	 * @param  {string} target
-	 * @return {object} navItems
+	 * @return {object} navItem
 	 */
 	get(target) {
 		var index;
@@ -93,14 +93,41 @@ class Navigation {
 			index = this.tocByHref[target];
 		}
 
-		return this.toc[index];
+		return this.getByIndex(target, index, this.toc);
+	}
+
+	/**
+	 * Get an item from navigation subitems recursively by index
+	 * @param  {string} target
+	 * @param  {number} index
+	 * @param  {array} navItems
+	 * @return {object} navItem
+	 */
+	getByIndex(target, index, navItems) {
+		if (navItems.length === 0) {
+			return;
+		}
+
+		const item = navItems[index];
+		if (item && (target === item.id || target === item.href)) {
+			return item;
+		} else {
+			let result;
+			for (let i = 0; i < navItems.length; ++i) {
+				result = this.getByIndex(target, index, navItems[i].subitems);
+				if (result) {
+					break;
+				}
+			}
+			return result;
+		}
 	}
 
 	/**
 	 * Get a landmark by type
 	 * List of types: https://idpf.github.io/epub-vocabs/structure/
 	 * @param  {string} type
-	 * @return {object} landmarkItems
+	 * @return {object} landmarkItem
 	 */
 	landmark(type) {
 		var index;
@@ -122,29 +149,38 @@ class Navigation {
 	 */
 	parseNav(navHtml){
 		var navElement = querySelectorByType(navHtml, "nav", "toc");
-		var navItems = navElement ? qsa(navElement, "li") : [];
-		var length = navItems.length;
-		var i;
-		var toc = {};
 		var list = [];
-		var item, parent;
 
-		if(!navItems || length === 0) return list;
+		if (!navElement) return list;
 
-		for (i = 0; i < length; ++i) {
-			item = this.navItem(navItems[i]);
+		let navList = filterChildren(navElement, "ol", true);
+		if (!navList) return list;
+
+		list = this.parseNavList(navList);
+		return list;
+	}
+
+	/**
+	 * Parses lists in the toc
+	 * @param  {document} navListHtml
+	 * @param  {string} parent id
+	 * @return {array} navigation list
+	 */
+	parseNavList(navListHtml, parent) {
+		const result = [];
+
+		if (!navListHtml) return result;
+		if (!navListHtml.children) return result;
+		
+		for (let i = 0; i < navListHtml.children.length; i++) {
+			const item = this.navItem(navListHtml.children[i], parent);
+
 			if (item) {
-				toc[item.id] = item;
-				if(!item.parent) {
-					list.push(item);
-				} else {
-					parent = toc[item.parent];
-					parent.subitems.push(item);
-				}
+				result.push(item);
 			}
 		}
 
-		return list;
+		return result;
 	}
 
 	/**
@@ -153,29 +189,26 @@ class Navigation {
 	 * @param  {element} item
 	 * @return {object} navItem
 	 */
-	navItem(item){
+	navItem(item, parent) {
 		let id = item.getAttribute("id") || undefined;
-		let content = filterChildren(item, "a", true);
+		let content = filterChildren(item, "a", true)
+			|| filterChildren(item, "span", true);
 
 		if (!content) {
 			return;
 		}
 
 		let src = content.getAttribute("href") || "";
-		let text = content.textContent || "";
-		let subitems = [];
-		let parentItem = getParentByTagName(item, "li");
-		let parent;
-
-		if (parentItem) {
-			parent = parentItem.getAttribute("id");
+		
+		if (!id) {
+			id = src;
 		}
+		let text = content.textContent || "";
 
-		while (!parent && parentItem) {
-			parentItem = getParentByTagName(parentItem, "li");
-			if (parentItem) {
-				parent = parentItem.getAttribute("id");
-			}
+		let subitems = [];
+		let nested = filterChildren(item, "ol", true);
+		if (nested) {
+			subitems = 	this.parseNavList(nested, id);
 		}
 
 		return {
@@ -284,7 +317,7 @@ class Navigation {
 				parentNode = item.parentNode,
 				parent;
 
-		if(parentNode && parentNode.nodeName === "navPoint") {
+		if(parentNode && (parentNode.nodeName === "navPoint" || parentNode.nodeName.split(':').slice(-1)[0] === "navPoint")) {
 			parent = parentNode.getAttribute("id");
 		}
 
@@ -301,13 +334,12 @@ class Navigation {
 	/**
 	 * Load Spine Items
 	 * @param  {object} json the items to be loaded
+	 * @return {Array} navItems
 	 */
 	load(json) {
-		return json.map((item) => {
+		return json.map(item => {
 			item.label = item.title;
-			if (item.children) {
-				item.subitems = this.load(item.children);
-			}
+			item.subitems = item.children ? this.load(item.children) : [];
 			return item;
 		});
 	}

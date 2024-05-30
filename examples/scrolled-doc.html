@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: scrolled-doc example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="content" class="doc">
+        <div id="viewer" class="scrolled-doc"></div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            flow: "scrolled-doc",
+            width: "100%",
+            fullsize: true
+        })
+        rendition.display()
+        next.onclick = (e) => {
+            rendition.next()
+            e.preventDefault()
+        }
+        prev.onclick = (e) => {
+            rendition.prev();
+            e.preventDefault();
+        }
+        const update = (location) => {
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+        }
+        const keybinding = (e) => {
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break;
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break;
+            }
+        }
+        rendition.on("rendered", (section) => {
+
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+            console.log(rendition)
+        })
+        rendition.on("relocated", (location) => {
+            update(location)
+            console.log(location)
+        })
+    </script>
+</body>
+
+</html>

@@ -6,7 +6,7 @@ Epub.js is a JavaScript library for rendering ePub documents in the browser, acr
 
 Epub.js provides an interface for common ebook functions (such as rendering, persistence and pagination) without the need to develop a dedicated application or plugin. Importantly, it has an incredibly permissive [Free BSD](http://en.wikipedia.org/wiki/BSD_licenses) license.
 
-[Try it while reading Moby Dick](http://futurepress.github.com/epub.js/reader/)
+[Try it while reading Moby Dick](https://futurepress.github.io/epubjs-reader/)
 
 ## Why EPUB
 
@@ -20,16 +20,16 @@ More specifically, the EPUB schema standardizes the table of contents, provides 
 
 ## Getting Started
 
+If using archived `.epub` files include JSZip (this must precede inclusion of epub.js):
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+```
+
 Get the minified code from the build folder:
 
 ```html
 <script src="../dist/epub.min.js"></script>
-```
-
-If using archived `.epub` files include JSZip:
-
-```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
 ```
 
 Set up a element to render to:
@@ -56,7 +56,7 @@ Create the new ePub, and then render it to that element:
 book.renderTo("area", { method: "default", width: "100%", height: "100%" });
 ```
 
-[View example](https://s3.amazonaws.com/epubjs/examples/spreads.html)
+[View example](http://futurepress.github.io/epub.js/examples/spreads.html)
 
 The default manager only displays a single section at a time.
 
@@ -65,7 +65,7 @@ The default manager only displays a single section at a time.
 ```js
 book.renderTo("area", { method: "continuous", width: "100%", height: "100%" });
 ```
-[View example](https://s3.amazonaws.com/epubjs/examples/continuous-scrolled.html)
+[View example](http://futurepress.github.io/epub.js/examples/continuous-scrolled.html)
 
 The continuous manager will display as many sections as need to fill the screen, and preload the next section offscreen. This enables seamless swiping / scrolling between pages on mobile and desktop, but is less performant than the default method.
 
@@ -82,17 +82,37 @@ Flow will be based on the settings in the OPF, defaults to `paginated`.
 book.renderTo("area", { flow: "paginated", width: "900", height: "600" });
 ```
 
-[View example](https://s3.amazonaws.com/epubjs/examples/spreads.html)
+[View example](http://futurepress.github.io/epub.js/examples/spreads.html)
 
 Scrolled: `book.renderTo("area", { flow: "scrolled-doc" });`
 
-[View example](https://s3.amazonaws.com/epubjs/examples/scrolled.html)
+[View example](http://futurepress.github.io/epub.js/examples/scrolled.html)
+
+## Scripted Content
+
+[Scripted content](https://www.w3.org/TR/epub-33/#sec-scripted-content), JavasScript the ePub HTML content, is disabled by default due to the potential for executing malicious content. 
+
+This is done by sandboxing the iframe the content is rendered into, though it is still recommended to sanitize the ePub content server-side as well.
+
+If a trusted ePub contains interactivity, it can be enabled by passing `allowScriptedContent: true` to the `Rendition` settings.
+
+```html
+<script>
+  var rendition = book.renderTo("area", {
+    width: 600,
+    height: 400,
+    allowScriptedContent: true
+  });
+</script>
+```
+
+This will allow the sandboxed content to run scripts, but currently makes the sandbox insecure.
 
 ## Documentation
 
 API documentation is available at [epubjs.org/documentation/0.3/](http://epubjs.org/documentation/0.3/)
 
-A Markdown version is included in the repo at [documentation/API.md](htts://github.com/futurepress/epub.js/blob/v0.3/documentation/API.md)
+A Markdown version is included in the repo at [documentation/API.md](https://github.com/futurepress/epub.js/blob/master/documentation/md/API.md)
 
 ## Running Locally
 
@@ -135,7 +155,7 @@ Builds are concatenated and minified using [webpack](https://webpack.js.org/) an
 To generate a new build run
 
 ```javascript
-npm run preprocess
+npm run prepare
 ```
 
 or to continuously build run
@@ -181,6 +201,8 @@ rendition.hooks.unloaded // Section contents are being unloaded
 The reader has moved to its own repo at: https://github.com/futurepress/epubjs-reader/
 
 ## Additional Resources
+
+[![Gitter Chat](https://badges.gitter.im/futurepress/epub.js.png)](https://gitter.im/futurepress/epub.js "Gitter Chat")
 
 [Epub.js Developer Mailing List](https://groups.google.com/forum/#!forum/epubjs)
 

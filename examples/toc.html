@@ -1,52 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-	<meta charset="utf-8">
-	<title>EPUB.js Basic Example</title>
-
-	<script src="../dist/epub.js"></script>
-
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>EPUB.JS: Table of Contents Example</title>
 	<link rel="stylesheet" type="text/css" href="examples.css">
-
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="../dist/epub.js"></script>
 </head>
+
 <body>
-	<select id="toc"></select>
-	<div id="viewer" class="scrolled"></div>
-
+	<div id="toolbar">
+		<label for="toc">Table of Contents:</label>
+		<select id="toc"></select>
+	</div>
+	<div id="content">
+		<div id="viewer" class="scrolled"></div>
+	</div>
 	<script>
-		var $viewer = document.getElementById("viewer");
-		var $next = document.getElementById("next");
-		var $prev = document.getElementById("prev");
-		var currentSectionIndex = 9;
-		// Load the opf
-		var book = ePub("https://s3.amazonaws.com/moby-dick/OPS/package.opf");
-		var rendition = book.renderTo("viewer", { flow: "scrolled-doc", width: 600, height: 400});
-		var displayed = rendition.display(currentSectionIndex);
+		const list = document.getElementById("toc")
+		const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+		const rendition = book.renderTo("viewer", {
+			flow: "scrolled",
+			width: "100%",
+			height: "100%"
+		})
+		rendition.display()
+		book.loaded.navigation.then((toc) => {
+			
+			const fragment = document.createDocumentFragment()
 
-		book.loaded.navigation.then(function(toc){
-			var $select = document.getElementById("toc"),
-					docfrag = document.createDocumentFragment();
+			toc.forEach((chapter) => {
 
-			toc.forEach(function(chapter) {
-				var option = document.createElement("option");
-				option.textContent = chapter.label;
-				option.ref = chapter.href;
+				const option = document.createElement("option")
+				option.textContent = chapter.label
+				option.ref = chapter.href
+				fragment.appendChild(option)
+			})
 
-				docfrag.appendChild(option);
-			});
+			list.appendChild(fragment)
+			list.onchange = (e) => {
 
-			$select.appendChild(docfrag);
+				const ind = e.target.selectedIndex
+				const url = e.target[ind].ref
+				rendition.display(url)
+			}
+		})
+		rendition.on("relocated", (location) => {
 
-			$select.onchange = function(){
-					var index = $select.selectedIndex,
-							url = $select.options[index].ref;
-					rendition.display(url);
-					return false;
-			};
-
-
-		});
+			console.log(location)
+		})
 	</script>
-
 </body>
+
 </html>

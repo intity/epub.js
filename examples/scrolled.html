@@ -1,82 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EPUB.js Scrolled Example</title>
-
-  <script src="../dist/epub.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="examples.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Scrolled Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
 </head>
+
 <body>
-  <a id="prev" href="#prev" class="navlink">...</a>
-  <div id="viewer" class="scrolled"></div>
-  <a id="next" href="#next" class="navlink">...</a>
+    <div id="content">
+        <div id="viewer" class="scrolled"></div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            flow: "scrolled",
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        next.onclick = (e) => {
 
-  <script>
-    var currentSectionIndex = 8;
-    // Load the opf
-    var book = ePub("https://s3.amazonaws.com/epubjs/books/alice/OPS/package.opf");
-    var rendition = book.renderTo("viewer", {
-      flow: "scrolled-doc"
-    });
-
-    rendition.display("chapter_008.xhtml");
-
-
-    var next = document.getElementById("next");
-    next.addEventListener("click", function(e){
-      rendition.next();
-      e.preventDefault();
-    }, false);
-
-    var prev = document.getElementById("prev");
-    prev.addEventListener("click", function(e){
-      rendition.prev();
-      e.preventDefault();
-    }, false);
-
-    rendition.on("relocated", function(location){
-      console.log(location);
-    });
-
-    rendition.on("rendered", function(section){
-      var nextSection = section.next();
-      var prevSection = section.prev();
-
-      if(nextSection) {
-        nextNav = book.navigation.get(nextSection.href);
-
-        if(nextNav) {
-          nextLabel = nextNav.label;
-        } else {
-          nextLabel = "next";
+            rendition.next()
+            e.preventDefault()
         }
+        prev.onclick = (e) => {
 
-        next.textContent = nextLabel + " »";
-      } else {
-        next.textContent = "";
-      }
-
-      if(prevSection) {
-        prevNav = book.navigation.get(prevSection.href);
-
-        if(prevNav) {
-          prevLabel = prevNav.label;
-        } else {
-          prevLabel = "previous";
+            rendition.prev();
+            e.preventDefault();
         }
+        const update = (location) => {
 
-        prev.textContent = "« " + prevLabel;
-      } else {
-        prev.textContent = "";
-      }
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+        }
+        const keybinding = (e) => {
 
-    });
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break;
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break;
+            }
+        }
+        book.ready.then(() => {
 
-  </script>
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+        })
+        rendition.on("rendered", (section, view) => {
 
+            console.log(rendition)
+        })
+        rendition.on("relocated", (location) => {
+
+            update(location)
+            console.log(location)
+        })
+    </script>
 </body>
+
 </html>
