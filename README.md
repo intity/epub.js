@@ -1,18 +1,18 @@
 # Epub.js v0.3
 
-![FuturePress Views](http://fchasen.com/futurepress/fp.png)
+![FuturePress Views](assets/fp.png)
 
 Epub.js is a JavaScript library for rendering ePub documents in the browser, across many devices.
 
-Epub.js provides an interface for common ebook functions (such as rendering, persistence and pagination) without the need to develop a dedicated application or plugin. Importantly, it has an incredibly permissive [Free BSD](http://en.wikipedia.org/wiki/BSD_licenses) license.
+Epub.js provides an interface for common ebook functions (such as rendering, persistence and pagination) without the need to develop a dedicated application or plugin. Importantly, it has an incredibly permissive [Free BSD](https://en.wikipedia.org/wiki/BSD_licenses) license.
 
-[Try it while reading Moby Dick](https://futurepress.github.io/epubjs-reader/)
+[Try it while reading Moby Dick](https://intity.github.io/epubreader-js/)
 
 ## Why EPUB
 
-![Why EPUB](http://fchasen.com/futurepress/whyepub.png)
+![Why EPUB](assets/whyepub.png)
 
-The [EPUB standard](http://www.idpf.org/epub/30/spec/epub30-overview.html) is a widely used and easily convertible format. Many books are currently in this format, and it is convertible to many other formats (such as PDF, Mobi and iBooks).
+The [EPUB standard](https://www.w3.org/TR/epub/) is a widely used and easily convertible format. Many books are currently in this format, and it is convertible to many other formats (such as PDF, Mobi and iBooks).
 
 An unzipped EPUB3 is a collection of HTML5 files, CSS, images and other media – just like any other website. However, it enforces a schema of book components, which allows us to render a book and its parts based on a controlled vocabulary.
 
@@ -23,7 +23,7 @@ More specifically, the EPUB schema standardizes the table of contents, provides 
 If using archived `.epub` files include JSZip (this must precede inclusion of epub.js):
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 ```
 
 Get the minified code from the build folder:
@@ -35,62 +35,70 @@ Get the minified code from the build folder:
 Set up a element to render to:
 
 ```html
-<div id="area"></div>
+<div id="viewer"></div>
 ```
 
 Create the new ePub, and then render it to that element:
 
 ```html
 <script>
-  var book = ePub("url/to/book/package.opf");
-  var rendition = book.renderTo("area", {width: 600, height: 400});
-  var displayed = rendition.display();
+    const book = ePub("url/to/book/package.opf")
+    const rendition = book.renderTo("viewer", {width: 600, height: 400})
+    const displayed = rendition.display()
 </script>
 ```
 
-## Render Methods
+## Render manager
 
 ### Default
 
 ```js
-book.renderTo("area", { method: "default", width: "100%", height: "100%" });
+book.renderTo("viewer", { manager: "default", width: "100%", height: "100%" })
 ```
 
-[View example](http://futurepress.github.io/epub.js/examples/spreads.html)
+[View example](https://intity.github.io/epub-js/examples/paginated.html)
 
 The default manager only displays a single section at a time.
 
 ### Continuous
 
 ```js
-book.renderTo("area", { method: "continuous", width: "100%", height: "100%" });
+book.renderTo("viewer", { manager: "continuous", width: "100%", height: "100%" })
 ```
-[View example](http://futurepress.github.io/epub.js/examples/continuous-scrolled.html)
+
+[View example](https://intity.github.io/epub-js/examples/scrolled-continuous.html)
 
 The continuous manager will display as many sections as need to fill the screen, and preload the next section offscreen. This enables seamless swiping / scrolling between pages on mobile and desktop, but is less performant than the default method.
 
 ## Flow Overrides
 
 ### Auto (Default)
-`book.renderTo("area", { flow: "auto", width: "900", height: "600" });`
+
+```js
+book.renderTo("viewer", { flow: "auto", width: "900", height: "600" })
+```
 
 Flow will be based on the settings in the OPF, defaults to `paginated`.
 
 ### Paginated
 
 ```js
-book.renderTo("area", { flow: "paginated", width: "900", height: "600" });
+book.renderTo("viewer", { flow: "paginated", width: "900", height: "600" })
 ```
 
-[View example](http://futurepress.github.io/epub.js/examples/spreads.html)
+[View example](https://intity.github.io/epub-js/examples/paginated.html)
 
-Scrolled: `book.renderTo("area", { flow: "scrolled-doc" });`
+### Scrolled Doc
 
-[View example](http://futurepress.github.io/epub.js/examples/scrolled.html)
+```js
+book.renderTo("viewer", { flow: "scrolled-doc" })
+```
+
+[View example](http://intity.github.io/epub-js/examples/scrolled-doc.html)
 
 ## Scripted Content
 
-[Scripted content](https://www.w3.org/TR/epub-33/#sec-scripted-content), JavasScript the ePub HTML content, is disabled by default due to the potential for executing malicious content. 
+[Scripted content](https://www.w3.org/TR/epub/#sec-scripted-content), JavasScript the ePub HTML content, is disabled by default due to the potential for executing malicious content. 
 
 This is done by sandboxing the iframe the content is rendered into, though it is still recommended to sanitize the ePub content server-side as well.
 
@@ -98,11 +106,11 @@ If a trusted ePub contains interactivity, it can be enabled by passing `allowScr
 
 ```html
 <script>
-  var rendition = book.renderTo("area", {
-    width: 600,
-    height: 400,
-    allowScriptedContent: true
-  });
+    const rendition = book.renderTo("viewer", {
+        width: 600,
+        height: 400,
+        allowScriptedContent: true
+    })
 </script>
 ```
 
@@ -110,42 +118,34 @@ This will allow the sandboxed content to run scripts, but currently makes the sa
 
 ## Documentation
 
-API documentation is available at [epubjs.org/documentation/0.3/](http://epubjs.org/documentation/0.3/)
-
-A Markdown version is included in the repo at [documentation/API.md](https://github.com/futurepress/epub.js/blob/master/documentation/md/API.md)
+API documentation is available at [docs/index.md](docs/index.md)
 
 ## Running Locally
 
-install [node.js](http://nodejs.org/)
+install [node.js](https://nodejs.org/)
 
 Then install the project dependences with npm
 
-```javascript
+```js
 npm install
 ```
 
 You can run the reader locally with the command
 
-```javascript
-npm start
+```js
+npm run start
 ```
 
 ## Examples
 
-+ [Spreads](http://futurepress.github.io/epub.js/examples/spreads.html)
-+ [Scrolled](http://futurepress.github.io/epub.js/examples/scrolled.html)
-+ [Swipe](http://futurepress.github.io/epub.js/examples/swipe.html)
-+ [Input](http://futurepress.github.io/epub.js/examples/input.html)
-+ [Highlights](http://futurepress.github.io/epub.js/examples/highlights.html)
-
-[View All Examples](http://futurepress.github.io/epub.js/examples/)
+[View All Examples](https://intity.github.io/epub-js/examples/)
 
 ## Testing
 
 Test can be run by Karma from NPM
 
 ```js
-npm test
+npm run test
 ```
 
 ## Building for Distribution
@@ -154,13 +154,13 @@ Builds are concatenated and minified using [webpack](https://webpack.js.org/) an
 
 To generate a new build run
 
-```javascript
+```js
 npm run prepare
 ```
 
 or to continuously build run
 
-```javascript
+```js
 npm run watch
 ```
 
@@ -174,16 +174,15 @@ Hooks require an event to register to and a can return a promise to block until 
 
 Example hook:
 
-```javascript
-rendition.hooks.content.register(function(contents, view) {
+```js
+rendition.hooks.content.register((contents, view) => {
 
-    var elements = contents.document.querySelectorAll('[video]');
-    var items = Array.prototype.slice.call(elements);
+    const elements = contents.document.querySelectorAll("[video]")
+    const items = Array.prototype.slice.call(elements)
 
-    items.forEach(function(item){
-      // do something with the video item
-    });
-
+    items.forEach((item) => {
+        // do something with the video item
+    })
 })
 ```
 
@@ -198,20 +197,4 @@ rendition.hooks.unloaded // Section contents are being unloaded
 ```
 
 ## Reader
-The reader has moved to its own repo at: https://github.com/futurepress/epubjs-reader/
-
-## Additional Resources
-
-[![Gitter Chat](https://badges.gitter.im/futurepress/epub.js.png)](https://gitter.im/futurepress/epub.js "Gitter Chat")
-
-[Epub.js Developer Mailing List](https://groups.google.com/forum/#!forum/epubjs)
-
-IRC Server: freenode.net Channel: #epub.js
-
-Follow us on twitter: @Epubjs
-
-+ http://twitter.com/#!/Epubjs
-
-## Other
-
-EPUB is a registered trademark of the [IDPF](http://idpf.org/).
+The reader has moved to its own repo at: [epubreader-js](https://github.com/intity/epubreader-js/)
