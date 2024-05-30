@@ -226,7 +226,7 @@ class ContinuousViewManager extends DefaultViewManager {
 	/**
 	 * update
 	 * @param {number} [offset] 
-	 * @returns 
+	 * @returns {Promise}
 	 */
 	async update(offset) {
 

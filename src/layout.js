@@ -24,7 +24,7 @@ class Layout {
 		this.name = "reflowable";
 		/**
 		 * @member {string} flow
-		 * @memberof
+		 * @memberof Layout
 		 * @readonly
 		 */
 		this.flow = "paginated";
