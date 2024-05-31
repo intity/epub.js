@@ -1,68 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EPUB.js Archived Example</title>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-  <script src="../dist/epub.js"></script>
-
-  <link rel="stylesheet" type="text/css" href="examples.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Archived Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
 </head>
+
 <body>
-  <div id="viewer" class="spreads"></div>
-  <div id="prev" class="arrow">‹</div>
-  <div id="next" class="arrow">›</div>
-  <script>
-    var book = ePub("https://s3.amazonaws.com/moby-dick/moby-dick.epub");
-    var rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: 600
-    });
+    <div id="content">
+        <div id="viewer" class="paginated">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const content = document.getElementById("content")
+        const divider = document.getElementById("divider")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("../test/fixtures/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        prev.onclick = (e) => {
 
-    var displayed = rendition.display();
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
 
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (location) => {
 
-    displayed.then(function(renderer){
-      // -- do stuff
-    });
+            const dir = rendition.layout.direction
+            const div = rendition.layout.divisor
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+            divider.style.display = div === 1 ? "none" : "block"
+            content.dir = dir
+        }
+        const keybinding = (e) => {
 
-    // Navigation loaded
-    book.loaded.navigation.then(function(toc){
-      // console.log(toc);
-    });
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break
+            }
+        }
+        book.ready.then(() => {
 
-    var next = document.getElementById("next");
-    next.addEventListener("click", function(){
-      rendition.next();
-    }, false);
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+        })
+        rendition.on("rendered", (section, view) => {
 
-    var prev = document.getElementById("prev");
-    prev.addEventListener("click", function(){
-      rendition.prev();
-    }, false);
+            console.log(rendition)
+        })
+        rendition.on("relocated", (location) => {
 
-    var keyListener = function(e){
-
-      // Left Key
-      if ((e.keyCode || e.which) == 37) {
-        rendition.prev();
-      }
-
-      // Right Key
-      if ((e.keyCode || e.which) == 39) {
-        rendition.next();
-      }
-
-    };
-
-    rendition.on("keyup", keyListener);
-    document.addEventListener("keyup", keyListener, false);
-
-
-  </script>
-
+            update(location)
+            console.log(location)
+        })
+    </script>
 </body>
+
 </html>

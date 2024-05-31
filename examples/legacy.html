@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EPUB.JS: Legacy Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" type="text/javascript"></script>
     <script src="../dist/epub.legacy.js" type="text/javascript"></script>
 </head>
 
@@ -24,7 +23,7 @@
         var divider = document.getElementById("divider");
         var prev = document.getElementById("prev");
         var next = document.getElementById("next");
-        var book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub");
+        var book = ePub("../test/fixtures/alice/OPS/package.opf");
         var rendition = book.renderTo("viewer", {
             manager: swipe ? "continuous" : "default",
             snap: swipe ? {} : null,

@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EPUB.JS: Hooks Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../dist/epub.js"></script>
 </head>
 
@@ -20,7 +19,7 @@
         const content = document.getElementById("content")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
-        const book = ePub("https://s3.amazonaws.com/epubjs/books/alice.epub")
+        const book = ePub("../test/fixtures/alice/OPS/package.opf")
         const rendition = book.renderTo("viewer", {
             flow: "scrolled-doc",
             width: "100%",
