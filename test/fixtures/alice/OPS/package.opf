@@ -12,7 +12,7 @@
     <dc:title>Alice's Adventures in Wonderland</dc:title>
     <dc:subject>Fantasy</dc:subject>
     <dc:source>http://www.gutenberg.org/files/19033/19033-h/19033-h.htm</dc:source>
-    <meta property="rendition:layout">pre-paginated</meta>
+    <meta property="rendition:layout">reflowable</meta>
     <meta content="coverpage" name="cover"/>
     
   </metadata>

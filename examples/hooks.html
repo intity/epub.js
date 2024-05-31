@@ -21,7 +21,6 @@
         const next = document.getElementById("next")
         const book = ePub("../test/fixtures/alice/OPS/package.opf")
         const rendition = book.renderTo("viewer", {
-            layout: "reflowable",
             flow: "scrolled-doc",
             width: "100%",
             fullsize: true,
