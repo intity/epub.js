@@ -10,6 +10,7 @@
     "test": "test"
   },
   "scripts": {
+    "test:chromium": "cypress run --port 9876 --browser chromium",
     "test": "karma start --single-run --browsers ChromeHeadlessNoSandbox",
     "docs": "node docsgen.js",
     "lint": "eslint -c .eslintrc.js src; exit 0",
@@ -31,6 +32,7 @@
     "@babel/preset-env": "^7.24.6",
     "@babel/runtime": "^7.24.6",
     "babel-loader": "^9.1.3",
+    "cypress": "^13.10.0",
     "eslint": "^9.3.0",
     "jsdoc": "^4.0.3",
     "jsdoc-to-markdown": "^8.0.1",
