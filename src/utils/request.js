@@ -1,158 +1,110 @@
-import {defer, isXml, parse} from "./core";
+import { defer, isXml, parse } from "./core";
 import Path from "./path";
+
+// TODO: fallback for url if window isn't defined
+const SUPPORTS_URL = window && window.URL ? true : false;
+const BLOB_RESPONSE = SUPPORTS_URL ? "blob" : "arraybuffer";
+
+const read = (e, def) => {
+
+	const xhr = e.target;
+
+	if (xhr.status === 403) {
+		def.reject({
+			message: "Forbidden",
+			responseURL: xhr.responseURL,
+			status: xhr.status,
+			stack: new Error().stack
+		});
+	}
+}
+
+const load = (e, type, def) => {
+
+	const xhr = e.target;
+
+	let r;
+	if (xhr.responseType === "document") {
+		if (xhr.response === null &&
+			xhr.responseXML === null) {
+			def.reject({
+				message: "Empty Response",
+				status: xhr.status,
+				stack: new Error().stack
+			});
+		} else if (xhr.responseXML) {
+			r = xhr.responseXML;
+		} else if (isXml(type)) {
+			r = parse(xhr.response, "text/xml");
+		} else if (type === "xhtml") {
+			r = parse(xhr.response, "application/xhtml+xml");
+		} else if (type == "html" || type == "htm") {
+			r = parse(xhr.response, "text/html");
+		}
+	} else if (xhr.responseType === "json") {
+		r = JSON.parse(xhr.response);
+	} else if (xhr.responseType === "blob") {
+		if (SUPPORTS_URL) {
+			r = xhr.response;
+		} else {
+			// Safari doesn't support responseType blob, 
+			// so create a blob from arraybuffer
+			r = new Blob([xhr.response]);
+		}
+	} else {
+		r = xhr.response;
+	}
+
+	def.resolve(r);
+}
 
 /**
  * request
- * @param {*} url 
- * @param {*} type 
- * @param {*} withCredentials 
- * @param {*} headers 
- * @returns {defer}
+ * @param {string|ArrayBuffer} url 
+ * @param {string} [type] 
+ * @param {boolean} [withCredentials=false] 
+ * @param {object[]} [headers=[]] 
+ * @returns {Promise}
  */
-function request(url, type, withCredentials, headers) {
-	var supportsURL = (typeof window != "undefined") ? window.URL : false; // TODO: fallback for url if window isn't defined
-	var BLOB_RESPONSE = supportsURL ? "blob" : "arraybuffer";
+const request = (url, type, withCredentials = false, headers = []) => {
 
-	var deferred = new defer();
+	const def = new defer();
+	const xhr = new XMLHttpRequest();
 
-	var xhr = new XMLHttpRequest();
+	type = type || new Path(url).extension;
 
-	//-- Check from PDF.js:
-	//   https://github.com/mozilla/pdf.js/blob/master/web/compatibility.js
-	var xhrPrototype = XMLHttpRequest.prototype;
-
-	var header;
-
-	if (!("overrideMimeType" in xhrPrototype)) {
-		// IE10 might have response, but not overrideMimeType
-		Object.defineProperty(xhrPrototype, "overrideMimeType", {
-			value: function xmlHttpRequestOverrideMimeType() {}
-		});
-	}
-
-	if(withCredentials) {
+	if (withCredentials) {
 		xhr.withCredentials = true;
 	}
 
-	xhr.onreadystatechange = handler;
-	xhr.onerror = err;
-
-	xhr.open("GET", url, true);
-
-	for(header in headers) {
-		xhr.setRequestHeader(header, headers[header]);
-	}
-
-	if(type == "json") {
+	if (isXml(type)) {
+		xhr.responseType = "document";
+		xhr.overrideMimeType("text/xml"); // for OPF parsing
+	} else if (type === "xhtml") {
+		xhr.responseType = "document";
+	} else if (type == "html" || type == "htm") {
+		xhr.responseType = "document";
+	} else if (type == "binary") {
+		xhr.responseType = "arraybuffer";
+	} else if (type === "blob") {
+		xhr.responseType = BLOB_RESPONSE;
+	} else if (type === "json") {
+		xhr.responseType = "json";
 		xhr.setRequestHeader("Accept", "application/json");
 	}
 
-	// If type isn"t set, determine it from the file extension
-	if(!type) {
-		type = new Path(url).extension;
-	}
+	xhr.onreadystatechange = (e) => read(e, def);
+	xhr.onload = (e) => load(e, type, def);
+	xhr.onerror = (e) => def.reject(e);
+	xhr.open("GET", url, true);
 
-	if(type == "blob"){
-		xhr.responseType = BLOB_RESPONSE;
-	}
-
-
-	if(isXml(type)) {
-		// xhr.responseType = "document";
-		xhr.overrideMimeType("text/xml"); // for OPF parsing
-	}
-
-	if(type == "xhtml") {
-		// xhr.responseType = "document";
-	}
-
-	if(type == "html" || type == "htm") {
-		// xhr.responseType = "document";
-	}
-
-	if(type == "binary") {
-		xhr.responseType = "arraybuffer";
+	for (const header in headers) {
+		xhr.setRequestHeader(header, headers[header]);
 	}
 
 	xhr.send();
 
-	function err(e) {
-		deferred.reject(e);
-	}
-
-	function handler() {
-		if (this.readyState === XMLHttpRequest.DONE) {
-			var responseXML = false;
-
-			if(this.responseType === "" || this.responseType === "document") {
-				responseXML = this.responseXML;
-			}
-
-			if (this.status === 200 || this.status === 0 || responseXML) { //-- Firefox is reporting 0 for blob urls
-				var r;
-
-				if (!this.response && !responseXML) {
-					deferred.reject({
-						status: this.status,
-						message : "Empty Response",
-						stack : new Error().stack
-					});
-					return deferred.promise;
-				}
-
-				if (this.status === 403) {
-					deferred.reject({
-						status: this.status,
-						response: this.response,
-						message : "Forbidden",
-						stack : new Error().stack
-					});
-					return deferred.promise;
-				}
-				if(responseXML){
-					r = this.responseXML;
-				} else
-				if(isXml(type)){
-					// xhr.overrideMimeType("text/xml"); // for OPF parsing
-					// If this.responseXML wasn't set, try to parse using a DOMParser from text
-					r = parse(this.response, "text/xml");
-				}else
-				if(type == "xhtml"){
-					r = parse(this.response, "application/xhtml+xml");
-				}else
-				if(type == "html" || type == "htm"){
-					r = parse(this.response, "text/html");
-				}else
-				if(type == "json"){
-					r = JSON.parse(this.response);
-				}else
-				if(type == "blob"){
-
-					if(supportsURL) {
-						r = this.response;
-					} else {
-						//-- Safari doesn't support responseType blob, so create a blob from arraybuffer
-						r = new Blob([this.response]);
-					}
-
-				}else{
-					r = this.response;
-				}
-
-				deferred.resolve(r);
-			} else {
-
-				deferred.reject({
-					status: this.status,
-					message : this.response,
-					stack : new Error().stack
-				});
-
-			}
-		}
-	}
-
-	return deferred.promise;
+	return def.promise;
 }
 
 export default request;
