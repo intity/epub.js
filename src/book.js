@@ -456,7 +456,7 @@ class Book {
 			}).catch((err) => {
 				this.displayOptions = new DisplayOptions();
 				this.loading.displayOptions.resolve(this.displayOptions);
-				console.error(err);
+				console.error(err.message);
 			});
 		} else {
 			this.displayOptions = new DisplayOptions();
@@ -496,7 +496,7 @@ class Book {
 					this.opening.resolve(this);
 				});
 			}).catch((err) => {
-				console.error(err);
+				console.error(err.message);
 			});
 		} else {
 			// Resolve book opened promise
