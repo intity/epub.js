@@ -176,7 +176,7 @@ class EpubCFI {
 			terminalB = cfiTwo.path.terminal;
 		}
 		// Compare Each Step in the First item
-		for (var i = 0; i < stepsA.length; i++) {
+		for (let i = 0; i < stepsA.length; i++) {
 			if (!stepsA[i]) return -1;
 			if (!stepsB[i]) return 1;
 			if (stepsA[i].index > stepsB[i].index) return 1;
@@ -193,18 +193,17 @@ class EpubCFI {
 	}
 
 	/**
-	 * generateChapterComponent (unused)
-	 * @param {number} _spineNodeIndex 
-	 * @param {number} _pos 
+	 * Generate chapter component
+	 * @param {number} spineNodeIndex
+	 * @param {number} position
 	 * @param {string} [id] 
 	 * @returns {string} EpubCFI string format
-	 * @private
 	 */
-	generateChapterComponent(_spineNodeIndex, _pos, id) {
+	generateChapterComponent(spineNodeIndex, position, id) {
 
-		const pos = parseInt(_pos);
-		const spineNodeIndex = (_spineNodeIndex + 1) * 2;
-		let cfi = "/" + spineNodeIndex + "/";
+		const pos = parseInt(position);
+		const index = (spineNodeIndex + 1) * 2;
+		let cfi = "/" + index + "/";
 		cfi += (pos + 1) * 2;
 		if (id) cfi += "[" + id + "]";
 		return cfi;
