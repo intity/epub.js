@@ -2,7 +2,17 @@ import assert from "assert"
 import Book from "../src/book"
 
 describe("Book", () => {
-	describe("Unarchived", () => {
+	describe("Unarchived: open from directory", () => {
+		const book = new Book("/fixtures/alice/")
+		it ("should open a epub", async () => {
+			await book.opened
+			assert.equal(book.container.directory, "OPS")
+			assert.equal(book.container.fullPath, "OPS/package.opf")
+			assert.equal(book.container.encoding, "UTF-8")
+			assert.equal(book.container.mediaType, "application/oebps-package+xml")
+		})
+	})
+	describe("Unarchived: open from package.opf", () => {
 		const book = new Book("/fixtures/alice/OPS/package.opf")
 		it("should open a epub", async () => {
 			await book.opened
