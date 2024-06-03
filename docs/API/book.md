@@ -23,10 +23,23 @@ of its contents.
         * [.destroy()](#Book+destroy)
     * _static_
         * [.opened](#Book.opened) : <code>promise</code>
+        * [.isOpen](#Book.isOpen) : <code>boolean</code>
+        * [.ready](#Book.ready) : <code>promise</code>
+        * [.isRendered](#Book.isRendered) : <code>boolean</code>
+        * [.request](#Book.request) : <code>method</code>
         * [.spine](#Book.spine) : <code>Spine</code>
         * [.locations](#Book.locations) : <code>Locations</code>
         * [.navigation](#Book.navigation) : <code>Navigation</code>
         * [.pagelist](#Book.pagelist) : <code>PageList</code>
+        * [.url](#Book.url) : <code>Url</code>
+        * [.path](#Book.path) : <code>Path</code>
+        * [.archived](#Book.archived) : <code>boolean</code>
+        * [.storage](#Book.storage) : <code>Store</code>
+        * [.resources](#Book.resources) : <code>Resources</code>
+        * [.rendition](#Book.rendition) : <code>Rendition</code>
+        * [.container](#Book.container) : <code>Container</code>
+        * [.packaging](#Book.packaging) : <code>Packaging</code>
+        * ["openFailed" (error)](#Book.event_openFailed)
 
 <a name="new_Book_new"></a>
 
@@ -128,7 +141,7 @@ Sugar to render a book to an element
 
 | Param | Type | Description |
 | --- | --- | --- |
-| element | <code>element</code> \| <code>string</code> | element or string to add a rendition to |
+| element | <code>Element</code> \| <code>string</code> | element or string to add a rendition to |
 | [options] | <code>object</code> |  |
 
 <a name="Book+setRequestCredentials"></a>
@@ -195,19 +208,97 @@ Destroy the Book and all associated objects
 returns after the book is loaded
 
 **Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.isOpen"></a>
+
+## Book.isOpen : <code>boolean</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.ready"></a>
+
+## Book.ready : <code>promise</code>
+returns after the book is loaded and parsed
+
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.isRendered"></a>
+
+## Book.isRendered : <code>boolean</code>
+Queue for methods used before opening
+
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.request"></a>
+
+## Book.request : <code>method</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
 <a name="Book.spine"></a>
 
 ## Book.spine : <code>Spine</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
 <a name="Book.locations"></a>
 
 ## Book.locations : <code>Locations</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
 <a name="Book.navigation"></a>
 
 ## Book.navigation : <code>Navigation</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
 <a name="Book.pagelist"></a>
 
 ## Book.pagelist : <code>PageList</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.url"></a>
+
+## Book.url : <code>Url</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.path"></a>
+
+## Book.path : <code>Path</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.archived"></a>
+
+## Book.archived : <code>boolean</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.storage"></a>
+
+## Book.storage : <code>Store</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.resources"></a>
+
+## Book.resources : <code>Resources</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.rendition"></a>
+
+## Book.rendition : <code>Rendition</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.container"></a>
+
+## Book.container : <code>Container</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.packaging"></a>
+
+## Book.packaging : <code>Packaging</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.event_openFailed"></a>
+
+## "openFailed" (error)
+**Kind**: event emitted by [<code>Book</code>](#Book)  
+
+| Param | Type |
+| --- | --- |
+| error | <code>object</code> | 
+

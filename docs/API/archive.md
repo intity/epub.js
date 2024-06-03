@@ -10,10 +10,11 @@ Handles Unzipping a requesting files from an Epub Archive
     * [.openUrl(zipUrl, [isBase64])](#Archive+openUrl) ⇒ <code>Promise</code>
     * [.request(url, [type])](#Archive+request) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
     * [.getBlob(url, [mimeType])](#Archive+getBlob) ⇒ <code>Blob</code>
-    * [.getText(url, [encoding])](#Archive+getText) ⇒ <code>string</code>
+    * [.getText(url)](#Archive+getText) ⇒ <code>string</code>
     * [.getBase64(url, [mimeType])](#Archive+getBase64) ⇒ <code>string</code>
-    * [.createUrl(url)](#Archive+createUrl) ⇒ <code>Promise</code>
+    * [.createUrl(url, [options])](#Archive+createUrl) ⇒ <code>Promise</code>
     * [.revokeUrl(url)](#Archive+revokeUrl)
+    * [.destroy()](#Archive+destroy)
 
 <a name="Archive+open"></a>
 
@@ -67,7 +68,7 @@ Get a Blob from Archive by Url
 
 <a name="Archive+getText"></a>
 
-## archive.getText(url, [encoding]) ⇒ <code>string</code>
+## archive.getText(url) ⇒ <code>string</code>
 Get Text from Archive by Url
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -75,7 +76,6 @@ Get Text from Archive by Url
 | Param | Type |
 | --- | --- |
 | url | <code>string</code> | 
-| [encoding] | <code>string</code> | 
 
 <a name="Archive+getBase64"></a>
 
@@ -92,7 +92,7 @@ Get a base64 encoded result from Archive by Url
 
 <a name="Archive+createUrl"></a>
 
-## archive.createUrl(url) ⇒ <code>Promise</code>
+## archive.createUrl(url, [options]) ⇒ <code>Promise</code>
 Create a Url from an unarchived item
 
 **Kind**: instance method of [<code>Archive</code>](#Archive)  
@@ -101,6 +101,7 @@ Create a Url from an unarchived item
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>string</code> |  |
+| [options] | <code>object</code> |  |
 | [options.base64] | <code>object</code> | use base64 encoding or blob url |
 
 <a name="Archive+revokeUrl"></a>
@@ -114,3 +115,9 @@ Revoke Temp Url for a archive item
 | --- | --- | --- |
 | url | <code>string</code> | url of the item in the archive |
 
+<a name="Archive+destroy"></a>
+
+## archive.destroy()
+destroy
+
+**Kind**: instance method of [<code>Archive</code>](#Archive)  
