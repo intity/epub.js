@@ -299,7 +299,7 @@ class Book {
 
 		return this.load(url).then((xml) => {
 			this.container = new Container(xml);
-			return this.resolve(this.container.packagePath);
+			return this.resolve(this.container.fullPath);
 		});
 	}
 
