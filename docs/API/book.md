@@ -13,7 +13,7 @@ of its contents.
         * [.load(path)](#Book+load) ⇒ <code>Promise</code>
         * [.resolve(path, [absolute])](#Book+resolve) ⇒ <code>string</code>
         * [.canonical(path)](#Book+canonical) ⇒ <code>string</code>
-        * [.section(target)](#Book+section) ⇒ <code>Section</code>
+        * [.section(target)](#Book+section) ⇒ <code>Section</code> \| <code>null</code>
         * [.renderTo(element, [options])](#Book+renderTo) ⇒ <code>Rendition</code>
         * [.setRequestCredentials(credentials)](#Book+setRequestCredentials)
         * [.setRequestHeaders(headers)](#Book+setRequestHeaders)
@@ -49,14 +49,15 @@ of its contents.
 | --- | --- | --- | --- |
 | [url] | <code>string</code> |  |  |
 | [options] | <code>object</code> |  |  |
-| [options.requestMethod] | <code>method</code> |  | a request function to use instead of the default |
-| [options.requestCredentials] | <code>boolean</code> |  | send the xhr request withCredentials |
-| [options.requestHeaders] | <code>object</code> |  | send the xhr request headers |
-| [options.encoding] | <code>string</code> | <code>&quot;binary&quot;</code> | optional to pass 'binary' or base64' for archived Epubs |
-| [options.replacements] | <code>string</code> | <code>&quot;none&quot;</code> | use base64, blobUrl, or none for replacing assets in archived Epubs |
+| [options.request] | <code>object</code> |  | object options to xhr request |
+| [options.request.method] | <code>method</code> | <code></code> | a request function to use instead of the default |
+| [options.request.withCredentials] | <code>boolean</code> | <code>false</code> | send the xhr request withCredentials |
+| [options.request.headers] | <code>object</code> | <code>[]</code> | send the xhr request headers |
+| [options.encoding] | <code>string</code> | <code>&quot;&#x27;binary&#x27;&quot;</code> | optional to pass 'binary' or 'base64' for archived Epubs |
+| [options.replacements] | <code>string</code> | <code>&quot;&#x27;none&#x27;&quot;</code> | use base64, blobUrl, or none for replacing assets in archived Epubs |
 | [options.canonical] | <code>method</code> |  | optional function to determine canonical urls for a path |
 | [options.openAs] | <code>string</code> |  | optional string to determine the input type |
-| [options.store] | <code>string</code> | <code>false</code> | cache the contents in local storage, value should be the name of the reader |
+| [options.store] | <code>string</code> |  | cache the contents in local storage, value should be the name of the reader |
 
 **Example**  
 ```js
@@ -77,11 +78,31 @@ Open a epub or url
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | input | <code>string</code> \| <code>ArrayBuffer</code> |  | Url, Path or ArrayBuffer |
-| [what] | <code>string</code> | <code>&quot;\&quot;binary\&quot;, \&quot;base64\&quot;, \&quot;epub\&quot;, \&quot;opf\&quot;, \&quot;json\&quot;, \&quot;directory\&quot;&quot;</code> | force opening as a certain type |
+| [what] | <code>string</code> | <code>&quot;&#x27;binary&#x27;, &#x27;base64&#x27;, &#x27;epub&#x27;, &#x27;opf&#x27;, &#x27;json&#x27;, &#x27;directory&#x27;&quot;</code> | force opening as a certain type |
 
 **Example**  
 ```js
+book.open("/path/to/book/")
+```
+**Example**  
+```js
+book.open("/path/to/book/OPS/package.opf")
+```
+**Example**  
+```js
 book.open("/path/to/book.epub")
+```
+**Example**  
+```js
+book.open("https://example.com/book/")
+```
+**Example**  
+```js
+book.open("https://example.com/book/OPS/package.opf")
+```
+**Example**  
+```js
+book.open("https://example.com/book.epub")
 ```
 <a name="Book+load"></a>
 
@@ -103,10 +124,10 @@ Resolve a path to it's absolute position in the Book
 **Kind**: instance method of [<code>Book</code>](#Book)  
 **Returns**: <code>string</code> - the resolved path string  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| path | <code>string</code> |  |
-| [absolute] | <code>boolean</code> | force resolving the full URL |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| path | <code>string</code> |  |  |
+| [absolute] | <code>boolean</code> | <code>false</code> | force resolving the full URL |
 
 <a name="Book+canonical"></a>
 
@@ -122,7 +143,7 @@ Get a canonical link to a path
 
 <a name="Book+section"></a>
 
-## book.section(target) ⇒ <code>Section</code>
+## book.section(target) ⇒ <code>Section</code> \| <code>null</code>
 Gets a Section of the Book from the Spine
 Alias for `book.spine.get`
 
