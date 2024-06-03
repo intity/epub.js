@@ -1,28 +1,40 @@
 import EpubCFI from "./epubcfi";
 import Hook from "./utils/hook";
 import Section from "./section";
-import {replaceBase, replaceCanonical, replaceMeta} from "./utils/replacements";
+import { replaceBase, replaceCanonical, replaceMeta } from "./utils/replacements";
 
 /**
  * A collection of Spine Items
  */
 class Spine {
 	constructor() {
+
 		this.spineItems = [];
 		this.spineByHref = {};
 		this.spineById = {};
-
-		this.hooks = {};
-		this.hooks.serialize = new Hook();
-		this.hooks.content = new Hook();
+		/**
+		 * @member {object} hooks
+		 * @property {Hook} content
+		 * @property {Hook} serialize
+		 * @memberof Spine
+		 * @readonly
+		 */
+		this.hooks = {
+			content: new Hook(),
+			serialize: new Hook()
+		};
 
 		// Register replacements
 		this.hooks.content.register(replaceBase);
-		this.hooks.content.register(replaceCanonical);
 		this.hooks.content.register(replaceMeta);
+		this.hooks.content.register(replaceCanonical);
 
 		this.epubcfi = new EpubCFI();
-
+		/**
+		 * @member {boolean} loaded
+		 * @memberof Spine
+		 * @readonly
+		 */
 		this.loaded = false;
 
 		this.items = undefined;
@@ -34,21 +46,21 @@ class Spine {
 
 	/**
 	 * Unpack items from a opf into spine items
-	 * @param  {Packaging} _package
-	 * @param  {method} resolver URL resolver
-	 * @param  {method} canonical Resolve canonical url
+	 * @param {Packaging} packege
+	 * @param {method} resolver URL resolver
+	 * @param {method} canonical Resolve canonical url
 	 */
-	unpack(_package, resolver, canonical) {
+	unpack(packege, resolver, canonical) {
 
-		this.items = _package.spine;
-		this.manifest = _package.manifest;
-		this.spineNodeIndex = _package.spineNodeIndex;
-		this.baseUrl = _package.baseUrl || _package.basePath || "";
+		this.items = packege.spine;
+		this.manifest = packege.manifest;
+		this.spineNodeIndex = packege.spineNodeIndex;
+		this.baseUrl = packege.baseUrl || packege.basePath || "";
 		this.length = this.items.length;
 
-		this.items.forEach( (item, index) => {
-			var manifestItem = this.manifest[item.idref];
-			var spineItem;
+		this.items.forEach((item, index) => {
+
+			const manifestItem = this.manifest[item.idref];
 
 			item.index = index;
 			item.cfiBase = this.epubcfi.generateChapterComponent(this.spineNodeIndex, item.index, item.id);
@@ -58,21 +70,21 @@ class Spine {
 				item.canonical = canonical(item.href);
 			}
 
-			if(manifestItem) {
+			if (manifestItem) {
 				item.href = manifestItem.href;
 				item.url = resolver(item.href, true);
 				item.canonical = canonical(item.href);
 
-				if(manifestItem.properties.length){
+				if (manifestItem.properties.length) {
 					item.properties.push.apply(item.properties, manifestItem.properties);
 				}
 			}
 
 			if (item.linear === "yes") {
-				item.prev = function() {
+				item.prev = function () {
 					let prevIndex = item.index;
 					while (prevIndex > 0) {
-						let prev = this.get(prevIndex-1);
+						let prev = this.get(prevIndex - 1);
 						if (prev && prev.linear) {
 							return prev;
 						}
@@ -80,10 +92,10 @@ class Spine {
 					}
 					return;
 				}.bind(this);
-				item.next = function() {
+				item.next = function () {
 					let nextIndex = item.index;
-					while (nextIndex < this.spineItems.length-1) {
-						let next = this.get(nextIndex+1);
+					while (nextIndex < this.spineItems.length - 1) {
+						let next = this.get(nextIndex + 1);
 						if (next && next.linear) {
 							return next;
 						}
@@ -92,20 +104,16 @@ class Spine {
 					return;
 				}.bind(this);
 			} else {
-				item.prev = function() {
+				item.prev = function () {
 					return;
 				}
-				item.next = function() {
+				item.next = function () {
 					return;
 				}
 			}
 
-
-			spineItem = new Section(item, this.hooks);
-
+			const spineItem = new Section(item, this.hooks);
 			this.append(spineItem);
-
-
 		});
 
 		this.loaded = true;
@@ -113,15 +121,16 @@ class Spine {
 
 	/**
 	 * Get an item from the spine
-	 * @param  {string|number} [target]
-	 * @return {Section} section
+	 * @param {string|number} [target]
+	 * @return {Section|null} section
 	 * @example spine.get();
 	 * @example spine.get(1);
 	 * @example spine.get("chap1.html");
 	 * @example spine.get("#id1234");
 	 */
 	get(target) {
-		var index = 0;
+
+		let index = 0;
 
 		if (typeof target === "undefined") {
 			while (index < this.spineItems.length) {
@@ -131,14 +140,14 @@ class Spine {
 				}
 				index += 1;
 			}
-		} else if(this.epubcfi.isCfiString(target)) {
+		} else if (this.epubcfi.isCfiString(target)) {
 			let cfi = new EpubCFI(target);
 			index = cfi.spinePos;
-		} else if(typeof target === "number" || isNaN(target) === false){
+		} else if (typeof target === "number" || isNaN(target) === false) {
 			index = target;
-		} else if(typeof target === "string" && target.indexOf("#") === 0) {
+		} else if (typeof target === "string" && target.indexOf("#") === 0) {
 			index = this.spineById[target.substring(1)];
-		} else if(typeof target === "string") {
+		} else if (typeof target === "string") {
 			// Remove fragments
 			target = target.split("#")[0];
 			index = this.spineByHref[target] || this.spineByHref[encodeURI(target)];
@@ -149,13 +158,14 @@ class Spine {
 
 	/**
 	 * Append a Section to the Spine
+	 * @param {Section} section
+	 * @returns {number} index
 	 * @private
-	 * @param  {Section} section
 	 */
 	append(section) {
-		var index = this.spineItems.length;
-		section.index = index;
 
+		const index = this.spineItems.length;
+		section.index = index;
 		this.spineItems.push(section);
 
 		// Encode and Decode href lookups
@@ -163,16 +173,16 @@ class Spine {
 		this.spineByHref[decodeURI(section.href)] = index;
 		this.spineByHref[encodeURI(section.href)] = index;
 		this.spineByHref[section.href] = index;
-
 		this.spineById[section.idref] = index;
 
 		return index;
 	}
 
 	/**
-	 * Prepend a Section to the Spine
+	 * Prepend a Section to the Spine (unused)
+	 * @param {Section} section
+	 * @returns {number}
 	 * @private
-	 * @param  {Section} section
 	 */
 	prepend(section) {
 		// var index = this.spineItems.unshift(section);
@@ -180,26 +190,23 @@ class Spine {
 		this.spineById[section.idref] = 0;
 
 		// Re-index
-		this.spineItems.forEach(function(item, index){
+		this.spineItems.forEach((item, index) => {
 			item.index = index;
 		});
 
 		return 0;
 	}
 
-	// insert(section, index) {
-	//
-	// };
-
 	/**
-	 * Remove a Section from the Spine
+	 * Remove a Section from the Spine (unused)
+	 * @param {Section} section
 	 * @private
-	 * @param  {Section} section
 	 */
 	remove(section) {
-		var index = this.spineItems.indexOf(section);
 
-		if(index > -1) {
+		const index = this.spineItems.indexOf(section);
+
+		if (index > -1) {
 			delete this.spineByHref[section.href];
 			delete this.spineById[section.idref];
 
@@ -212,6 +219,7 @@ class Spine {
 	 * @return {method} forEach
 	 */
 	each() {
+
 		return this.spineItems.forEach.apply(this.spineItems, arguments);
 	}
 
@@ -220,16 +228,16 @@ class Spine {
 	 * @return {Section} first section
 	 */
 	first() {
+
 		let index = 0;
 
 		do {
-			let next = this.get(index);
-
+			const next = this.get(index);
 			if (next && next.linear) {
 				return next;
 			}
 			index += 1;
-		} while (index < this.spineItems.length) ;
+		} while (index < this.spineItems.length);
 	}
 
 	/**
@@ -237,10 +245,11 @@ class Spine {
 	 * @return {Section} last section
 	 */
 	last() {
-		let index = this.spineItems.length-1;
+
+		let index = this.spineItems.length - 1;
 
 		do {
-			let prev = this.get(index);
+			const prev = this.get(index);
 			if (prev && prev.linear) {
 				return prev;
 			}
@@ -248,7 +257,11 @@ class Spine {
 		} while (index >= 0);
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
+
 		this.each((section) => section.destroy());
 
 		this.spineItems = undefined
@@ -260,7 +273,6 @@ class Spine {
 		this.hooks = undefined;
 
 		this.epubcfi = undefined;
-
 		this.loaded = false;
 
 		this.items = undefined;
