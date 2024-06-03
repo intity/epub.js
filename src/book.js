@@ -382,7 +382,7 @@ class Book {
 			resolved = this.path.resolve(path);
 		}
 
-		if (absolute && this.url) {
+		if (absolute === false && this.url) {
 			resolved = this.url.resolve(resolved);
 		}
 
