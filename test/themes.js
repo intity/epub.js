@@ -15,12 +15,12 @@ describe("Themes", () => {
         it("register a theme by url", async () => {
             await book.opened
             let theme
-            rendition.themes.register("light", "themes.css")
+            rendition.themes.register("light", "../examples/themes.css")
             theme = rendition.themes.get("light")
-            assert.equal(theme.url, "http://localhost:9876/themes.css")
-            rendition.themes.register("dark", "themes.css")
+            assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
+            rendition.themes.register("dark", "../examples/themes.css")
             theme = rendition.themes.get("dark")
-            assert.equal(theme.url, "http://localhost:9876/themes.css")
+            assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
             rendition.themes.destroy()
             assert.equal(rendition.themes.size, 0)
         })
@@ -65,18 +65,18 @@ describe("Themes", () => {
             assert.equal(rendition.themes.size, 0)
         })
     })
-    describe("#select", () => {
+    describe("#select()", () => {
         it ("switching theme using select method", async () => {
             await book.opened
             let theme
             rendition.themes.register({
-                light: "themes.css",
-                dark: "themes.css"
+                light: "../examples/themes.css",
+                dark: "../examples/themes.css"
             })
             theme = rendition.themes.get("light")
-            assert.equal(theme.url, "http://localhost:9876/themes.css")
+            assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
             theme = rendition.themes.get("dark")
-            assert.equal(theme.url, "http://localhost:9876/themes.css")
+            assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
             rendition.themes.select("light")
             assert.equal(rendition.themes.current, "light")
             rendition.themes.select("dark")
