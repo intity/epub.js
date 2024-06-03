@@ -364,10 +364,10 @@ class Book {
 	/**
 	 * Resolve a path to it's absolute position in the Book
 	 * @param {string} path
-	 * @param {boolean} [absolute] force resolving the full URL
+	 * @param {boolean} [absolute=false] force resolving the full URL
 	 * @returns {string} the resolved path string
 	 */
-	resolve(path, absolute) {
+	resolve(path, absolute = false) {
 
 		if (!path) return;
 
@@ -382,7 +382,7 @@ class Book {
 			resolved = this.path.resolve(path);
 		}
 
-		if (absolute != false && this.url) {
+		if (absolute && this.url) {
 			resolved = this.url.resolve(resolved);
 		}
 
