@@ -301,7 +301,7 @@ class Book {
 	/**
 	 * Open the epub container
 	 * @param {string} url
-	 * @returns {string} packagePath
+	 * @returns {Promise}
 	 * @private
 	 */
 	async openContainer(url) {
