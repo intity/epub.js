@@ -223,12 +223,12 @@ class Book {
 
 		if (url) {
 			this.open(url, this.settings.openAs).catch((error) => {
-				const err = new Error("Cannot load book at " + url);
 				/**
 				 * @event openFailed
+				 * @param {object} error
 				 * @memberof Book
 				 */
-				this.emit(EVENTS.BOOK.OPEN_FAILED, err);
+				this.emit(EVENTS.BOOK.OPEN_FAILED, error);
 			});
 		}
 	}
