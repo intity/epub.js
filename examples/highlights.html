@@ -26,8 +26,7 @@
         const rendition = book.renderTo("viewer", {
             width: "100%",
             height: "100%",
-            spread: "none",
-            ignoreClass: "annotator-hl"
+            spread: "none"
         })
         rendition.display(6)
         prev.onclick = (e) => {
@@ -45,13 +44,12 @@
         }
         const keybinding = (e) => {
 
-            const dir = rendition.layout.direction
             switch (e.key) {
                 case "ArrowLeft":
-                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    rendition.prev()
                     break
                 case "ArrowRight":
-                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    rendition.next()
                     break
             }
         }
@@ -63,8 +61,8 @@
         })
         rendition.on("selected", (cfiRange, contents) => {
 
-            rendition.annotations.highlight(cfiRange, {}, (e) => {
-                console.log(e.target)
+            const note = rendition.annotations.highlight(cfiRange, {
+                cb: (e) => console.log(e.target)
             })
             book.getRange(cfiRange).then((range) => {
 
@@ -88,7 +86,7 @@
                     ctrl.href = "#"
                     ctrl.onclick = (e) => {
 
-                        rendition.annotations.remove(cfiRange, "highlight")
+                        rendition.annotations.remove("highlight", cfiRange)
                         highlights.removeChild(list)
                         e.preventDefault()
                     }
@@ -100,6 +98,7 @@
                 }
             })
             contents.window.getSelection().removeAllRanges()
+            console.log(note)
         })
         rendition.on("relocated", (location) => {
 
