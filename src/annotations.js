@@ -1,12 +1,11 @@
-import EventEmitter from "event-emitter";
 import EpubCFI from "./epubcfi";
-import { EVENTS } from "./utils/constants";
+import Annotation from "./annotation";
 
 /**
-	* Handles managing adding & removing Annotations
-	* @param {Rendition} rendition
-	* @class
-	*/
+ * Handles managing adding & removing Annotations
+ * @param {Rendition} rendition
+ * @class
+ */
 class Annotations {
 
 	constructor (rendition) {
@@ -198,104 +197,5 @@ class Annotations {
 	}
 
 }
-
-/**
- * Annotation object
- * @class
- * @param {object} options
- * @param {string} options.type Type of annotation to add: "highlight", "underline", "mark"
- * @param {EpubCFI} options.cfiRange EpubCFI range to attach annotation to
- * @param {object} options.data Data to assign to annotation
- * @param {int} options.sectionIndex Index in the Spine of the Section annotation belongs to
- * @param {function} [options.cb] Callback after annotation is clicked
- * @param {string} className CSS class to assign to annotation
- * @param {object} styles CSS styles to assign to annotation
- * @returns {Annotation} annotation
- */
-class Annotation {
-
-	constructor ({
-		type,
-		cfiRange,
-		data,
-		sectionIndex,
-		cb,
-		className,
-		styles
-	}) {
-		this.type = type;
-		this.cfiRange = cfiRange;
-		this.data = data;
-		this.sectionIndex = sectionIndex;
-		this.mark = undefined;
-		this.cb = cb;
-		this.className = className;
-		this.styles = styles;
-	}
-
-	/**
-	 * Update stored data
-	 * @param {object} data
-	 */
-	update (data) {
-		this.data = data;
-	}
-
-	/**
-	 * Add to a view
-	 * @param {View} view
-	 */
-	attach (view) {
-		let {cfiRange, data, type, mark, cb, className, styles} = this;
-		let result;
-
-		if (type === "highlight") {
-			result = view.highlight(cfiRange, data, cb, className, styles);
-		} else if (type === "underline") {
-			result = view.underline(cfiRange, data, cb, className, styles);
-		} else if (type === "mark") {
-			result = view.mark(cfiRange, data, cb);
-		}
-
-		this.mark = result;
-		this.emit(EVENTS.ANNOTATION.ATTACH, result);
-		return result;
-	}
-
-	/**
-	 * Remove from a view
-	 * @param {View} view
-	 */
-	detach (view) {
-		let {cfiRange, type} = this;
-		let result;
-
-		if (view) {
-			if (type === "highlight") {
-				result = view.unhighlight(cfiRange);
-			} else if (type === "underline") {
-				result = view.ununderline(cfiRange);
-			} else if (type === "mark") {
-				result = view.unmark(cfiRange);
-			}
-		}
-
-		this.mark = undefined;
-		this.emit(EVENTS.ANNOTATION.DETACH, result);
-		return result;
-	}
-
-	/**
-	 * [Not Implemented] Get text of an annotation
-	 * @TODO: needs implementation in contents
-	 */
-	text () {
-
-	}
-
-}
-
-EventEmitter(Annotation.prototype);
-
 
 export default Annotations
