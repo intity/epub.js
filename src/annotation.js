@@ -5,10 +5,10 @@ import { EVENTS } from "./utils/constants";
  * Annotation object
  * @class
  * @param {object} options
- * @param {string} options.type Type of annotation to add: "highlight", "underline", "mark"
- * @param {EpubCFI} options.cfiRange EpubCFI range to attach annotation to
- * @param {object} options.data Data to assign to annotation
+ * @param {string} options.type Type of annotation to add: `"highlight"` OR `"underline"` OR `"mark"`
+ * @param {string} options.cfiRange EpubCFI range to attach annotation to
  * @param {number} options.sectionIndex Index in the Spine of the Section annotation belongs to
+ * @param {object} [options.data] Data to assign to annotation
  * @param {method} [options.cb] Callback after annotation is clicked
  * @param {string} [options.className] CSS class to assign to annotation
  * @param {object} [options.styles] CSS styles to assign to annotation
@@ -19,20 +19,20 @@ class Annotation {
     constructor({
         type,
         cfiRange,
-        data,
         sectionIndex,
+        data,
         cb,
         className,
         styles
     }) {
         this.type = type;
         this.cfiRange = cfiRange;
-        this.data = data;
         this.sectionIndex = sectionIndex;
-        this.mark = undefined;
+        this.data = data;
         this.cb = cb;
         this.className = className;
         this.styles = styles;
+        this.mark = undefined;
     }
 
     /**
@@ -47,11 +47,14 @@ class Annotation {
     /**
      * Add to a view
      * @param {View} view
+     * @returns {object|null}
      */
     attach(view) {
 
         let result;
-        if (this.type === "highlight") {
+        if (!view) {
+            return null;
+        } else if (this.type === "highlight") {
             result = view.highlight(
                 this.cfiRange,
                 this.data,
@@ -78,6 +81,7 @@ class Annotation {
         this.mark = result;
         /**
          * @event attach
+         * @param {any} result
          * @memberof Annotation
          */
         this.emit(EVENTS.ANNOTATION.ATTACH, result);
@@ -87,12 +91,13 @@ class Annotation {
     /**
      * Remove from a view
      * @param {View} view
+     * @returns {boolean}
      */
     detach(view) {
 
-        let result;
+        let result = false;
         if (!view) {
-            return;
+            return result;
         } else if (this.type === "highlight") {
             result = view.unhighlight(this.cfiRange);
         } else if (this.type === "underline") {
@@ -104,6 +109,7 @@ class Annotation {
         this.mark = undefined;
         /**
          * @event detach
+         * @param {boolean} result
          * @memberof Annotation
          */
         this.emit(EVENTS.ANNOTATION.DETACH, result);
@@ -119,4 +125,4 @@ class Annotation {
 
 EventEmitter(Annotation.prototype);
 
-export default Annotation
+export default Annotation;
