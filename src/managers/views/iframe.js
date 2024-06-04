@@ -870,10 +870,11 @@ class IframeView {
 	/**
 	 * unhighlight
 	 * @param {string} cfiRange 
+	 * @returns {boolean}
 	 */
 	unhighlight(cfiRange) {
 
-		let item;
+		let item, result = false;
 		if (cfiRange in this.highlights) {
 			item = this.highlights[cfiRange];
 			this.pane.removeMark(item.mark);
@@ -884,16 +885,19 @@ class IframeView {
 				};
 			});
 			delete this.highlights[cfiRange];
+			result = true;
 		}
+		return result;
 	}
 
 	/**
 	 * ununderline
 	 * @param {string} cfiRange 
+	 * @returns {boolean}
 	 */
 	ununderline(cfiRange) {
 
-		let item;
+		let item, result = false;
 		if (cfiRange in this.underlines) {
 			item = this.underlines[cfiRange];
 			this.pane.removeMark(item.mark);
@@ -904,16 +908,19 @@ class IframeView {
 				};
 			});
 			delete this.underlines[cfiRange];
+			result = true;
 		}
+		return result;
 	}
 
 	/**
 	 * unmark
 	 * @param {string} cfiRange 
+	 * @returns {boolean}
 	 */
 	unmark(cfiRange) {
 
-		let item;
+		let item, result = false;
 		if (cfiRange in this.marks) {
 			item = this.marks[cfiRange];
 			this.element.removeChild(item.element);
@@ -924,7 +931,9 @@ class IframeView {
 				};
 			});
 			delete this.marks[cfiRange];
+			result = true;
 		}
+		return result;
 	}
 
 	/**
