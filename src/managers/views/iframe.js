@@ -815,6 +815,8 @@ class IframeView {
 		const emitter = (e) => {
 			/**
 			 * @event markClicked
+			 * @param {string} cfiRange
+			 * @param {object} data
 			 * @memberof IframeView
 			 */
 			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
