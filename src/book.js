@@ -14,11 +14,9 @@ import Archive from "./archive";
 import request from "./utils/request";
 import EpubCFI from "./epubcfi";
 import Store from "./store";
-import DisplayOptions from "./displayoptions";
 import { EPUBJS_VERSION, EVENTS } from "./utils/constants";
 
 const CONTAINER_PATH = "META-INF/container.xml";
-const IBOOKS_DISPLAY_OPTIONS_PATH = "META-INF/com.apple.ibooks.display-options.xml";
 const INPUT_TYPE = {
 	BINARY: "binary",
 	BASE64: "base64",
@@ -91,9 +89,8 @@ class Book {
 			manifest: new defer(),
 			metadata: new defer(),
 			pageList: new defer(),
-			navigation: new defer(),
 			resources: new defer(),
-			displayOptions: new defer()
+			navigation: new defer()
 		};
 
 		this.loaded = {
@@ -102,9 +99,8 @@ class Book {
 			manifest: this.loading.manifest.promise,
 			metadata: this.loading.metadata.promise,
 			pageList: this.loading.pageList.promise,
-			navigation: this.loading.navigation.promise,
 			resources: this.loading.resources.promise,
-			displayOptions: this.loading.displayOptions.promise
+			navigation: this.loading.navigation.promise
 		};
 		/**
 		 * @member {promise} ready returns after the book is loaded and parsed
@@ -117,8 +113,7 @@ class Book {
 			this.loaded.metadata,
 			this.loaded.cover,
 			this.loaded.navigation,
-			this.loaded.resources,
-			this.loaded.displayOptions
+			this.loaded.resources
 		]);
 		/**
 		 * Queue for methods used before opening
@@ -211,12 +206,6 @@ class Book {
 		 * @readonly
 		 */
 		this.packaging = undefined;
-		/**
-		 * @member {DisplayOptions} displayOptions
-		 * @memberof DisplayOptions
-		 * @readonly
-		 */
-		this.displayOptions = undefined;
 
 		// this.toc = undefined;
 		if (this.settings.store) {
@@ -455,26 +444,14 @@ class Book {
 	 * @param {Packaging} packaging object
 	 * @private
 	 */
-	unpack(packaging) {
+	async unpack(packaging) {
 
 		this.package = packaging; //TODO: deprecated this
 
-		if (this.packaging.metadata.layout === "") {
-			// rendition:layout not set - check display options if book is pre-paginated
-			this.load(this.url.resolve(IBOOKS_DISPLAY_OPTIONS_PATH)).then((xml) => {
-				this.displayOptions = new DisplayOptions(xml);
-				this.loading.displayOptions.resolve(this.displayOptions);
-			}).catch((err) => {
-				this.displayOptions = new DisplayOptions();
-				this.loading.displayOptions.resolve(this.displayOptions);
-				console.error(err.message);
-			});
-		} else {
-			this.displayOptions = new DisplayOptions();
-			this.loading.displayOptions.resolve(this.displayOptions);
-		}
-
-		this.spine.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
+		this.spine.unpack(this.packaging,
+			this.resolve.bind(this),
+			this.canonical.bind(this)
+		);
 
 		this.resources = new Resources(this.packaging.manifest, {
 			archive: this.archive,
@@ -501,19 +478,14 @@ class Book {
 
 		this.isOpen = true;
 
-		if (this.archived || this.settings.replacements && this.settings.replacements !== "none") {
+		if (this.archived ||
+			this.settings.replacements &&
+			this.settings.replacements !== "none") {
 			this.replacements().then(() => {
-				this.loaded.displayOptions.then(() => {
-					this.opening.resolve(this);
-				});
-			}).catch((err) => {
-				console.error(err.message);
-			});
-		} else {
-			// Resolve book opened promise
-			this.loaded.displayOptions.then(() => {
 				this.opening.resolve(this);
-			});
+			}).catch((err) => console.error(err.message));
+		} else {
+			this.opening.resolve(this);
 		}
 	}
 
@@ -755,7 +727,6 @@ class Book {
 		this.container && this.container.destroy();
 		this.packaging && this.packaging.destroy();
 		this.rendition && this.rendition.destroy();
-		this.displayOptions && this.displayOptions.destroy();
 
 		this.spine = undefined;
 		this.locations = undefined;
