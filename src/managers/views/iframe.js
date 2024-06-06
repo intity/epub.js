@@ -3,7 +3,9 @@ import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
 import { extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl } from "../../utils/core";
-import { Pane, Highlight, Underline } from "marks-pane";
+import Pane from "../../marks-pane/pane";
+import Highlight from "../../marks-pane/highlight";
+import Underline from "../../marks-pane/underline";
 
 const AXIS_H = "horizontal";
 const AXIS_V = "vertical";
