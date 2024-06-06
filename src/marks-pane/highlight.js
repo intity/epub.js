@@ -58,13 +58,13 @@ class Highlight extends Mark {
 
         this.clear();
 
-        const ranges = this.range.getClientRects();
+        const rects = this.range.getClientRects();
         const offset = this.element.getBoundingClientRect();
         const container = this.container.getBoundingClientRect();
 
-        for (let i = 0, len = ranges.length; i < len; i++) {
+        for (let i = 0, len = rects.length; i < len; i++) {
 
-            const r = ranges[i];
+            const r = rects[i];
             const rect = document.createElementNS(NS_URI, "rect");
             rect.setAttribute("x", r.left - offset.left + container.left);
             rect.setAttribute("y", r.top - offset.top + container.top);
