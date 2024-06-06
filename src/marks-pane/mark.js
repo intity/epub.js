@@ -49,29 +49,6 @@ class Mark {
      * @abstract
      */
     render() { }
-
-    dispatchEvent(e) {
-
-        if (this.element) {
-            this.element.dispatchEvent(e);
-        }
-    }
-
-    getBoundingClientRect() {
-
-        return this.element.getBoundingClientRect();
-    }
-
-    getClientRects() {
-
-        const rects = [];
-        let el = this.element.firstChild;
-        while (el) {
-            rects.push(el.getBoundingClientRect());
-            el = el.nextSibling;
-        }
-        return rects;
-    }
 }
 
 export default Mark;
