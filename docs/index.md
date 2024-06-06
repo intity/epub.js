@@ -123,6 +123,12 @@
         - [constants](API/utils/constants.md) `from ../../utils/constants`
             - EVENTS
         - [Contents](API/contents.md) `from ../../contents`
+        - [Marks](API/marks-pane/marks.md) `from ../../marks-pane/marks`
+            - [proxyMouse](API/marks-pane/events.md) `from ./events`
+        - [Highlight](API/marks-pane/highlight.md) `from ../../marks-pane/highlight`
+            - [Mark](API/marks-pane/mark.md) `from ./mark`
+        - [Underline](API/marks-pane/underline.md) `from ../../marks-pane/underline`
+            - [Highlight](API/marks-pane/highlight.md)
         - [core](API/utils/core.md) `from ../../utils/core`
             - createBlobUrl
             - borders
