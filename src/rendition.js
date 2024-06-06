@@ -199,9 +199,8 @@ class Rendition {
 
 		const metadata = this.book.package.metadata;
 		const prePaginated = metadata.layout === "pre-paginated";
-		const fixedLayout = this.book.displayOptions.fixedLayout === "true";
 
-		if (!this.settings.layout && (prePaginated || fixedLayout)) {
+		if (!this.settings.layout && prePaginated) {
 			this.settings.layout = "pre-paginated";
 		}
 

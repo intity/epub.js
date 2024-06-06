@@ -20,6 +20,7 @@ Does Not Implement:
     * _instance_
         * [.collapse([toStart])](#EpubCFI+collapse)
         * [.compare(cfiOne, cfiTwo)](#EpubCFI+compare) ⇒ <code>number</code>
+        * [.generateChapterComponent(spineNodeIndex, position, [id])](#EpubCFI+generateChapterComponent) ⇒ <code>string</code>
         * [.fromNode(node, base, [ignoreClass])](#EpubCFI+fromNode) ⇒ [<code>EpubCFI</code>](#EpubCFI)
         * [.fromRange(range, base, [ignoreClass])](#EpubCFI+fromRange) ⇒ [<code>EpubCFI</code>](#EpubCFI)
         * [.isCfiString(str)](#EpubCFI+isCfiString) ⇒ <code>boolean</code>
@@ -70,6 +71,20 @@ Compare which of two CFIs is earlier in the text
 | --- | --- |
 | cfiOne | <code>string</code> \| [<code>EpubCFI</code>](#EpubCFI) | 
 | cfiTwo | <code>string</code> \| [<code>EpubCFI</code>](#EpubCFI) | 
+
+<a name="EpubCFI+generateChapterComponent"></a>
+
+## epubCFI.generateChapterComponent(spineNodeIndex, position, [id]) ⇒ <code>string</code>
+Generate chapter component
+
+**Kind**: instance method of [<code>EpubCFI</code>](#EpubCFI)  
+**Returns**: <code>string</code> - EpubCFI string format  
+
+| Param | Type |
+| --- | --- |
+| spineNodeIndex | <code>number</code> | 
+| position | <code>number</code> | 
+| [id] | <code>string</code> | 
 
 <a name="EpubCFI+fromNode"></a>
 

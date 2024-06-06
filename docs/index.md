@@ -16,7 +16,6 @@
         - EPUBJS_VERSION
         - EVENTS
     - [Container](API/container.md)
-    - [DisplayOptions](API/displayoptions.md)
     - [Locations](API/locations.md)
     - [Navigation](API/navigation.md)
     - [Packaging](API/packaging.md)

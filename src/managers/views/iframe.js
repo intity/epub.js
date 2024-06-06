@@ -3,7 +3,9 @@ import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
 import { extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl } from "../../utils/core";
-import { Pane, Highlight, Underline } from "marks-pane";
+import Marks from "../../marks-pane/marks";
+import Highlight from "../../marks-pane/highlight";
+import Underline from "../../marks-pane/underline";
 
 const AXIS_H = "horizontal";
 const AXIS_V = "vertical";
@@ -72,10 +74,12 @@ class IframeView {
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			this.updateLayout();
 		});
-		this.pane = undefined;
-		this.highlights = {};
-		this.underlines = {};
-		this.marks = {};
+		/**
+		 * @member {Marks} marks
+		 * @memberof IframeView
+		 * @readonly
+		 */
+		this.marks = null;
 		this.setAxis(this.settings.axis);
 	}
 
@@ -187,11 +191,21 @@ class IframeView {
 			});
 
 		}, (err) => {
+			/**
+			 * @event loaderror
+			 * @param {*} err
+			 * @memberof IframeView
+			 */
 			this.emit(EVENTS.VIEWS.LOAD_ERROR, err);
 			return new Promise((resolve, reject) => {
 				reject(err);
 			});
 		}).then(() => {
+			/**
+			 * @event rendered
+			 * @param {Section} section
+			 * @memberof IframeView
+			 */
 			this.emit(EVENTS.VIEWS.RENDERED, this.section);
 		});
 	}
@@ -221,7 +235,7 @@ class IframeView {
 	 * @param {number} [height] 
 	 */
 	size(width, height) {
-		
+
 		width = width || this.layout.width;
 		height = height || this.layout.height;
 
@@ -359,17 +373,12 @@ class IframeView {
 			heightDelta: this.prevBounds ? height - this.prevBounds.height : height,
 		};
 
-		this.pane && this.pane.render();
-
-		requestAnimationFrame(() => {
-			for (let m in this.marks) {
-				if (this.marks.hasOwnProperty(m)) {
-					const mark = this.marks[m];
-					this.placeMark(mark.element, mark.range);
-				}
-			}
-		});
-
+		this.marks && this.marks.render();
+		/**
+		 * @event resized
+		 * @param {object} size
+		 * @memberof IframeView
+		 */
 		this.emit(EVENTS.VIEWS.RESIZED, size);
 		this.prevBounds = size;
 		this.elementBounds = bounds(this.element);
@@ -518,7 +527,7 @@ class IframeView {
 
 	/**
 	 * display
-	 * @param {function} request 
+	 * @param {method} request 
 	 * @returns {Promise} displayed promise
 	 */
 	display(request) {
@@ -528,7 +537,10 @@ class IframeView {
 		if (this.displayed === false) {
 
 			this.render(request).then(() => {
-
+				/**
+				 * @event displayed
+				 * @memberof IframeView
+				 */
 				this.emit(EVENTS.VIEWS.DISPLAYED);
 				this.displayed = true;
 				displayed.resolve(this);
@@ -558,7 +570,11 @@ class IframeView {
 			this.iframe.offsetWidth;
 			this.iframe.style.transform = null;
 		}
-
+		/**
+		 * @event shown
+		 * @param {IframeView} view
+		 * @memberof IframeView
+		 */
 		this.emit(EVENTS.VIEWS.SHOWN, this);
 	}
 
@@ -569,8 +585,12 @@ class IframeView {
 
 		this.element.style.visibility = "hidden";
 		this.iframe.style.visibility = "hidden";
-
 		this.stopExpanding = true;
+		/**
+		 * @event hidden
+		 * @param {IframeView} view
+		 * @memberof IframeView
+		 */
 		this.emit(EVENTS.VIEWS.HIDDEN, this);
 	}
 
@@ -627,42 +647,48 @@ class IframeView {
 
 	/**
 	 * highlight
-	 * @param {string|EpubCFI} cfiRange 
+	 * @param {string} cfiRange 
 	 * @param {object} [data={}] 
-	 * @param {function} cb callback function
+	 * @param {method} [cb=null] callback function
 	 * @param {string} [className='epubjs-hl'] 
 	 * @param {object} [styles={}] 
 	 * @returns {object}
 	 */
-	highlight(cfiRange, data = {}, cb, className = "epubjs-hl", styles = {}) {
+	highlight(cfiRange, data = {}, cb = null, className = "epubjs-hl", styles = {}) {
 
 		if (!this.contents) {
 			return;
 		}
+
+		data["epubcfi"] = cfiRange;
+
+		if (this.marks === null) {
+			this.marks = new Marks(this.iframe, this.element);
+		}
+
 		const attributes = Object.assign({
 			"fill": "yellow",
 			"fill-opacity": "0.3",
 			"mix-blend-mode": "multiply"
 		}, styles);
-		const range = this.contents.range(cfiRange);
-		const emitter = () => {
+		const emitter = (e) => {
+			/**
+			 * @event markClicked
+			 * @param {string} cfiRange
+			 * @param {object} data
+			 * @memberof IframeView
+			 */
 			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 		};
-
-		data["epubcfi"] = cfiRange;
-
-		if (!this.pane) {
-			this.pane = new Pane(this.iframe, this.element);
-		}
-
-		const m = new Highlight(range, className, data, attributes);
-		const h = this.pane.addMark(m);
-
-		this.highlights[cfiRange] = {
-			"mark": h,
-			"element": h.element,
-			"listeners": [emitter, cb]
-		};
+		const key = encodeURI("epubjs-hl:" + cfiRange);
+		const range = this.contents.range(cfiRange);
+		const m = new Highlight(range, {
+			className,
+			data,
+			attributes,
+			listeners: [emitter, cb]
+		});
+		const h = this.marks.appendMark(key, m);
 
 		h.element.setAttribute("ref", className);
 		h.element.addEventListener("click", emitter);
@@ -672,39 +698,54 @@ class IframeView {
 			h.element.addEventListener("click", cb);
 			h.element.addEventListener("touchstart", cb);
 		}
+
 		return h;
 	}
 
 	/**
 	 * underline
-	 * @param {*} cfiRange 
-	 * @param {*} [data={}] 
-	 * @param {*} cb 
-	 * @param {*} [className='epubjs-ul'] 
-	 * @param {*} [styles={}] 
+	 * @param {string} cfiRange 
+	 * @param {object} [data={}] 
+	 * @param {method} [cb=null]
+	 * @param {string} [className='epubjs-ul'] 
+	 * @param {object} [styles={}] 
 	 * @returns {object}
 	 */
-	underline(cfiRange, data = {}, cb, className = "epubjs-ul", styles = {}) {
+	underline(cfiRange, data = {}, cb = null, className = "epubjs-ul", styles = {}) {
 
 		if (!this.contents) {
 			return;
 		}
-		const attributes = Object.assign({ "stroke": "black", "stroke-opacity": "0.3", "mix-blend-mode": "multiply" }, styles);
-		let range = this.contents.range(cfiRange);
-		let emitter = () => {
-			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
-		};
 
 		data["epubcfi"] = cfiRange;
 
-		if (!this.pane) {
-			this.pane = new Pane(this.iframe, this.element);
+		if (this.marks === null) {
+			this.marks = new Marks(this.iframe, this.element);
 		}
 
-		let m = new Underline(range, className, data, attributes);
-		let h = this.pane.addMark(m);
-
-		this.underlines[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
+		const attributes = Object.assign({
+			"stroke": "black",
+			"stroke-opacity": "0.3",
+			"mix-blend-mode": "multiply"
+		}, styles);
+		const emitter = (e) => {
+			/**
+			 * @event markClicked
+			 * @param {string} cfiRange
+			 * @param {object} data
+			 * @memberof IframeView
+			 */
+			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
+		};
+		const key = encodeURI("epubjs-ul:" + cfiRange);
+		const range = this.contents.range(cfiRange);
+		const m = new Underline(range, {
+			className,
+			data,
+			attributes,
+			listeners: [emitter, cb]
+		});
+		const h = this.marks.appendMark(key, m);
 
 		h.element.setAttribute("ref", className);
 		h.element.addEventListener("click", emitter);
@@ -718,162 +759,49 @@ class IframeView {
 	}
 
 	/**
-	 * mark
-	 * @param {*} cfiRange 
-	 * @param {*} [data={}] 
-	 * @param {*} cb 
-	 * @returns {object}
-	 */
-	mark(cfiRange, data = {}, cb) {
-
-		if (!this.contents) {
-			return;
-		}
-
-		if (cfiRange in this.marks) {
-			let item = this.marks[cfiRange];
-			return item;
-		}
-
-		let range = this.contents.range(cfiRange);
-		if (!range) {
-			return;
-		}
-		let container = range.commonAncestorContainer;
-		let parent = (container.nodeType === 1) ? container : container.parentNode;
-
-		let emitter = (e) => {
-			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
-		};
-
-		if (range.collapsed && container.nodeType === 1) {
-			range = new Range();
-			range.selectNodeContents(container);
-		} else if (range.collapsed) { // Webkit doesn't like collapsed ranges
-			range = new Range();
-			range.selectNodeContents(parent);
-		}
-
-		let mark = this.document.createElement("a");
-		mark.setAttribute("ref", "epubjs-mk");
-		mark.style.position = "absolute";
-
-		mark.dataset["epubcfi"] = cfiRange;
-
-		if (data) {
-			Object.keys(data).forEach((key) => {
-				mark.dataset[key] = data[key];
-			});
-		}
-
-		if (cb) {
-			mark.addEventListener("click", cb);
-			mark.addEventListener("touchstart", cb);
-		}
-
-		mark.addEventListener("click", emitter);
-		mark.addEventListener("touchstart", emitter);
-
-		this.placeMark(mark, range);
-
-		this.element.appendChild(mark);
-
-		this.marks[cfiRange] = { "element": mark, "range": range, "listeners": [emitter, cb] };
-
-		return parent;
-	}
-
-	/**
-	 * placeMark
-	 * @param {*} element 
-	 * @param {*} range 
-	 */
-	placeMark(element, range) {
-
-		let top, right;
-
-		if (this.layout.name === "pre-paginated" ||
-			this.settings.axis !== AXIS_H) {
-			const pos = range.getBoundingClientRect();
-			top = pos.top;
-			right = pos.right;
-		} else {
-			// Element might break columns, so find the left most element
-			const rects = range.getClientRects();
-			let left;
-			for (let i = 0; i != rects.length; i++) {
-				const rect = rects[i];
-				if (!left || rect.left < left) {
-					left = rect.left;
-					// right = rect.right;
-					right = Math.ceil(left / this.layout.pageWidth) * this.layout.pageWidth - (this.layout.gap / 2);
-					top = rect.top;
-				}
-			}
-		}
-
-		element.style.top = `${top}px`;
-		element.style.left = `${right}px`;
-	}
-
-	/**
 	 * unhighlight
-	 * @param {*} cfiRange 
+	 * @param {string} cfiRange 
+	 * @returns {boolean}
 	 */
 	unhighlight(cfiRange) {
 
-		let item;
-		if (cfiRange in this.highlights) {
-			item = this.highlights[cfiRange];
-			this.pane.removeMark(item.mark);
-			item.listeners.forEach((l) => {
+		const key = encodeURI("epubjs-hl:" + cfiRange);
+		const mark = this.marks.get(key);
+		let result = false;
+		if (mark) {
+			mark.listeners.forEach((l) => {
 				if (l) {
-					item.element.removeEventListener("click", l);
-					item.element.removeEventListener("touchstart", l);
+					mark.element.removeEventListener("click", l);
+					mark.element.removeEventListener("touchstart", l);
 				};
 			});
-			delete this.highlights[cfiRange];
+			this.marks.removeMark(key);
+			result = true;
 		}
+		return result;
 	}
 
 	/**
 	 * ununderline
-	 * @param {*} cfiRange 
+	 * @param {string} cfiRange 
+	 * @returns {boolean}
 	 */
 	ununderline(cfiRange) {
 
-		let item;
-		if (cfiRange in this.underlines) {
-			item = this.underlines[cfiRange];
-			this.pane.removeMark(item.mark);
-			item.listeners.forEach((l) => {
+		const key = encodeURI("epubjs-ul:" + cfiRange);
+		const mark = this.marks.get(key);
+		let result = false;
+		if (mark) {
+			mark.listeners.forEach((l) => {
 				if (l) {
-					item.element.removeEventListener("click", l);
-					item.element.removeEventListener("touchstart", l);
+					mark.element.removeEventListener("click", l);
+					mark.element.removeEventListener("touchstart", l);
 				};
 			});
-			delete this.underlines[cfiRange];
+			this.marks.removeMark(key);
+			result = true;
 		}
-	}
-
-	/**
-	 * unmark
-	 * @param {*} cfiRange 
-	 */
-	unmark(cfiRange) {
-
-		let item;
-		if (cfiRange in this.marks) {
-			item = this.marks[cfiRange];
-			this.element.removeChild(item.element);
-			item.listeners.forEach((l) => {
-				if (l) {
-					item.element.removeEventListener("click", l);
-					item.element.removeEventListener("touchstart", l);
-				};
-			});
-			delete this.marks[cfiRange];
-		}
+		return result;
 	}
 
 	/**
@@ -881,17 +809,13 @@ class IframeView {
 	 */
 	destroy() {
 
-		for (let cfiRange in this.highlights) {
-			this.unhighlight(cfiRange);
-		}
-
-		for (let cfiRange in this.underlines) {
-			this.ununderline(cfiRange);
-		}
-
-		for (let cfiRange in this.marks) {
-			this.unmark(cfiRange);
-		}
+		this.marks.forEach((mark, key) => {
+			if (mark instanceof Highlight) {
+				this.unhighlight(mark.data["epubcfi"]);
+			} else {
+				this.ununderline(mark.data["epubcfi"]);
+			}
+		});
 
 		if (this.blobUrl) {
 			revokeBlobUrl(this.blobUrl);
@@ -906,9 +830,9 @@ class IframeView {
 			this.stopExpanding = true;
 			this.element.removeChild(this.iframe);
 
-			if (this.pane) {
-				this.pane.element.remove();
-				this.pane = undefined;
+			if (this.marks) {
+				this.marks.element.remove();
+				this.marks = undefined;
 			}
 
 			this.iframe = undefined;
