@@ -13506,7 +13506,7 @@ class EpubCFI {
       terminalB = cfiTwo.path.terminal;
     }
     // Compare Each Step in the First item
-    for (var i = 0; i < stepsA.length; i++) {
+    for (let i = 0; i < stepsA.length; i++) {
       if (!stepsA[i]) return -1;
       if (!stepsB[i]) return 1;
       if (stepsA[i].index > stepsB[i].index) return 1;
@@ -13522,17 +13522,16 @@ class EpubCFI {
   }
 
   /**
-   * generateChapterComponent (unused)
-   * @param {number} _spineNodeIndex 
-   * @param {number} _pos 
+   * Generate chapter component
+   * @param {number} spineNodeIndex
+   * @param {number} position
    * @param {string} [id] 
    * @returns {string} EpubCFI string format
-   * @private
    */
-  generateChapterComponent(_spineNodeIndex, _pos, id) {
-    const pos = parseInt(_pos);
-    const spineNodeIndex = (_spineNodeIndex + 1) * 2;
-    let cfi = "/" + spineNodeIndex + "/";
+  generateChapterComponent(spineNodeIndex, position, id) {
+    const pos = parseInt(position);
+    const index = (spineNodeIndex + 1) * 2;
+    let cfi = "/" + index + "/";
     cfi += (pos + 1) * 2;
     if (id) cfi += "[" + id + "]";
     return cfi;
@@ -14887,15 +14886,28 @@ class Spine {
     this.spineItems = [];
     this.spineByHref = {};
     this.spineById = {};
-    this.hooks = {};
-    this.hooks.serialize = new hook();
-    this.hooks.content = new hook();
+    /**
+     * @member {object} hooks
+     * @property {Hook} content
+     * @property {Hook} serialize
+     * @memberof Spine
+     * @readonly
+     */
+    this.hooks = {
+      content: new hook(),
+      serialize: new hook()
+    };
 
     // Register replacements
     this.hooks.content.register(replaceBase);
-    this.hooks.content.register(replaceCanonical);
     this.hooks.content.register(replaceMeta);
+    this.hooks.content.register(replaceCanonical);
     this.epubcfi = new src_epubcfi();
+    /**
+     * @member {boolean} loaded
+     * @memberof Spine
+     * @readonly
+     */
     this.loaded = false;
     this.items = undefined;
     this.manifest = undefined;
@@ -14906,19 +14918,18 @@ class Spine {
 
   /**
    * Unpack items from a opf into spine items
-   * @param  {Packaging} _package
-   * @param  {method} resolver URL resolver
-   * @param  {method} canonical Resolve canonical url
+   * @param {Packaging} packege
+   * @param {method} resolver URL resolver
+   * @param {method} canonical Resolve canonical url
    */
-  unpack(_package, resolver, canonical) {
-    this.items = _package.spine;
-    this.manifest = _package.manifest;
-    this.spineNodeIndex = _package.spineNodeIndex;
-    this.baseUrl = _package.baseUrl || _package.basePath || "";
+  unpack(packege, resolver, canonical) {
+    this.items = packege.spine;
+    this.manifest = packege.manifest;
+    this.spineNodeIndex = packege.spineNodeIndex;
+    this.baseUrl = packege.baseUrl || packege.basePath || "";
     this.length = this.items.length;
     this.items.forEach((item, index) => {
-      var manifestItem = this.manifest[item.idref];
-      var spineItem;
+      const manifestItem = this.manifest[item.idref];
       item.index = index;
       item.cfiBase = this.epubcfi.generateChapterComponent(this.spineNodeIndex, item.index, item.id);
       if (item.href) {
@@ -14964,7 +14975,7 @@ class Spine {
           return;
         };
       }
-      spineItem = new section(item, this.hooks);
+      const spineItem = new section(item, this.hooks);
       this.append(spineItem);
     });
     this.loaded = true;
@@ -14972,15 +14983,15 @@ class Spine {
 
   /**
    * Get an item from the spine
-   * @param  {string|number} [target]
-   * @return {Section} section
+   * @param {string|number} [target]
+   * @return {Section|null} section
    * @example spine.get();
    * @example spine.get(1);
    * @example spine.get("chap1.html");
    * @example spine.get("#id1234");
    */
   get(target) {
-    var index = 0;
+    let index = 0;
     if (typeof target === "undefined") {
       while (index < this.spineItems.length) {
         let next = this.spineItems[index];
@@ -15006,11 +15017,12 @@ class Spine {
 
   /**
    * Append a Section to the Spine
+   * @param {Section} section
+   * @returns {number} index
    * @private
-   * @param  {Section} section
    */
   append(section) {
-    var index = this.spineItems.length;
+    const index = this.spineItems.length;
     section.index = index;
     this.spineItems.push(section);
 
@@ -15024,9 +15036,10 @@ class Spine {
   }
 
   /**
-   * Prepend a Section to the Spine
+   * Prepend a Section to the Spine (unused)
+   * @param {Section} section
+   * @returns {number}
    * @private
-   * @param  {Section} section
    */
   prepend(section) {
     // var index = this.spineItems.unshift(section);
@@ -15034,23 +15047,19 @@ class Spine {
     this.spineById[section.idref] = 0;
 
     // Re-index
-    this.spineItems.forEach(function (item, index) {
+    this.spineItems.forEach((item, index) => {
       item.index = index;
     });
     return 0;
   }
 
-  // insert(section, index) {
-  //
-  // };
-
   /**
-   * Remove a Section from the Spine
+   * Remove a Section from the Spine (unused)
+   * @param {Section} section
    * @private
-   * @param  {Section} section
    */
   remove(section) {
-    var index = this.spineItems.indexOf(section);
+    const index = this.spineItems.indexOf(section);
     if (index > -1) {
       delete this.spineByHref[section.href];
       delete this.spineById[section.idref];
@@ -15073,7 +15082,7 @@ class Spine {
   first() {
     let index = 0;
     do {
-      let next = this.get(index);
+      const next = this.get(index);
       if (next && next.linear) {
         return next;
       }
@@ -15088,13 +15097,17 @@ class Spine {
   last() {
     let index = this.spineItems.length - 1;
     do {
-      let prev = this.get(index);
+      const prev = this.get(index);
       if (prev && prev.linear) {
         return prev;
       }
       index -= 1;
     } while (index >= 0);
   }
+
+  /**
+   * destroy
+   */
   destroy() {
     this.each(section => section.destroy());
     this.spineItems = undefined;
@@ -23599,127 +23612,95 @@ event_emitter_default()(Rendition.prototype);
 
 
 
-/**
- * request
- * @param {*} url 
- * @param {*} type 
- * @param {*} withCredentials 
- * @param {*} headers 
- * @returns {defer}
- */
-function request(url, type, withCredentials, headers) {
-  var supportsURL = typeof window != "undefined" ? window.URL : false; // TODO: fallback for url if window isn't defined
-  var BLOB_RESPONSE = supportsURL ? "blob" : "arraybuffer";
-  var deferred = new defer();
-  var xhr = new XMLHttpRequest();
-
-  //-- Check from PDF.js:
-  //   https://github.com/mozilla/pdf.js/blob/master/web/compatibility.js
-  var xhrPrototype = XMLHttpRequest.prototype;
-  var header;
-  if (!("overrideMimeType" in xhrPrototype)) {
-    // IE10 might have response, but not overrideMimeType
-    Object.defineProperty(xhrPrototype, "overrideMimeType", {
-      value: function xmlHttpRequestOverrideMimeType() {}
+// TODO: fallback for url if window isn't defined
+const SUPPORTS_URL = window && window.URL ? true : false;
+const BLOB_RESPONSE = SUPPORTS_URL ? "blob" : "arraybuffer";
+const read = (e, def) => {
+  const xhr = e.target;
+  if (xhr.status === 403) {
+    def.reject({
+      message: "Forbidden",
+      responseURL: xhr.responseURL,
+      status: xhr.status,
+      stack: new Error().stack
     });
   }
+};
+const load = (e, type, def) => {
+  const xhr = e.target;
+  let r;
+  if (xhr.responseType === "document") {
+    if (xhr.response === null && xhr.responseXML === null) {
+      def.reject({
+        message: "Empty Response",
+        status: xhr.status,
+        stack: new Error().stack
+      });
+    } else if (xhr.responseXML) {
+      r = xhr.responseXML;
+    } else if (isXml(type)) {
+      r = parse(xhr.response, "text/xml");
+    } else if (type === "xhtml") {
+      r = parse(xhr.response, "application/xhtml+xml");
+    } else if (type == "html" || type == "htm") {
+      r = parse(xhr.response, "text/html");
+    }
+  } else if (xhr.responseType === "json") {
+    r = JSON.parse(xhr.response);
+  } else if (xhr.responseType === "blob") {
+    if (SUPPORTS_URL) {
+      r = xhr.response;
+    } else {
+      // Safari doesn't support responseType blob, 
+      // so create a blob from arraybuffer
+      r = new Blob([xhr.response]);
+    }
+  } else {
+    r = xhr.response;
+  }
+  def.resolve(r);
+};
+
+/**
+ * request
+ * @param {string|ArrayBuffer} url 
+ * @param {string} [type] 
+ * @param {boolean} [withCredentials=false] 
+ * @param {object[]} [headers=[]] 
+ * @returns {Promise}
+ */
+const request = (url, type, withCredentials = false, headers = []) => {
+  const def = new defer();
+  const xhr = new XMLHttpRequest();
+  type = type || new utils_path(url).extension;
   if (withCredentials) {
     xhr.withCredentials = true;
   }
-  xhr.onreadystatechange = handler;
-  xhr.onerror = err;
-  xhr.open("GET", url, true);
-  for (header in headers) {
-    xhr.setRequestHeader(header, headers[header]);
-  }
-  if (type == "json") {
+  if (isXml(type)) {
+    xhr.responseType = "document";
+    xhr.overrideMimeType("text/xml"); // for OPF parsing
+  } else if (type === "xhtml") {
+    xhr.responseType = "document";
+  } else if (type == "html" || type == "htm") {
+    xhr.responseType = "document";
+  } else if (type == "binary") {
+    xhr.responseType = "arraybuffer";
+  } else if (type === "blob") {
+    xhr.responseType = BLOB_RESPONSE;
+  } else if (type === "json") {
+    xhr.responseType = "json";
     xhr.setRequestHeader("Accept", "application/json");
   }
-
-  // If type isn"t set, determine it from the file extension
-  if (!type) {
-    type = new utils_path(url).extension;
-  }
-  if (type == "blob") {
-    xhr.responseType = BLOB_RESPONSE;
-  }
-  if (isXml(type)) {
-    // xhr.responseType = "document";
-    xhr.overrideMimeType("text/xml"); // for OPF parsing
-  }
-  if (type == "xhtml") {
-    // xhr.responseType = "document";
-  }
-  if (type == "html" || type == "htm") {
-    // xhr.responseType = "document";
-  }
-  if (type == "binary") {
-    xhr.responseType = "arraybuffer";
+  xhr.onreadystatechange = e => read(e, def);
+  xhr.onload = e => load(e, type, def);
+  xhr.onerror = e => def.reject(e);
+  xhr.open("GET", url, true);
+  for (const header in headers) {
+    xhr.setRequestHeader(header, headers[header]);
   }
   xhr.send();
-  function err(e) {
-    deferred.reject(e);
-  }
-  function handler() {
-    if (this.readyState === XMLHttpRequest.DONE) {
-      var responseXML = false;
-      if (this.responseType === "" || this.responseType === "document") {
-        responseXML = this.responseXML;
-      }
-      if (this.status === 200 || this.status === 0 || responseXML) {
-        //-- Firefox is reporting 0 for blob urls
-        var r;
-        if (!this.response && !responseXML) {
-          deferred.reject({
-            status: this.status,
-            message: "Empty Response",
-            stack: new Error().stack
-          });
-          return deferred.promise;
-        }
-        if (this.status === 403) {
-          deferred.reject({
-            status: this.status,
-            response: this.response,
-            message: "Forbidden",
-            stack: new Error().stack
-          });
-          return deferred.promise;
-        }
-        if (responseXML) {
-          r = this.responseXML;
-        } else if (isXml(type)) {
-          // xhr.overrideMimeType("text/xml"); // for OPF parsing
-          // If this.responseXML wasn't set, try to parse using a DOMParser from text
-          r = parse(this.response, "text/xml");
-        } else if (type == "xhtml") {
-          r = parse(this.response, "application/xhtml+xml");
-        } else if (type == "html" || type == "htm") {
-          r = parse(this.response, "text/html");
-        } else if (type == "json") {
-          r = JSON.parse(this.response);
-        } else if (type == "blob") {
-          if (supportsURL) {
-            r = this.response;
-          } else {
-            //-- Safari doesn't support responseType blob, so create a blob from arraybuffer
-            r = new Blob([this.response]);
-          }
-        } else {
-          r = this.response;
-        }
-        deferred.resolve(r);
-      } else {
-        deferred.reject({
-          status: this.status,
-          message: this.response,
-          stack: new Error().stack
-        });
-      }
-    }
-  }
-  return deferred.promise;
-}
+  return def.promise;
+};
 /* harmony default export */ const utils_request = (request);
 // EXTERNAL MODULE: external "JSZip"
 var external_JSZip_ = __webpack_require__(6838);
@@ -23733,7 +23714,6 @@ var external_JSZip_default = /*#__PURE__*/__webpack_require__.n(external_JSZip_)
 
 /**
  * Handles Unzipping a requesting files from an Epub Archive
- * @class
  */
 class Archive {
   constructor() {
@@ -23757,55 +23737,55 @@ class Archive {
 
   /**
    * Open an archive
-   * @param  {binary} input
-   * @param  {boolean} [isBase64] tells JSZip if the input data is base64 encoded
+   * @param {binary} input
+   * @param {boolean} [isBase64] tells JSZip if the input data is base64 encoded
    * @return {Promise} zipfile
    */
   open(input, isBase64) {
     return this.zip.loadAsync(input, {
-      "base64": isBase64
+      base64: isBase64
     });
   }
 
   /**
    * Load and Open an archive
-   * @param  {string} zipUrl
-   * @param  {boolean} [isBase64] tells JSZip if the input data is base64 encoded
+   * @param {string} zipUrl
+   * @param {boolean} [isBase64] tells JSZip if the input data is base64 encoded
    * @return {Promise} zipfile
    */
-  openUrl(zipUrl, isBase64) {
-    return utils_request(zipUrl, "binary").then(function (data) {
+  async openUrl(zipUrl, isBase64) {
+    return utils_request(zipUrl, "binary").then(data => {
       return this.zip.loadAsync(data, {
-        "base64": isBase64
+        base64: isBase64
       });
-    }.bind(this));
+    });
   }
 
   /**
    * Request a url from the archive
-   * @param  {string} url  a url to request from the archive
-   * @param  {string} [type] specify the type of the returned result
-   * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
+   * @param {string} url  a url to request from the archive
+   * @param {string} [type] specify the type of the returned result
+   * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
    */
   request(url, type) {
-    var deferred = new defer();
-    var response;
-    var path = new utils_path(url);
+    const deferred = new defer();
+    const path = new utils_path(url);
 
     // If type isn't set, determine it from the file extension
     if (!type) {
       type = path.extension;
     }
+    let response;
     if (type == "blob") {
       response = this.getBlob(url);
     } else {
       response = this.getText(url);
     }
     if (response) {
-      response.then(function (r) {
-        let result = this.handleResponse(r, type);
+      response.then(r => {
+        const result = this.handleResponse(r, type);
         deferred.resolve(result);
-      }.bind(this));
+      });
     } else {
       deferred.reject({
         message: "File not found in the epub: " + url,
@@ -23817,21 +23797,21 @@ class Archive {
 
   /**
    * Handle the response from request
-   * @private
-   * @param  {any} response
-   * @param  {string} [type]
+   * @param {any} response
+   * @param {string} [type]
    * @return {any} the parsed result
+   * @private
    */
   handleResponse(response, type) {
-    var r;
-    if (type == "json") {
-      r = JSON.parse(response);
-    } else if (isXml(type)) {
+    let r;
+    if (isXml(type)) {
       r = parse(response, "text/xml");
-    } else if (type == "xhtml") {
+    } else if (type === "xhtml") {
       r = parse(response, "application/xhtml+xml");
     } else if (type == "html" || type == "htm") {
       r = parse(response, "text/html");
+    } else if (type === "json") {
+      r = JSON.parse(response);
     } else {
       r = response;
     }
@@ -23840,16 +23820,17 @@ class Archive {
 
   /**
    * Get a Blob from Archive by Url
-   * @param  {string} url
-   * @param  {string} [mimeType]
+   * @param {string} url
+   * @param {string} [mimeType]
    * @return {Blob}
    */
   getBlob(url, mimeType) {
-    var decodededUrl = window.decodeURIComponent(url.substr(1)); // Remove first slash
-    var entry = this.zip.file(decodededUrl);
+    const encodedUri = url.substring(1); // Remove first slash
+    const decodededUri = window.decodeURIComponent(encodedUri);
+    const entry = this.zip.file(decodededUri);
     if (entry) {
       mimeType = mimeType || mime.lookup(entry.name);
-      return entry.async("uint8array").then(function (uint8array) {
+      return entry.async("uint8array").then(uint8array => {
         return new Blob([uint8array], {
           type: mimeType
         });
@@ -23859,15 +23840,15 @@ class Archive {
 
   /**
    * Get Text from Archive by Url
-   * @param  {string} url
-   * @param  {string} [encoding]
+   * @param {string} url
    * @return {string}
    */
-  getText(url, encoding) {
-    var decodededUrl = window.decodeURIComponent(url.substr(1)); // Remove first slash
-    var entry = this.zip.file(decodededUrl);
+  getText(url) {
+    const encodedUri = url.substring(1); // Remove first slash
+    const decodededUri = window.decodeURIComponent(encodedUri);
+    const entry = this.zip.file(decodededUri);
     if (entry) {
-      return entry.async("string").then(function (text) {
+      return entry.async("string").then(text => {
         return text;
       });
     }
@@ -23875,16 +23856,17 @@ class Archive {
 
   /**
    * Get a base64 encoded result from Archive by Url
-   * @param  {string} url
-   * @param  {string} [mimeType]
+   * @param {string} url
+   * @param {string} [mimeType]
    * @return {string} base64 encoded
    */
   getBase64(url, mimeType) {
-    var decodededUrl = window.decodeURIComponent(url.substr(1)); // Remove first slash
-    var entry = this.zip.file(decodededUrl);
+    const encodedUri = url.substring(1); // Remove first slash
+    const decodededUri = window.decodeURIComponent(encodedUri);
+    const entry = this.zip.file(decodededUri);
     if (entry) {
       mimeType = mimeType || mime.lookup(entry.name);
-      return entry.async("base64").then(function (data) {
+      return entry.async("base64").then(data => {
         return "data:" + mimeType + ";base64," + data;
       });
     }
@@ -23892,39 +23874,33 @@ class Archive {
 
   /**
    * Create a Url from an unarchived item
-   * @param  {string} url
-   * @param  {object} [options.base64] use base64 encoding or blob url
+   * @param {string} url
+   * @param {object} [options] 
+   * @param {object} [options.base64] use base64 encoding or blob url
    * @return {Promise} url promise with Url string
    */
   createUrl(url, options) {
-    var deferred = new defer();
-    var _URL = window.URL || window.webkitURL || window.mozURL;
-    var tempUrl;
-    var response;
-    var useBase64 = options && options.base64;
+    const deferred = new defer();
+    const _URL = window.URL || window.webkitURL || window.mozURL;
+    const base64 = options && options.base64;
     if (url in this.urlCache) {
       deferred.resolve(this.urlCache[url]);
       return deferred.promise;
     }
-    if (useBase64) {
-      response = this.getBase64(url);
-      if (response) {
-        response.then(function (tempUrl) {
-          this.urlCache[url] = tempUrl;
-          deferred.resolve(tempUrl);
-        }.bind(this));
-      }
-    } else {
-      response = this.getBlob(url);
-      if (response) {
-        response.then(function (blob) {
-          tempUrl = _URL.createObjectURL(blob);
-          this.urlCache[url] = tempUrl;
-          deferred.resolve(tempUrl);
-        }.bind(this));
-      }
+    let response;
+    if (base64 && (response = this.getBase64(url))) {
+      response.then(tempUrl => {
+        this.urlCache[url] = tempUrl;
+        deferred.resolve(tempUrl);
+      });
+    } else if (response = this.getBlob(url)) {
+      response.then(blob => {
+        const tempUrl = _URL.createObjectURL(blob);
+        this.urlCache[url] = tempUrl;
+        deferred.resolve(tempUrl);
+      });
     }
-    if (!response) {
+    if (typeof response === "undefined") {
       deferred.reject({
         message: "File not found in the epub: " + url,
         stack: new Error().stack
@@ -23935,16 +23911,20 @@ class Archive {
 
   /**
    * Revoke Temp Url for a archive item
-   * @param  {string} url url of the item in the archive
+   * @param {string} url url of the item in the archive
    */
   revokeUrl(url) {
-    var _URL = window.URL || window.webkitURL || window.mozURL;
-    var fromCache = this.urlCache[url];
+    const _URL = window.URL || window.webkitURL || window.mozURL;
+    const fromCache = this.urlCache[url];
     if (fromCache) _URL.revokeObjectURL(fromCache);
   }
+
+  /**
+   * destroy
+   */
   destroy() {
-    var _URL = window.URL || window.webkitURL || window.mozURL;
-    for (let fromCache in this.urlCache) {
+    const _URL = window.URL || window.webkitURL || window.mozURL;
+    for (const fromCache in this.urlCache) {
       _URL.revokeObjectURL(fromCache);
     }
     this.zip = undefined;
@@ -24409,7 +24389,7 @@ class Book {
       options = url;
       url = undefined;
     }
-    this.settings = extend(this.settings || {}, {
+    this.settings = extend({
       requestMethod: undefined,
       requestCredentials: undefined,
       requestHeaders: undefined,
@@ -24418,16 +24398,19 @@ class Book {
       canonical: undefined,
       openAs: undefined,
       store: undefined
-    });
-    extend(this.settings, options);
-
-    // Promises
-    this.opening = new defer();
+    }, options || {});
+    this.opening = new defer(); // Promises
     /**
      * @member {promise} opened returns after the book is loaded
      * @memberof Book
+     * @readonly
      */
     this.opened = this.opening.promise;
+    /**
+     * @member {boolean} isOpen
+     * @memberof Book
+     * @readonly
+     */
     this.isOpen = false;
     this.loading = {
       manifest: new defer(),
@@ -24440,125 +24423,116 @@ class Book {
       displayOptions: new defer()
     };
     this.loaded = {
-      manifest: this.loading.manifest.promise,
-      spine: this.loading.spine.promise,
-      metadata: this.loading.metadata.promise,
       cover: this.loading.cover.promise,
-      navigation: this.loading.navigation.promise,
+      spine: this.loading.spine.promise,
+      manifest: this.loading.manifest.promise,
+      metadata: this.loading.metadata.promise,
       pageList: this.loading.pageList.promise,
+      navigation: this.loading.navigation.promise,
       resources: this.loading.resources.promise,
       displayOptions: this.loading.displayOptions.promise
     };
-
     /**
      * @member {promise} ready returns after the book is loaded and parsed
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.ready = Promise.all([this.loaded.manifest, this.loaded.spine, this.loaded.metadata, this.loaded.cover, this.loaded.navigation, this.loaded.resources, this.loaded.displayOptions]);
-
-    // Queue for methods used before opening
+    /**
+     * Queue for methods used before opening
+     * @member {boolean} isRendered
+     * @memberof Book
+     * @readonly
+     */
     this.isRendered = false;
-    // this._q = queue(this);
-
     /**
      * @member {method} request
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.request = this.settings.requestMethod || utils_request;
-
     /**
      * @member {Spine} spine
      * @memberof Book
+     * @readonly
      */
     this.spine = new spine();
-
     /**
      * @member {Locations} locations
      * @memberof Book
+     * @readonly
      */
     this.locations = new locations(this.spine, this.load.bind(this));
-
     /**
      * @member {Navigation} navigation
      * @memberof Book
+     * @readonly
      */
     this.navigation = undefined;
-
     /**
      * @member {PageList} pagelist
      * @memberof Book
+     * @readonly
      */
     this.pageList = undefined;
-
     /**
      * @member {Url} url
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.url = undefined;
-
     /**
      * @member {Path} path
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.path = undefined;
-
     /**
      * @member {boolean} archived
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.archived = false;
-
     /**
      * @member {Archive} archive
      * @memberof Book
      * @private
      */
     this.archive = undefined;
-
     /**
      * @member {Store} storage
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.storage = undefined;
-
     /**
      * @member {Resources} resources
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.resources = undefined;
-
     /**
      * @member {Rendition} rendition
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.rendition = undefined;
-
     /**
      * @member {Container} container
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.container = undefined;
-
     /**
      * @member {Packaging} packaging
      * @memberof Book
-     * @private
+     * @readonly
      */
     this.packaging = undefined;
-
     /**
      * @member {DisplayOptions} displayOptions
      * @memberof DisplayOptions
-     * @private
+     * @readonly
      */
     this.displayOptions = undefined;
 
@@ -24568,22 +24542,26 @@ class Book {
     }
     if (url) {
       this.open(url, this.settings.openAs).catch(error => {
-        var err = new Error("Cannot load book at " + url);
-        this.emit(EVENTS.BOOK.OPEN_FAILED, err);
+        /**
+         * @event openFailed
+         * @param {object} error
+         * @memberof Book
+         */
+        this.emit(EVENTS.BOOK.OPEN_FAILED, error);
       });
     }
   }
 
   /**
    * Open a epub or url
-   * @param {string | ArrayBuffer} input Url, Path or ArrayBuffer
+   * @param {string|ArrayBuffer} input Url, Path or ArrayBuffer
    * @param {string} [what="binary", "base64", "epub", "opf", "json", "directory"] force opening as a certain type
    * @returns {Promise} of when the book has been loaded
    * @example book.open("/path/to/book.epub")
    */
   open(input, what) {
-    var opening;
-    var type = what || this.determineType(input);
+    let opening;
+    const type = what || this.determineType(input);
     if (type === INPUT_TYPE.BINARY) {
       this.archived = true;
       this.url = new utils_url("/", "");
@@ -24611,12 +24589,12 @@ class Book {
 
   /**
    * Open an archived epub
-   * @private
-   * @param  {binary} data
-   * @param  {string} [encoding]
+   * @param {binary} data
+   * @param {string} [encoding]
    * @return {Promise}
+   * @private
    */
-  openEpub(data, encoding) {
+  async openEpub(data, encoding) {
     return this.unarchive(data, encoding || this.settings.encoding).then(() => {
       return this.openContainer(CONTAINER_PATH);
     }).then(packagePath => {
@@ -24626,9 +24604,9 @@ class Book {
 
   /**
    * Open the epub container
-   * @private
-   * @param  {string} url
+   * @param {string} url
    * @return {string} packagePath
+   * @private
    */
   openContainer(url) {
     return this.load(url).then(xml => {
@@ -24639,11 +24617,11 @@ class Book {
 
   /**
    * Open the Open Packaging Format Xml
-   * @private
-   * @param  {string} url
+   * @param {string} url
    * @return {Promise}
+   * @private
    */
-  openPackaging(url) {
+  async openPackaging(url) {
     this.path = new utils_path(url);
     return this.load(url).then(xml => {
       this.packaging = new packaging(xml);
@@ -24653,11 +24631,11 @@ class Book {
 
   /**
    * Open the manifest JSON
-   * @private
-   * @param  {string} url
+   * @param {string} url
    * @return {Promise}
+   * @private
    */
-  openManifest(url) {
+  async openManifest(url) {
     this.path = new utils_path(url);
     return this.load(url).then(json => {
       this.packaging = new packaging();
@@ -24669,10 +24647,10 @@ class Book {
   /**
    * Load a resource from the Book
    * @param  {string} path path to the resource to load
-   * @return {Promise}     returns a promise with the requested resource
+   * @return {Promise} returns a promise with the requested resource
    */
   load(path) {
-    var resolved = this.resolve(path);
+    const resolved = this.resolve(path);
     if (this.archived) {
       return this.archive.request(resolved);
     } else {
@@ -24682,19 +24660,17 @@ class Book {
 
   /**
    * Resolve a path to it's absolute position in the Book
-   * @param  {string} path
-   * @param  {boolean} [absolute] force resolving the full URL
-   * @return {string}          the resolved path string
+   * @param {string} path
+   * @param {boolean} [absolute] force resolving the full URL
+   * @return {string} the resolved path string
    */
   resolve(path, absolute) {
-    if (!path) {
-      return;
-    }
-    var resolved = path;
-    var isAbsolute = path.indexOf("://") > -1;
+    if (!path) return;
+    const isAbsolute = path.indexOf("://") > -1;
     if (isAbsolute) {
       return path;
     }
+    let resolved = path;
     if (this.path) {
       resolved = this.path.resolve(path);
     }
@@ -24706,14 +24682,12 @@ class Book {
 
   /**
    * Get a canonical link to a path
-   * @param  {string} path
+   * @param {string} path
    * @return {string} the canonical path string
    */
   canonical(path) {
-    var url = path;
-    if (!path) {
-      return "";
-    }
+    if (!path) return "";
+    let url = path;
     if (this.settings.canonical) {
       url = this.settings.canonical(path);
     } else {
@@ -24724,24 +24698,20 @@ class Book {
 
   /**
    * Determine the type of they input passed to open
+   * @param {string} input
+   * @return {string} values: `"binary"` OR `"directory"` OR `"epub"` OR `"opf"`
    * @private
-   * @param  {string} input
-   * @return {string}  binary | directory | epub | opf
    */
   determineType(input) {
-    var url;
-    var path;
-    var extension;
     if (this.settings.encoding === "base64") {
       return INPUT_TYPE.BASE64;
     }
     if (typeof input != "string") {
       return INPUT_TYPE.BINARY;
     }
-    url = new utils_url(input);
-    path = url.path();
-    extension = path.extension;
-
+    const url = new utils_url(input);
+    const path = url.path();
+    let extension = path.extension;
     // If there's a search string, remove it before determining type
     if (extension) {
       extension = extension.replace(/\?.*$/, "");
@@ -24776,6 +24746,7 @@ class Book {
       }).catch(err => {
         this.displayOptions = new displayoptions();
         this.loading.displayOptions.resolve(this.displayOptions);
+        console.error(err.message);
       });
     } else {
       this.displayOptions = new displayoptions();
@@ -24784,8 +24755,8 @@ class Book {
     this.spine.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
     this.resources = new resources(this.packaging.manifest, {
       archive: this.archive,
-      resolver: this.resolve.bind(this),
       request: this.request.bind(this),
+      resolver: this.resolve.bind(this),
       replacements: this.settings.replacements || (this.archived ? "blobUrl" : "base64")
     });
     this.loadNavigation(this.packaging).then(() => {
@@ -24803,13 +24774,13 @@ class Book {
     this.loading.resources.resolve(this.resources);
     this.loading.pageList.resolve(this.pageList);
     this.isOpen = true;
-    if (this.archived || this.settings.replacements && this.settings.replacements != "none") {
+    if (this.archived || this.settings.replacements && this.settings.replacements !== "none") {
       this.replacements().then(() => {
         this.loaded.displayOptions.then(() => {
           this.opening.resolve(this);
         });
       }).catch(err => {
-        console.error(err);
+        console.error(err.message);
       });
     } else {
       // Resolve book opened promise
@@ -24821,12 +24792,12 @@ class Book {
 
   /**
    * Load Navigation and PageList from package
-   * @private
    * @param {Packaging} packaging
+   * @private
    */
-  loadNavigation(packaging) {
-    let navPath = packaging.navPath || packaging.ncxPath;
-    let toc = packaging.toc;
+  async loadNavigation(packaging) {
+    const navPath = packaging.navPath || packaging.ncxPath;
+    const toc = packaging.toc;
 
     // From json manifest
     if (toc) {
@@ -24864,8 +24835,8 @@ class Book {
 
   /**
    * Sugar to render a book to an element
-   * @param  {element | string} element element or string to add a rendition to
-   * @param  {object} [options]
+   * @param {Element|string} element element or string to add a rendition to
+   * @param {object} [options]
    * @return {Rendition}
    */
   renderTo(element, options) {
@@ -24893,8 +24864,8 @@ class Book {
   /**
    * Unarchive a zipped epub
    * @private
-   * @param  {binary} input epub data
-   * @param  {string} [encoding]
+   * @param {binary} input epub data
+   * @param {string} [encoding]
    * @return {Archive}
    */
   unarchive(input, encoding) {
@@ -24905,19 +24876,16 @@ class Book {
   /**
    * Store the epubs contents
    * @private
-   * @param  {binary} input epub data
-   * @param  {string} [encoding]
+   * @param {binary} input epub data
    * @return {Store}
    */
-  store(name) {
+  store(input) {
     // Use "blobUrl" or "base64" for replacements
-    let replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
-    // Save original url
-    let originalUrl = this.url;
+    const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
     // Save original request method
-    let requester = this.settings.requestMethod || utils_request.bind(this);
+    const requester = this.settings.requestMethod || utils_request.bind(this);
     // Create new Store
-    this.storage = new store(name, requester, this.resolve.bind(this));
+    this.storage = new store(input, requester, this.resolve.bind(this));
     // Replace request method to go through store
     this.request = this.storage.request.bind(this.storage);
     this.opened.then(() => {
@@ -24925,7 +24893,7 @@ class Book {
         this.storage.requester = this.archive.request.bind(this.archive);
       }
       // Substitute hook
-      let substituteResources = (output, section) => {
+      const substituteResources = (output, section) => {
         section.output = this.resources.substitute(output, section.url);
       };
 
@@ -24935,6 +24903,8 @@ class Book {
       this.resources.replacements().then(() => {
         return this.resources.replaceCss();
       });
+      let originalUrl = this.url; // Save original url
+
       this.storage.on("offline", () => {
         // Remove url to use relative resolving for hrefs
         this.url = new utils_url("/", "");
@@ -24955,7 +24925,7 @@ class Book {
    * Get the cover url
    * @return {Promise<?string>} coverUrl
    */
-  coverUrl() {
+  async coverUrl() {
     return this.loaded.cover.then(() => {
       if (!this.cover) {
         return null;
@@ -24970,10 +24940,10 @@ class Book {
 
   /**
    * Load replacement urls
-   * @private
    * @return {Promise} completed loading urls
+   * @private
    */
-  replacements() {
+  async replacements() {
     this.spine.hooks.serialize.register((output, section) => {
       section.output = this.resources.substitute(output, section.url);
     });
@@ -24984,31 +24954,31 @@ class Book {
 
   /**
    * Find a DOM Range for a given CFI Range
-   * @param  {EpubCFI} cfiRange a epub cfi range
+   * @param {EpubCFI} cfiRange a epub cfi range
    * @return {Promise}
    */
-  getRange(cfiRange) {
-    var cfi = new src_epubcfi(cfiRange);
-    var item = this.spine.get(cfi.spinePos);
-    var _request = this.load.bind(this);
+  async getRange(cfiRange) {
+    const cfi = new src_epubcfi(cfiRange);
+    const item = this.spine.get(cfi.spinePos);
+    const request = this.load.bind(this);
     if (!item) {
       return new Promise((resolve, reject) => {
         reject("CFI could not be found");
       });
     }
-    return item.load(_request).then(function (contents) {
-      var range = cfi.toRange(item.document);
+    return item.load(request).then(contents => {
+      const range = cfi.toRange(item.document);
       return range;
     });
   }
 
   /**
    * Generates the Book Key using the identifier in the manifest or other string provided
-   * @param  {string} [identifier] to use instead of metadata identifier
+   * @param {string} [identifier] to use instead of metadata identifier
    * @return {string} key
    */
   key(identifier) {
-    var ident = identifier || this.packaging.metadata.identifier || this.url.filename;
+    const ident = identifier || this.packaging.metadata.identifier || this.url.filename;
     return `epubjs:${EPUBJS_VERSION}:${ident}`;
   }
 
@@ -25045,8 +25015,6 @@ class Book {
     this.archived = false;
   }
 }
-
-//-- Enable binding events to book
 event_emitter_default()(Book.prototype);
 /* harmony default export */ const book = (Book);
 ;// CONCATENATED MODULE: ./src/epub.js
