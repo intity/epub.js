@@ -9209,491 +9209,6 @@ module.exports = toNumber;
 
 /***/ }),
 
-/***/ 2161:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-exports.proxyMouse = proxyMouse;
-exports.clone = clone;
-// import 'babelify/polyfill'; // needed for Object.assign
-
-exports["default"] = {
-    proxyMouse: proxyMouse
-};
-
-/**
- * Start proxying all mouse events that occur on the target node to each node in
- * a set of tracked nodes.
- *
- * The items in tracked do not strictly have to be DOM Nodes, but they do have
- * to have dispatchEvent, getBoundingClientRect, and getClientRects methods.
- *
- * @param target {Node} The node on which to listen for mouse events.
- * @param tracked {Node[]} A (possibly mutable) array of nodes to which to proxy
- *                         events.
- */
-
-function proxyMouse(target, tracked) {
-    function dispatch(e) {
-        // We walk through the set of tracked elements in reverse order so that
-        // events are sent to those most recently added first.
-        //
-        // This is the least surprising behaviour as it simulates the way the
-        // browser would work if items added later were drawn "on top of"
-        // earlier ones.
-        for (var i = tracked.length - 1; i >= 0; i--) {
-            var t = tracked[i];
-            var x = e.clientX;
-            var y = e.clientY;
-
-            if (e.touches && e.touches.length) {
-                x = e.touches[0].clientX;
-                y = e.touches[0].clientY;
-            }
-
-            if (!contains(t, target, x, y)) {
-                continue;
-            }
-
-            // The event targets this mark, so dispatch a cloned event:
-            t.dispatchEvent(clone(e));
-            // We only dispatch the cloned event to the first matching mark.
-            break;
-        }
-    }
-
-    if (target.nodeName === "iframe" || target.nodeName === "IFRAME") {
-
-        try {
-            // Try to get the contents if same domain
-            this.target = target.contentDocument;
-        } catch (err) {
-            this.target = target;
-        }
-    } else {
-        this.target = target;
-    }
-
-    var _arr = ['mouseup', 'mousedown', 'click', 'touchstart'];
-    for (var _i = 0; _i < _arr.length; _i++) {
-        var ev = _arr[_i];
-        this.target.addEventListener(ev, function (e) {
-            return dispatch(e);
-        }, false);
-    }
-}
-
-/**
- * Clone a mouse event object.
- *
- * @param e {MouseEvent} A mouse event object to clone.
- * @returns {MouseEvent}
- */
-function clone(e) {
-    var opts = Object.assign({}, e, { bubbles: false });
-    try {
-        return new MouseEvent(e.type, opts);
-    } catch (err) {
-        // compat: webkit
-        var copy = document.createEvent('MouseEvents');
-        copy.initMouseEvent(e.type, false, opts.cancelable, opts.view, opts.detail, opts.screenX, opts.screenY, opts.clientX, opts.clientY, opts.ctrlKey, opts.altKey, opts.shiftKey, opts.metaKey, opts.button, opts.relatedTarget);
-        return copy;
-    }
-}
-
-/**
- * Check if the item contains the point denoted by the passed coordinates
- * @param item {Object} An object with getBoundingClientRect and getClientRects
- *                      methods.
- * @param x {Number}
- * @param y {Number}
- * @returns {Boolean}
- */
-function contains(item, target, x, y) {
-    // offset
-    var offset = target.getBoundingClientRect();
-
-    function rectContains(r, x, y) {
-        var top = r.top - offset.top;
-        var left = r.left - offset.left;
-        var bottom = top + r.height;
-        var right = left + r.width;
-        return top <= y && left <= x && bottom > y && right > x;
-    }
-
-    // Check overall bounding box first
-    var rect = item.getBoundingClientRect();
-    if (!rectContains(rect, x, y)) {
-        return false;
-    }
-
-    // Then continue to check each child rect
-    var rects = item.getClientRects();
-    for (var i = 0, len = rects.length; i < len; i++) {
-        if (rectContains(rects[i], x, y)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-/***/ }),
-
-/***/ 6628:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-var __webpack_unused_export__;
-
-
-__webpack_unused_export__ = ({
-    value: true
-});
-exports.z2 = exports.f4 = __webpack_unused_export__ = exports.Zv = undefined;
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _svg = __webpack_require__(3644);
-
-var _svg2 = _interopRequireDefault(_svg);
-
-var _events = __webpack_require__(2161);
-
-var _events2 = _interopRequireDefault(_events);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Pane = exports.Zv = function () {
-    function Pane(target) {
-        var container = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document.body;
-
-        _classCallCheck(this, Pane);
-
-        this.target = target;
-        this.element = _svg2.default.createElement('svg');
-        this.marks = [];
-
-        // Match the coordinates of the target element
-        this.element.style.position = 'absolute';
-        // Disable pointer events
-        this.element.setAttribute('pointer-events', 'none');
-
-        // Set up mouse event proxying between the target element and the marks
-        _events2.default.proxyMouse(this.target, this.marks);
-
-        this.container = container;
-        this.container.appendChild(this.element);
-
-        this.render();
-    }
-
-    _createClass(Pane, [{
-        key: 'addMark',
-        value: function addMark(mark) {
-            var g = _svg2.default.createElement('g');
-            this.element.appendChild(g);
-            mark.bind(g, this.container);
-
-            this.marks.push(mark);
-
-            mark.render();
-            return mark;
-        }
-    }, {
-        key: 'removeMark',
-        value: function removeMark(mark) {
-            var idx = this.marks.indexOf(mark);
-            if (idx === -1) {
-                return;
-            }
-            var el = mark.unbind();
-            this.element.removeChild(el);
-            this.marks.splice(idx, 1);
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            setCoords(this.element, coords(this.target, this.container));
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = this.marks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var m = _step.value;
-
-                    m.render();
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
-                    }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
-            }
-        }
-    }]);
-
-    return Pane;
-}();
-
-var Mark = __webpack_unused_export__ = function () {
-    function Mark() {
-        _classCallCheck(this, Mark);
-
-        this.element = null;
-    }
-
-    _createClass(Mark, [{
-        key: 'bind',
-        value: function bind(element, container) {
-            this.element = element;
-            this.container = container;
-        }
-    }, {
-        key: 'unbind',
-        value: function unbind() {
-            var el = this.element;
-            this.element = null;
-            return el;
-        }
-    }, {
-        key: 'render',
-        value: function render() {}
-    }, {
-        key: 'dispatchEvent',
-        value: function dispatchEvent(e) {
-            if (!this.element) return;
-            this.element.dispatchEvent(e);
-        }
-    }, {
-        key: 'getBoundingClientRect',
-        value: function getBoundingClientRect() {
-            return this.element.getBoundingClientRect();
-        }
-    }, {
-        key: 'getClientRects',
-        value: function getClientRects() {
-            var rects = [];
-            var el = this.element.firstChild;
-            while (el) {
-                rects.push(el.getBoundingClientRect());
-                el = el.nextSibling;
-            }
-            return rects;
-        }
-    }, {
-        key: 'filteredRanges',
-        value: function filteredRanges() {
-            var rects = Array.from(this.range.getClientRects());
-
-            // De-duplicate the boxes
-            return rects.filter(function (box) {
-                for (var i = 0; i < rects.length; i++) {
-                    if (rects[i] === box) {
-                        return true;
-                    }
-                    var contained = contains(rects[i], box);
-                    if (contained) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-        }
-    }]);
-
-    return Mark;
-}();
-
-var Highlight = exports.f4 = function (_Mark) {
-    _inherits(Highlight, _Mark);
-
-    function Highlight(range, className, data, attributes) {
-        _classCallCheck(this, Highlight);
-
-        var _this = _possibleConstructorReturn(this, (Highlight.__proto__ || Object.getPrototypeOf(Highlight)).call(this));
-
-        _this.range = range;
-        _this.className = className;
-        _this.data = data || {};
-        _this.attributes = attributes || {};
-        return _this;
-    }
-
-    _createClass(Highlight, [{
-        key: 'bind',
-        value: function bind(element, container) {
-            _get(Highlight.prototype.__proto__ || Object.getPrototypeOf(Highlight.prototype), 'bind', this).call(this, element, container);
-
-            for (var attr in this.data) {
-                if (this.data.hasOwnProperty(attr)) {
-                    this.element.dataset[attr] = this.data[attr];
-                }
-            }
-
-            for (var attr in this.attributes) {
-                if (this.attributes.hasOwnProperty(attr)) {
-                    this.element.setAttribute(attr, this.attributes[attr]);
-                }
-            }
-
-            if (this.className) {
-                this.element.classList.add(this.className);
-            }
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            // Empty element
-            while (this.element.firstChild) {
-                this.element.removeChild(this.element.firstChild);
-            }
-
-            var docFrag = this.element.ownerDocument.createDocumentFragment();
-            var filtered = this.filteredRanges();
-            var offset = this.element.getBoundingClientRect();
-            var container = this.container.getBoundingClientRect();
-
-            for (var i = 0, len = filtered.length; i < len; i++) {
-                var r = filtered[i];
-                var el = _svg2.default.createElement('rect');
-                el.setAttribute('x', r.left - offset.left + container.left);
-                el.setAttribute('y', r.top - offset.top + container.top);
-                el.setAttribute('height', r.height);
-                el.setAttribute('width', r.width);
-                docFrag.appendChild(el);
-            }
-
-            this.element.appendChild(docFrag);
-        }
-    }]);
-
-    return Highlight;
-}(Mark);
-
-var Underline = exports.z2 = function (_Highlight) {
-    _inherits(Underline, _Highlight);
-
-    function Underline(range, className, data, attributes) {
-        _classCallCheck(this, Underline);
-
-        return _possibleConstructorReturn(this, (Underline.__proto__ || Object.getPrototypeOf(Underline)).call(this, range, className, data, attributes));
-    }
-
-    _createClass(Underline, [{
-        key: 'render',
-        value: function render() {
-            // Empty element
-            while (this.element.firstChild) {
-                this.element.removeChild(this.element.firstChild);
-            }
-
-            var docFrag = this.element.ownerDocument.createDocumentFragment();
-            var filtered = this.filteredRanges();
-            var offset = this.element.getBoundingClientRect();
-            var container = this.container.getBoundingClientRect();
-
-            for (var i = 0, len = filtered.length; i < len; i++) {
-                var r = filtered[i];
-
-                var rect = _svg2.default.createElement('rect');
-                rect.setAttribute('x', r.left - offset.left + container.left);
-                rect.setAttribute('y', r.top - offset.top + container.top);
-                rect.setAttribute('height', r.height);
-                rect.setAttribute('width', r.width);
-                rect.setAttribute('fill', 'none');
-
-                var line = _svg2.default.createElement('line');
-                line.setAttribute('x1', r.left - offset.left + container.left);
-                line.setAttribute('x2', r.left - offset.left + container.left + r.width);
-                line.setAttribute('y1', r.top - offset.top + container.top + r.height - 1);
-                line.setAttribute('y2', r.top - offset.top + container.top + r.height - 1);
-
-                line.setAttribute('stroke-width', 1);
-                line.setAttribute('stroke', 'black'); //TODO: match text color?
-                line.setAttribute('stroke-linecap', 'square');
-
-                docFrag.appendChild(rect);
-
-                docFrag.appendChild(line);
-            }
-
-            this.element.appendChild(docFrag);
-        }
-    }]);
-
-    return Underline;
-}(Highlight);
-
-function coords(el, container) {
-    var offset = container.getBoundingClientRect();
-    var rect = el.getBoundingClientRect();
-
-    return {
-        top: rect.top - offset.top,
-        left: rect.left - offset.left,
-        height: el.scrollHeight,
-        width: el.scrollWidth
-    };
-}
-
-function setCoords(el, coords) {
-    el.style.setProperty('top', coords.top + 'px', 'important');
-    el.style.setProperty('left', coords.left + 'px', 'important');
-    el.style.setProperty('height', coords.height + 'px', 'important');
-    el.style.setProperty('width', coords.width + 'px', 'important');
-}
-
-function contains(rect1, rect2) {
-    return rect2.right <= rect1.right && rect2.left >= rect1.left && rect2.top >= rect1.top && rect2.bottom <= rect1.bottom;
-}
-
-
-/***/ }),
-
-/***/ 3644:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-exports.createElement = createElement;
-function createElement(name) {
-    return document.createElementNS('http://www.w3.org/2000/svg', name);
-}
-
-exports["default"] = {
-    createElement: createElement
-};
-
-
-/***/ }),
-
 /***/ 6841:
 /***/ ((module) => {
 
@@ -15600,15 +15115,15 @@ class Spine {
 
   /**
    * Unpack items from a opf into spine items
-   * @param {Packaging} packege
+   * @param {Packaging} packaging
    * @param {method} resolver URL resolver
    * @param {method} canonical Resolve canonical url
    */
-  unpack(packege, resolver, canonical) {
-    this.items = packege.spine;
-    this.manifest = packege.manifest;
-    this.spineNodeIndex = packege.spineNodeIndex;
-    this.baseUrl = packege.baseUrl || packege.basePath || "";
+  unpack(packaging, resolver, canonical) {
+    this.items = packaging.spine;
+    this.manifest = packaging.manifest;
+    this.spineNodeIndex = packaging.spineNodeIndex;
+    this.baseUrl = packaging.baseUrl || packaging.basePath || "";
     this.length = this.items.length;
     this.items.forEach((item, index) => {
       const manifestItem = this.manifest[item.idref];
@@ -16453,15 +15968,39 @@ event_emitter_default()(Locations.prototype);
 
 
 /**
- * Handles Parsing and Accessing an Epub Container
- * @class
- * @param {document} [containerDocument] xml document
+ * Parsing the Epub Container
+ * @link https://www.w3.org/TR/epub/#sec-container-metainf
  */
 class Container {
+  /**
+   * Constructor
+   * @param {Document} [containerDocument] xml document
+   */
   constructor(containerDocument) {
-    this.packagePath = '';
-    this.directory = '';
-    this.encoding = '';
+    /**
+     * @member {string} directory Package directory
+     * @memberof Container
+     * @readonly
+     */
+    this.directory = "";
+    /**
+     * @member {string} fullPath Path to package file
+     * @memberof Container
+     * @readonly
+     */
+    this.fullPath = "";
+    /**
+     * @member {string} encoding Encoding
+     * @memberof Container
+     * @readonly
+     */
+    this.encoding = "";
+    /**
+     * @member {string} mediaType Media type
+     * @memberof Container
+     * @readonly
+     */
+    this.mediaType = "";
     if (containerDocument) {
       this.parse(containerDocument);
     }
@@ -16469,26 +16008,34 @@ class Container {
 
   /**
    * Parse the Container XML
-   * @param  {document} containerDocument
+   * @param {Document} containerDocument
    */
   parse(containerDocument) {
-    //-- <rootfile full-path="OPS/package.opf" media-type="application/oebps-package+xml"/>
-    var rootfile;
     if (!containerDocument) {
       throw new Error("Container File Not Found");
     }
-    rootfile = qs(containerDocument, "rootfile");
+
+    // <rootfile
+    //   full-path="OPS/package.opf" 
+    //   media-type="application/oebps-package+xml"/>
+    const rootfile = qs(containerDocument, "rootfile");
     if (!rootfile) {
       throw new Error("No RootFile Found");
     }
-    this.packagePath = rootfile.getAttribute("full-path");
-    this.directory = path_default().dirname(this.packagePath);
+    this.fullPath = rootfile.getAttribute("full-path");
+    this.directory = path_default().dirname(this.fullPath);
     this.encoding = containerDocument.xmlEncoding;
+    this.mediaType = rootfile.getAttribute("media-type");
   }
+
+  /**
+   * destroy
+   */
   destroy() {
-    this.packagePath = undefined;
     this.directory = undefined;
+    this.fullPath = undefined;
     this.encoding = undefined;
+    this.mediaType = undefined;
   }
 }
 /* harmony default export */ const container = (Container);
@@ -19871,145 +19418,228 @@ class Contents {
 }
 event_emitter_default()(Contents.prototype);
 /* harmony default export */ const contents = (Contents);
-;// CONCATENATED MODULE: ./src/annotations.js
-
-
+;// CONCATENATED MODULE: ./src/annotation.js
 
 
 
 /**
-	* Handles managing adding & removing Annotations
-	* @param {Rendition} rendition
-	* @class
-	*/
-class Annotations {
-  constructor(rendition) {
-    this.rendition = rendition;
-    this.highlights = [];
-    this.underlines = [];
-    this.marks = [];
-    this._annotations = {};
-    this._annotationsBySectionIndex = {};
-    this.rendition.hooks.render.register(this.inject.bind(this));
-    this.rendition.hooks.unloaded.register(this.clear.bind(this));
+ * Annotation object
+ * @class
+ * @param {object} options
+ * @param {string} options.type Type of annotation to add: `"highlight"` OR `"underline"` OR `"mark"`
+ * @param {string} options.cfiRange EpubCFI range to attach annotation to
+ * @param {number} options.sectionIndex Index in the Spine of the Section annotation belongs to
+ * @param {object} [options.data] Data to assign to annotation
+ * @param {method} [options.cb] Callback after annotation is clicked
+ * @param {string} [options.className] CSS class to assign to annotation
+ * @param {object} [options.styles] CSS styles to assign to annotation
+ * @returns {Annotation} annotation
+ */
+class Annotation {
+  constructor({
+    type,
+    cfiRange,
+    sectionIndex,
+    data,
+    cb,
+    className,
+    styles
+  }) {
+    this.type = type;
+    this.cfiRange = cfiRange;
+    this.sectionIndex = sectionIndex;
+    this.data = data;
+    this.cb = cb;
+    this.className = className;
+    this.styles = styles;
+    this.mark = undefined;
   }
 
   /**
-   * Add an annotation to store
-   * @param {string} type Type of annotation to add: "highlight", "underline", "mark"
-   * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
-   * @param {object} data Data to assign to annotation
-   * @param {function} [cb] Callback after annotation is added
-   * @param {string} className CSS class to assign to annotation
-   * @param {object} styles CSS styles to assign to annotation
-   * @returns {Annotation} annotation
+   * Update stored data
+   * @param {object} data
    */
-  add(type, cfiRange, data, cb, className, styles) {
-    let hash = encodeURI(cfiRange + type);
-    let cfi = new src_epubcfi(cfiRange);
-    let sectionIndex = cfi.spinePos;
-    let annotation = new Annotation({
+  update(data) {
+    this.data = data;
+  }
+
+  /**
+   * Add to a view
+   * @param {View} view
+   * @returns {object|null}
+   */
+  attach(view) {
+    let result;
+    if (!view) {
+      return null;
+    } else if (this.type === "highlight") {
+      result = view.highlight(this.cfiRange, this.data, this.cb, this.className, this.styles);
+    } else if (this.type === "underline") {
+      result = view.underline(this.cfiRange, this.data, this.cb, this.className, this.styles);
+    }
+    this.mark = result;
+    /**
+     * @event attach
+     * @param {any} result
+     * @memberof Annotation
+     */
+    this.emit(EVENTS.ANNOTATION.ATTACH, result);
+    return result;
+  }
+
+  /**
+   * Remove from a view
+   * @param {View} view
+   * @returns {boolean}
+   */
+  detach(view) {
+    let result = false;
+    if (!view) {
+      return result;
+    } else if (this.type === "highlight") {
+      result = view.unhighlight(this.cfiRange);
+    } else if (this.type === "underline") {
+      result = view.ununderline(this.cfiRange);
+    }
+    this.mark = undefined;
+    /**
+     * @event detach
+     * @param {boolean} result
+     * @memberof Annotation
+     */
+    this.emit(EVENTS.ANNOTATION.DETACH, result);
+    return result;
+  }
+
+  /**
+   * [Not Implemented] Get text of an annotation
+   * @TODO: needs implementation in contents
+   */
+  text() {}
+}
+event_emitter_default()(Annotation.prototype);
+/* harmony default export */ const src_annotation = (Annotation);
+;// CONCATENATED MODULE: ./src/annotations.js
+
+
+
+/**
+ * Handles managing adding & removing Annotations
+ */
+class Annotations extends Map {
+  /**
+   * Constructor
+   * @param {Rendition} rendition
+   */
+  constructor(rendition) {
+    super();
+    this.rendition = rendition;
+    this.rendition.hooks.render.register(this.inject.bind(this));
+    this.rendition.hooks.unloaded.register(this.reject.bind(this));
+  }
+
+  /**
+   * Append an annotation to store
+   * @param {string} type Type of annotation to append: `"highlight"` OR `"underline"`
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   * @param {object} [options]
+   * @param {object} [options.data] Data to assign to annotation
+   * @param {method} [options.cb] Callback after annotation is added
+   * @param {string} [options.className] CSS class to assign to annotation
+   * @param {object} [options.styles] CSS styles to assign to annotation
+   * @returns {Annotation} Annotation that was append
+   */
+  append(type, cfiRange, {
+    data,
+    cb,
+    className,
+    styles
+  }) {
+    const key = encodeURI(type + ":" + cfiRange);
+    const cfi = new src_epubcfi(cfiRange);
+    const sectionIndex = cfi.spinePos;
+    const annotation = new src_annotation({
       type,
       cfiRange,
-      data,
       sectionIndex,
+      data,
       cb,
       className,
       styles
     });
-    this._annotations[hash] = annotation;
-    if (sectionIndex in this._annotationsBySectionIndex) {
-      this._annotationsBySectionIndex[sectionIndex].push(hash);
-    } else {
-      this._annotationsBySectionIndex[sectionIndex] = [hash];
-    }
-    let views = this.rendition.views();
-    views.forEach(view => {
-      if (annotation.sectionIndex === view.section.index) {
+    this.rendition.views().forEach(view => {
+      const index = view.section.index;
+      if (annotation.sectionIndex === index) {
         annotation.attach(view);
       }
     });
+    this.set(key, annotation);
     return annotation;
   }
 
   /**
    * Remove an annotation from store
-   * @param {EpubCFI} cfiRange EpubCFI range the annotation is attached to
-   * @param {string} type Type of annotation to add: "highlight", "underline", "mark"
+   * @param {string} type Type of annotation to remove: `"highlight"` OR `"underline"`
+   * @param {string} cfiRange EpubCFI range to attach annotation to
    */
-  remove(cfiRange, type) {
-    let hash = encodeURI(cfiRange + type);
-    if (hash in this._annotations) {
-      let annotation = this._annotations[hash];
-      if (type && annotation.type !== type) {
-        return;
-      }
-      let views = this.rendition.views();
-      views.forEach(view => {
-        this._removeFromAnnotationBySectionIndex(annotation.sectionIndex, hash);
-        if (annotation.sectionIndex === view.section.index) {
+  remove(type, cfiRange) {
+    const key = encodeURI(type + ":" + cfiRange);
+    const annotation = this.get(key);
+    if (annotation) {
+      this.rendition.views().forEach(view => {
+        const index = view.section.index;
+        if (annotation.sectionIndex === index) {
           annotation.detach(view);
         }
       });
-      delete this._annotations[hash];
+      this.delete(key);
     }
   }
 
   /**
-   * Remove an annotations by Section Index
-   * @private
-   */
-  _removeFromAnnotationBySectionIndex(sectionIndex, hash) {
-    this._annotationsBySectionIndex[sectionIndex] = this._annotationsAt(sectionIndex).filter(h => h !== hash);
-  }
-
-  /**
-   * Get annotations by Section Index
-   * @private
-   */
-  _annotationsAt(index) {
-    return this._annotationsBySectionIndex[index];
-  }
-
-  /**
    * Add a highlight to the store
-   * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
-   * @param {object} data Data to assign to annotation
-   * @param {function} cb Callback after annotation is clicked
-   * @param {string} className CSS class to assign to annotation
-   * @param {object} styles CSS styles to assign to annotation
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   * @param {object} [options]
+   * @param {object} [options.data] Data to assign to annotation
+   * @param {method} [options.cb] Callback after annotation is clicked
+   * @param {string} [options.className] CSS class to assign to annotation
+   * @param {object} [options.styles] CSS styles to assign to annotation
    */
-  highlight(cfiRange, data, cb, className, styles) {
-    return this.add("highlight", cfiRange, data, cb, className, styles);
+  highlight(cfiRange, {
+    data,
+    cb,
+    className,
+    styles
+  }) {
+    return this.append("highlight", cfiRange, {
+      data,
+      cb,
+      className,
+      styles
+    });
   }
 
   /**
    * Add a underline to the store
-   * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
-   * @param {object} data Data to assign to annotation
-   * @param {function} cb Callback after annotation is clicked
-   * @param {string} className CSS class to assign to annotation
-   * @param {object} styles CSS styles to assign to annotation
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   * @param {object} [options]
+   * @param {object} [options.data] Data to assign to annotation
+   * @param {method} [options.cb] Callback after annotation is clicked
+   * @param {string} [options.className] CSS class to assign to annotation
+   * @param {object} [options.styles] CSS styles to assign to annotation
    */
-  underline(cfiRange, data, cb, className, styles) {
-    return this.add("underline", cfiRange, data, cb, className, styles);
-  }
-
-  /**
-   * Add a mark to the store
-   * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
-   * @param {object} data Data to assign to annotation
-   * @param {function} cb Callback after annotation is clicked
-   */
-  mark(cfiRange, data, cb) {
-    return this.add("mark", cfiRange, data, cb);
-  }
-
-  /**
-   * iterate over annotations in the store
-   */
-  each() {
-    return this._annotations.forEach.apply(this._annotations, arguments);
+  underline(cfiRange, {
+    data,
+    cb,
+    className,
+    styles
+  }) {
+    return this.append("underline", cfiRange, {
+      data,
+      cb,
+      className,
+      styles
+    });
   }
 
   /**
@@ -20018,14 +19648,12 @@ class Annotations {
    * @private
    */
   inject(view) {
-    let sectionIndex = view.section.index;
-    if (sectionIndex in this._annotationsBySectionIndex) {
-      let annotations = this._annotationsBySectionIndex[sectionIndex];
-      annotations.forEach(hash => {
-        let annotation = this._annotations[hash];
-        annotation.attach(view);
-      });
-    }
+    const index = view.section.index;
+    this.forEach((note, key) => {
+      if (note.sectionIndex === index) {
+        note.attach(view);
+      }
+    });
   }
 
   /**
@@ -20033,15 +19661,13 @@ class Annotations {
    * @param {View} view
    * @private
    */
-  clear(view) {
-    let sectionIndex = view.section.index;
-    if (sectionIndex in this._annotationsBySectionIndex) {
-      let annotations = this._annotationsBySectionIndex[sectionIndex];
-      annotations.forEach(hash => {
-        let annotation = this._annotations[hash];
-        annotation.detach(view);
-      });
-    }
+  reject(view) {
+    const index = view.section.index;
+    this.forEach((note, key) => {
+      if (note.sectionIndex === index) {
+        note.detach(view);
+      }
+    });
   }
 
   /**
@@ -20056,106 +19682,6 @@ class Annotations {
    */
   hide() {}
 }
-
-/**
- * Annotation object
- * @class
- * @param {object} options
- * @param {string} options.type Type of annotation to add: "highlight", "underline", "mark"
- * @param {EpubCFI} options.cfiRange EpubCFI range to attach annotation to
- * @param {object} options.data Data to assign to annotation
- * @param {int} options.sectionIndex Index in the Spine of the Section annotation belongs to
- * @param {function} [options.cb] Callback after annotation is clicked
- * @param {string} className CSS class to assign to annotation
- * @param {object} styles CSS styles to assign to annotation
- * @returns {Annotation} annotation
- */
-class Annotation {
-  constructor({
-    type,
-    cfiRange,
-    data,
-    sectionIndex,
-    cb,
-    className,
-    styles
-  }) {
-    this.type = type;
-    this.cfiRange = cfiRange;
-    this.data = data;
-    this.sectionIndex = sectionIndex;
-    this.mark = undefined;
-    this.cb = cb;
-    this.className = className;
-    this.styles = styles;
-  }
-
-  /**
-   * Update stored data
-   * @param {object} data
-   */
-  update(data) {
-    this.data = data;
-  }
-
-  /**
-   * Add to a view
-   * @param {View} view
-   */
-  attach(view) {
-    let {
-      cfiRange,
-      data,
-      type,
-      mark,
-      cb,
-      className,
-      styles
-    } = this;
-    let result;
-    if (type === "highlight") {
-      result = view.highlight(cfiRange, data, cb, className, styles);
-    } else if (type === "underline") {
-      result = view.underline(cfiRange, data, cb, className, styles);
-    } else if (type === "mark") {
-      result = view.mark(cfiRange, data, cb);
-    }
-    this.mark = result;
-    this.emit(EVENTS.ANNOTATION.ATTACH, result);
-    return result;
-  }
-
-  /**
-   * Remove from a view
-   * @param {View} view
-   */
-  detach(view) {
-    let {
-      cfiRange,
-      type
-    } = this;
-    let result;
-    if (view) {
-      if (type === "highlight") {
-        result = view.unhighlight(cfiRange);
-      } else if (type === "underline") {
-        result = view.ununderline(cfiRange);
-      } else if (type === "mark") {
-        result = view.unmark(cfiRange);
-      }
-    }
-    this.mark = undefined;
-    this.emit(EVENTS.ANNOTATION.DETACH, result);
-    return result;
-  }
-
-  /**
-   * [Not Implemented] Get text of an annotation
-   * @TODO: needs implementation in contents
-   */
-  text() {}
-}
-event_emitter_default()(Annotation.prototype);
 /* harmony default export */ const annotations = (Annotations);
 // EXTERNAL MODULE: ./node_modules/lodash/throttle.js
 var throttle = __webpack_require__(7350);
@@ -20640,9 +20166,394 @@ class Views extends Array {
   }
 }
 /* harmony default export */ const views = (Views);
-// EXTERNAL MODULE: ./node_modules/marks-pane/lib/marks.js
-var marks = __webpack_require__(6628);
+;// CONCATENATED MODULE: ./src/marks-pane/events.js
+const rectContains = (rect, x, y, offset) => {
+  const top = rect.top - offset.top;
+  const left = rect.left - offset.left;
+  const bottom = top + rect.height;
+  const right = left + rect.width;
+  return top <= y && left <= x && bottom > y && right > x;
+};
+
+/**
+ * Check if the item contains the point denoted by the passed coordinates
+ * @param {Mark} mark the mark object
+ * @param {number} x
+ * @param {number} y
+ * @returns {boolean}
+ * @private
+ */
+const contains = (mark, target, x, y) => {
+  const rect = mark.getBoundingClientRect();
+  const offset = target.getBoundingClientRect();
+
+  // Check overall bounding box first
+  if (!rectContains(rect, x, y, offset)) {
+    return false;
+  }
+
+  // Then continue to check each child rect
+  const rects = mark.getClientRects();
+  for (let i = 0, len = rects.length; i < len; i++) {
+    if (rectContains(rects[i], x, y, offset)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Clone a mouse event object.
+ * @param {MouseEvent} e A mouse event object to clone.
+ * @returns {MouseEvent}
+ * @private
+ */
+const clone = e => {
+  const opts = Object.assign({}, e, {
+    bubbles: false
+  });
+  return new MouseEvent(e.type, opts);
+};
+const dispatch = (e, target, marks) => {
+  let x = e.clientX;
+  let y = e.clientY;
+  if (e.touches && e.touches.length) {
+    x = e.touches[0].clientX;
+    y = e.touches[0].clientY;
+  }
+  marks.forEach((mark, key) => {
+    if (contains(mark, target, x, y)) {
+      mark.dispatchEvent(clone(e));
+    }
+  });
+};
+
+/**
+ * Start proxying all mouse events that occur on the target node to each node in
+ * a set of tracked marks.
+ *
+ * The marks in tracked do not strictly have to be DOM Nodes, but they do have
+ * to have dispatchEvent, getBoundingClientRect, and getClientRects methods.
+ *
+ * @param {Node} target The node on which to listen for mouse events.
+ * @param {Mark[]} marks A (possibly mutable) array of marks to which to proxy events.
+ */
+const proxyMouse = (target, marks) => {
+  let node = target;
+  if (target.nodeName === "iframe" || target.nodeName === "IFRAME") {
+    node = target.contentDocument;
+  } else {
+    node = target;
+  }
+  const events = ["mouseup", "mousedown", "click", "touchstart"];
+  for (const event of events) {
+    node.addEventListener(event, e => dispatch(e, target, marks), false);
+  }
+};
+/* harmony default export */ const events = (proxyMouse);
+;// CONCATENATED MODULE: ./src/marks-pane/marks.js
+
+const NS_URI = "http://www.w3.org/2000/svg";
+
+/**
+ * Marks class
+ */
+class Marks extends Map {
+  /**
+   * Constructor
+   * @param {Node} target view
+   * @param {Node} [container=document.body] epub-view container
+   */
+  constructor(target, container = document.body) {
+    super();
+    this.target = target;
+    /**
+     * @member {Node} element the marks container
+     * @memberof Marks
+     * @readonly
+     */
+    this.element = document.createElementNS(NS_URI, "svg");
+    this.element.style.position = "absolute";
+    this.element.setAttribute("pointer-events", "none");
+    // Set up mouse event proxying between the target element and the marks
+    events(this.target, this);
+    this.container = container;
+    this.container.appendChild(this.element);
+    this.render();
+  }
+
+  /**
+   * Append mark
+   * @param {string} key 
+   * @param {Mark} mark 
+   * @returns {Mark}
+   */
+  appendMark(key, mark) {
+    const g = document.createElementNS(NS_URI, "g");
+    this.element.appendChild(g);
+    mark.bind(g, this.container);
+    mark.render();
+    this.set(key, mark);
+    return mark;
+  }
+
+  /**
+   * Remove mark
+   * @param {string} key 
+   * @returns {void}
+   */
+  removeMark(key) {
+    const mark = this.get(key);
+    if (mark) {
+      const el = mark.unbind();
+      this.element.removeChild(el);
+      this.delete(key);
+    }
+  }
+
+  /**
+   * render
+   */
+  render() {
+    this.updateStyle(this.element);
+    this.forEach((mark, key) => mark.render());
+  }
+
+  /**
+   * Update style
+   * @param {Node} el the marks container
+   * @private 
+   */
+  updateStyle(el) {
+    const rect = this.target.getBoundingClientRect();
+    const offset = this.container.getBoundingClientRect();
+    const top = rect.top - offset.top;
+    const left = rect.left - offset.left;
+    const width = this.target.scrollWidth;
+    const height = this.target.scrollHeight;
+    el.style.setProperty("top", `${top}px`, "important");
+    el.style.setProperty("left", `${left}px`, "important");
+    el.style.setProperty("width", `${width}px`, "important");
+    el.style.setProperty("height", `${height}px`, "important");
+  }
+}
+/* harmony default export */ const marks = (Marks);
+;// CONCATENATED MODULE: ./src/marks-pane/mark.js
+
+/**
+ * Mark class
+ */
+class Mark {
+  constructor() {
+    /**
+     * @member {Node} element the mark container to rects
+     * @memberof Mark
+     * @readonly
+     */
+    this.element = null;
+    this.range = null;
+  }
+
+  /**
+   * bind
+   * @param {Node} element the mark container to rects
+   * @param {Node} container the epub-view container
+   */
+  bind(element, container) {
+    this.element = element;
+    this.container = container;
+  }
+
+  /**
+   * unbind
+   * @returns {Node}
+   */
+  unbind() {
+    const el = this.element;
+    this.element = null;
+    return el;
+  }
+
+  /**
+   * Clear the mark container
+   */
+  clear() {
+    while (this.element.firstChild) {
+      this.element.removeChild(this.element.firstChild);
+    }
+  }
+
+  /**
+   * render
+   * @abstract
+   */
+  render() {}
+
+  /**
+   * Dispatch event
+   * @param {MouseEvent} e 
+   */
+  dispatchEvent(e) {
+    if (this.element) {
+      this.element.dispatchEvent(e);
+    }
+  }
+
+  /**
+   * Get bounding client rect
+   * @returns {DOMRect}
+   */
+  getBoundingClientRect() {
+    return this.element.getBoundingClientRect();
+  }
+
+  /**
+   * Get client rects
+   * @returns {object[]}
+   */
+  getClientRects() {
+    const rects = [];
+    let el = this.element.firstChild;
+    while (el) {
+      rects.push(el.getBoundingClientRect());
+      el = el.nextSibling;
+    }
+    return rects;
+  }
+}
+/* harmony default export */ const mark = (Mark);
+;// CONCATENATED MODULE: ./src/marks-pane/highlight.js
+
+const highlight_NS_URI = "http://www.w3.org/2000/svg";
+
+/**
+ * Highlight class
+ * @extends Mark
+ */
+class Highlight extends mark {
+  /**
+   * Constructor
+   * @param {Range} range 
+   * @param {object} [options]
+   * @param {string} [options.className] 
+   * @param {object} [options.data={}] 
+   * @param {object} [options.attributes={}] 
+   * @param {object[]} [options.listeners=[]]
+   */
+  constructor(range, {
+    className,
+    data,
+    attributes,
+    listeners
+  }) {
+    super();
+    this.range = range;
+    this.className = className;
+    this.data = data || {};
+    this.attributes = attributes || {};
+    this.listeners = listeners || [];
+  }
+
+  /**
+   * bind
+   * @param {Node} element 
+   * @param {Node} container 
+   * @override
+   */
+  bind(element, container) {
+    super.bind(element, container);
+    for (const p in this.data) {
+      if (this.data.hasOwnProperty(p)) {
+        this.element.dataset[p] = this.data[p];
+      }
+    }
+    for (const p in this.attributes) {
+      if (this.attributes.hasOwnProperty(p)) {
+        this.element.setAttribute(p, this.attributes[p]);
+      }
+    }
+    if (this.className) {
+      this.element.classList.add(this.className);
+    }
+  }
+
+  /**
+   * render
+   * @override
+   */
+  render() {
+    this.clear();
+    const rects = this.range.getClientRects();
+    const offset = this.element.getBoundingClientRect();
+    const container = this.container.getBoundingClientRect();
+    for (let i = 0, len = rects.length; i < len; i++) {
+      const r = rects[i];
+      const rect = document.createElementNS(highlight_NS_URI, "rect");
+      rect.setAttribute("x", r.left - offset.left + container.left);
+      rect.setAttribute("y", r.top - offset.top + container.top);
+      rect.setAttribute("height", r.height);
+      rect.setAttribute("width", r.width);
+      this.element.appendChild(rect);
+    }
+  }
+}
+/* harmony default export */ const highlight = (Highlight);
+;// CONCATENATED MODULE: ./src/marks-pane/underline.js
+
+const underline_NS_URI = "http://www.w3.org/2000/svg";
+
+/**
+ * Underline class
+ * @extends Highlight
+ */
+class Underline extends highlight {
+  /**
+   * Constructor
+   * @param {Range} range 
+   * @param {object} [options]
+   * @param {string} [options.className] 
+   * @param {object} [options.data={}] 
+   * @param {object} [options.attributes={}] 
+   * @param {object[]} [options.listeners=[]]
+   */
+  constructor(range, options) {
+    super(range, options);
+  }
+
+  /**
+   * render
+   * @override
+   */
+  render() {
+    this.clear();
+    const rects = this.range.getClientRects();
+    const offset = this.element.getBoundingClientRect();
+    const container = this.container.getBoundingClientRect();
+    for (let i = 0, len = rects.length; i < len; i++) {
+      const r = rects[i];
+      const rect = document.createElementNS(underline_NS_URI, "rect");
+      const line = document.createElementNS(underline_NS_URI, "line");
+      rect.setAttribute("x", r.left - offset.left + container.left);
+      rect.setAttribute("y", r.top - offset.top + container.top);
+      rect.setAttribute("height", r.height);
+      rect.setAttribute("width", r.width);
+      rect.setAttribute("fill", "none");
+      line.setAttribute("x1", r.left - offset.left + container.left);
+      line.setAttribute("x2", r.left - offset.left + container.left + r.width);
+      line.setAttribute("y1", r.top - offset.top + container.top + r.height - 1);
+      line.setAttribute("y2", r.top - offset.top + container.top + r.height - 1);
+      line.setAttribute("stroke-width", 1);
+      line.setAttribute("stroke", "black"); //TODO: match text color?
+      line.setAttribute("stroke-linecap", "square");
+      this.element.appendChild(rect);
+      this.element.appendChild(line);
+    }
+  }
+}
+/* harmony default export */ const underline = (Underline);
 ;// CONCATENATED MODULE: ./src/managers/views/iframe.js
+
+
 
 
 
@@ -20716,10 +20627,12 @@ class IframeView {
     this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
       this.updateLayout();
     });
-    this.pane = undefined;
-    this.highlights = {};
-    this.underlines = {};
-    this.marks = {};
+    /**
+     * @member {Marks} marks
+     * @memberof IframeView
+     * @readonly
+     */
+    this.marks = null;
     this.setAxis(this.settings.axis);
   }
 
@@ -20816,11 +20729,21 @@ class IframeView {
         resolve();
       });
     }, err => {
+      /**
+       * @event loaderror
+       * @param {*} err
+       * @memberof IframeView
+       */
       this.emit(EVENTS.VIEWS.LOAD_ERROR, err);
       return new Promise((resolve, reject) => {
         reject(err);
       });
     }).then(() => {
+      /**
+       * @event rendered
+       * @param {Section} section
+       * @memberof IframeView
+       */
       this.emit(EVENTS.VIEWS.RENDERED, this.section);
     });
   }
@@ -20965,15 +20888,12 @@ class IframeView {
       widthDelta: this.prevBounds ? width - this.prevBounds.width : width,
       heightDelta: this.prevBounds ? height - this.prevBounds.height : height
     };
-    this.pane && this.pane.render();
-    requestAnimationFrame(() => {
-      for (let m in this.marks) {
-        if (this.marks.hasOwnProperty(m)) {
-          const mark = this.marks[m];
-          this.placeMark(mark.element, mark.range);
-        }
-      }
-    });
+    this.marks && this.marks.render();
+    /**
+     * @event resized
+     * @param {object} size
+     * @memberof IframeView
+     */
     this.emit(EVENTS.VIEWS.RESIZED, size);
     this.prevBounds = size;
     this.elementBounds = bounds(this.element);
@@ -21103,13 +21023,17 @@ class IframeView {
 
   /**
    * display
-   * @param {function} request 
+   * @param {method} request 
    * @returns {Promise} displayed promise
    */
   display(request) {
     const displayed = new defer();
     if (this.displayed === false) {
       this.render(request).then(() => {
+        /**
+         * @event displayed
+         * @memberof IframeView
+         */
         this.emit(EVENTS.VIEWS.DISPLAYED);
         this.displayed = true;
         displayed.resolve(this);
@@ -21135,6 +21059,11 @@ class IframeView {
       this.iframe.offsetWidth;
       this.iframe.style.transform = null;
     }
+    /**
+     * @event shown
+     * @param {IframeView} view
+     * @memberof IframeView
+     */
     this.emit(EVENTS.VIEWS.SHOWN, this);
   }
 
@@ -21145,6 +21074,11 @@ class IframeView {
     this.element.style.visibility = "hidden";
     this.iframe.style.visibility = "hidden";
     this.stopExpanding = true;
+    /**
+     * @event hidden
+     * @param {IframeView} view
+     * @memberof IframeView
+     */
     this.emit(EVENTS.VIEWS.HIDDEN, this);
   }
 
@@ -21195,37 +21129,44 @@ class IframeView {
 
   /**
    * highlight
-   * @param {string|EpubCFI} cfiRange 
+   * @param {string} cfiRange 
    * @param {object} [data={}] 
-   * @param {function} cb callback function
+   * @param {method} [cb=null] callback function
    * @param {string} [className='epubjs-hl'] 
    * @param {object} [styles={}] 
    * @returns {object}
    */
-  highlight(cfiRange, data = {}, cb, className = "epubjs-hl", styles = {}) {
+  highlight(cfiRange, data = {}, cb = null, className = "epubjs-hl", styles = {}) {
     if (!this.contents) {
       return;
+    }
+    data["epubcfi"] = cfiRange;
+    if (this.marks === null) {
+      this.marks = new marks(this.iframe, this.element);
     }
     const attributes = Object.assign({
       "fill": "yellow",
       "fill-opacity": "0.3",
       "mix-blend-mode": "multiply"
     }, styles);
-    const range = this.contents.range(cfiRange);
-    const emitter = () => {
+    const emitter = e => {
+      /**
+       * @event markClicked
+       * @param {string} cfiRange
+       * @param {object} data
+       * @memberof IframeView
+       */
       this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
     };
-    data["epubcfi"] = cfiRange;
-    if (!this.pane) {
-      this.pane = new marks/* Pane */.Zv(this.iframe, this.element);
-    }
-    const m = new marks/* Highlight */.f4(range, className, data, attributes);
-    const h = this.pane.addMark(m);
-    this.highlights[cfiRange] = {
-      "mark": h,
-      "element": h.element,
-      "listeners": [emitter, cb]
-    };
+    const key = encodeURI("epubjs-hl:" + cfiRange);
+    const range = this.contents.range(cfiRange);
+    const m = new highlight(range, {
+      className,
+      data,
+      attributes,
+      listeners: [emitter, cb]
+    });
+    const h = this.marks.appendMark(key, m);
     h.element.setAttribute("ref", className);
     h.element.addEventListener("click", emitter);
     h.element.addEventListener("touchstart", emitter);
@@ -21238,37 +21179,44 @@ class IframeView {
 
   /**
    * underline
-   * @param {*} cfiRange 
-   * @param {*} [data={}] 
-   * @param {*} cb 
-   * @param {*} [className='epubjs-ul'] 
-   * @param {*} [styles={}] 
+   * @param {string} cfiRange 
+   * @param {object} [data={}] 
+   * @param {method} [cb=null]
+   * @param {string} [className='epubjs-ul'] 
+   * @param {object} [styles={}] 
    * @returns {object}
    */
-  underline(cfiRange, data = {}, cb, className = "epubjs-ul", styles = {}) {
+  underline(cfiRange, data = {}, cb = null, className = "epubjs-ul", styles = {}) {
     if (!this.contents) {
       return;
+    }
+    data["epubcfi"] = cfiRange;
+    if (this.marks === null) {
+      this.marks = new marks(this.iframe, this.element);
     }
     const attributes = Object.assign({
       "stroke": "black",
       "stroke-opacity": "0.3",
       "mix-blend-mode": "multiply"
     }, styles);
-    let range = this.contents.range(cfiRange);
-    let emitter = () => {
+    const emitter = e => {
+      /**
+       * @event markClicked
+       * @param {string} cfiRange
+       * @param {object} data
+       * @memberof IframeView
+       */
       this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
     };
-    data["epubcfi"] = cfiRange;
-    if (!this.pane) {
-      this.pane = new marks/* Pane */.Zv(this.iframe, this.element);
-    }
-    let m = new marks/* Underline */.z2(range, className, data, attributes);
-    let h = this.pane.addMark(m);
-    this.underlines[cfiRange] = {
-      "mark": h,
-      "element": h.element,
-      "listeners": [emitter, cb]
-    };
+    const key = encodeURI("epubjs-ul:" + cfiRange);
+    const range = this.contents.range(cfiRange);
+    const m = new underline(range, {
+      className,
+      data,
+      attributes,
+      listeners: [emitter, cb]
+    });
+    const h = this.marks.appendMark(key, m);
     h.element.setAttribute("ref", className);
     h.element.addEventListener("click", emitter);
     h.element.addEventListener("touchstart", emitter);
@@ -21280,164 +21228,62 @@ class IframeView {
   }
 
   /**
-   * mark
-   * @param {*} cfiRange 
-   * @param {*} [data={}] 
-   * @param {*} cb 
-   * @returns {object}
-   */
-  mark(cfiRange, data = {}, cb) {
-    if (!this.contents) {
-      return;
-    }
-    if (cfiRange in this.marks) {
-      let item = this.marks[cfiRange];
-      return item;
-    }
-    let range = this.contents.range(cfiRange);
-    if (!range) {
-      return;
-    }
-    let container = range.commonAncestorContainer;
-    let parent = container.nodeType === 1 ? container : container.parentNode;
-    let emitter = e => {
-      this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
-    };
-    if (range.collapsed && container.nodeType === 1) {
-      range = new Range();
-      range.selectNodeContents(container);
-    } else if (range.collapsed) {
-      // Webkit doesn't like collapsed ranges
-      range = new Range();
-      range.selectNodeContents(parent);
-    }
-    let mark = this.document.createElement("a");
-    mark.setAttribute("ref", "epubjs-mk");
-    mark.style.position = "absolute";
-    mark.dataset["epubcfi"] = cfiRange;
-    if (data) {
-      Object.keys(data).forEach(key => {
-        mark.dataset[key] = data[key];
-      });
-    }
-    if (cb) {
-      mark.addEventListener("click", cb);
-      mark.addEventListener("touchstart", cb);
-    }
-    mark.addEventListener("click", emitter);
-    mark.addEventListener("touchstart", emitter);
-    this.placeMark(mark, range);
-    this.element.appendChild(mark);
-    this.marks[cfiRange] = {
-      "element": mark,
-      "range": range,
-      "listeners": [emitter, cb]
-    };
-    return parent;
-  }
-
-  /**
-   * placeMark
-   * @param {*} element 
-   * @param {*} range 
-   */
-  placeMark(element, range) {
-    let top, right;
-    if (this.layout.name === "pre-paginated" || this.settings.axis !== AXIS_H) {
-      const pos = range.getBoundingClientRect();
-      top = pos.top;
-      right = pos.right;
-    } else {
-      // Element might break columns, so find the left most element
-      const rects = range.getClientRects();
-      let left;
-      for (let i = 0; i != rects.length; i++) {
-        const rect = rects[i];
-        if (!left || rect.left < left) {
-          left = rect.left;
-          // right = rect.right;
-          right = Math.ceil(left / this.layout.pageWidth) * this.layout.pageWidth - this.layout.gap / 2;
-          top = rect.top;
-        }
-      }
-    }
-    element.style.top = `${top}px`;
-    element.style.left = `${right}px`;
-  }
-
-  /**
    * unhighlight
-   * @param {*} cfiRange 
+   * @param {string} cfiRange 
+   * @returns {boolean}
    */
   unhighlight(cfiRange) {
-    let item;
-    if (cfiRange in this.highlights) {
-      item = this.highlights[cfiRange];
-      this.pane.removeMark(item.mark);
-      item.listeners.forEach(l => {
+    const key = encodeURI("epubjs-hl:" + cfiRange);
+    const mark = this.marks.get(key);
+    let result = false;
+    if (mark) {
+      mark.listeners.forEach(l => {
         if (l) {
-          item.element.removeEventListener("click", l);
-          item.element.removeEventListener("touchstart", l);
+          mark.element.removeEventListener("click", l);
+          mark.element.removeEventListener("touchstart", l);
         }
         ;
       });
-      delete this.highlights[cfiRange];
+      this.marks.removeMark(key);
+      result = true;
     }
+    return result;
   }
 
   /**
    * ununderline
-   * @param {*} cfiRange 
+   * @param {string} cfiRange 
+   * @returns {boolean}
    */
   ununderline(cfiRange) {
-    let item;
-    if (cfiRange in this.underlines) {
-      item = this.underlines[cfiRange];
-      this.pane.removeMark(item.mark);
-      item.listeners.forEach(l => {
+    const key = encodeURI("epubjs-ul:" + cfiRange);
+    const mark = this.marks.get(key);
+    let result = false;
+    if (mark) {
+      mark.listeners.forEach(l => {
         if (l) {
-          item.element.removeEventListener("click", l);
-          item.element.removeEventListener("touchstart", l);
+          mark.element.removeEventListener("click", l);
+          mark.element.removeEventListener("touchstart", l);
         }
         ;
       });
-      delete this.underlines[cfiRange];
+      this.marks.removeMark(key);
+      result = true;
     }
-  }
-
-  /**
-   * unmark
-   * @param {*} cfiRange 
-   */
-  unmark(cfiRange) {
-    let item;
-    if (cfiRange in this.marks) {
-      item = this.marks[cfiRange];
-      this.element.removeChild(item.element);
-      item.listeners.forEach(l => {
-        if (l) {
-          item.element.removeEventListener("click", l);
-          item.element.removeEventListener("touchstart", l);
-        }
-        ;
-      });
-      delete this.marks[cfiRange];
-    }
+    return result;
   }
 
   /**
    * destroy
    */
   destroy() {
-    for (let cfiRange in this.highlights) {
-      this.unhighlight(cfiRange);
-    }
-    for (let cfiRange in this.underlines) {
-      this.ununderline(cfiRange);
-    }
-    for (let cfiRange in this.marks) {
-      this.unmark(cfiRange);
-    }
+    this.marks.forEach((mark, key) => {
+      if (mark instanceof highlight) {
+        this.unhighlight(mark.data["epubcfi"]);
+      } else {
+        this.ununderline(mark.data["epubcfi"]);
+      }
+    });
     if (this.blobUrl) {
       revokeBlobUrl(this.blobUrl);
     }
@@ -21447,9 +21293,9 @@ class IframeView {
       this.contents.destroy();
       this.stopExpanding = true;
       this.element.removeChild(this.iframe);
-      if (this.pane) {
-        this.pane.element.remove();
-        this.pane = undefined;
+      if (this.marks) {
+        this.marks.element.remove();
+        this.marks = undefined;
       }
       this.iframe = undefined;
       this.contents = undefined;
@@ -23684,8 +23530,7 @@ class Rendition {
   start() {
     const metadata = this.book.package.metadata;
     const prePaginated = metadata.layout === "pre-paginated";
-    const fixedLayout = this.book.displayOptions.fixedLayout === "true";
-    if (!this.settings.layout && (prePaginated || fixedLayout)) {
+    if (!this.settings.layout && prePaginated) {
       this.settings.layout = "pre-paginated";
     }
 
@@ -24318,8 +24163,7 @@ const read = (e, def) => {
   if (xhr.status === 403) {
     def.reject({
       message: "Forbidden",
-      responseURL: xhr.responseURL,
-      status: xhr.status,
+      target: xhr,
       stack: new Error().stack
     });
   }
@@ -24331,7 +24175,7 @@ const load = (e, type, def) => {
     if (xhr.response === null && xhr.responseXML === null) {
       def.reject({
         message: "Empty Response",
-        status: xhr.status,
+        target: xhr,
         stack: new Error().stack
       });
     } else if (xhr.responseXML) {
@@ -24340,7 +24184,7 @@ const load = (e, type, def) => {
       r = parse(xhr.response, "text/xml");
     } else if (type === "xhtml") {
       r = parse(xhr.response, "application/xhtml+xml");
-    } else if (type == "html" || type == "htm") {
+    } else if (type === "html" || type === "htm") {
       r = parse(xhr.response, "text/html");
     }
   } else if (xhr.responseType === "json") {
@@ -24371,17 +24215,15 @@ const request = (url, type, withCredentials = false, headers = []) => {
   const def = new defer();
   const xhr = new XMLHttpRequest();
   type = type || new utils_path(url).extension;
-  if (withCredentials) {
-    xhr.withCredentials = true;
-  }
+  xhr.withCredentials = withCredentials;
   if (isXml(type)) {
     xhr.responseType = "document";
     xhr.overrideMimeType("text/xml"); // for OPF parsing
   } else if (type === "xhtml") {
     xhr.responseType = "document";
-  } else if (type == "html" || type == "htm") {
+  } else if (type === "html" || type === "htm") {
     xhr.responseType = "document";
-  } else if (type == "binary") {
+  } else if (type === "binary") {
     xhr.responseType = "arraybuffer";
   } else if (type === "blob") {
     xhr.responseType = BLOB_RESPONSE;
@@ -24391,7 +24233,13 @@ const request = (url, type, withCredentials = false, headers = []) => {
   }
   xhr.onreadystatechange = e => read(e, def);
   xhr.onload = e => load(e, type, def);
-  xhr.onerror = e => def.reject(e);
+  xhr.onerror = e => {
+    def.reject({
+      message: "Error",
+      target: e.target,
+      stack: new Error().stack
+    });
+  };
   xhr.open("GET", url, true);
   for (const header in headers) {
     xhr.setRequestHeader(header, headers[header]);
@@ -24975,69 +24823,6 @@ class Store {
 }
 event_emitter_default()(Store.prototype);
 /* harmony default export */ const store = (Store);
-;// CONCATENATED MODULE: ./src/displayoptions.js
-
-
-/**
- * Open DisplayOptions Format Parser
- * @class
- * @param {document} displayOptionsDocument XML
- */
-class DisplayOptions {
-  constructor(displayOptionsDocument) {
-    this.interactive = "";
-    this.fixedLayout = "";
-    this.openToSpread = "";
-    this.orientationLock = "";
-    if (displayOptionsDocument) {
-      this.parse(displayOptionsDocument);
-    }
-  }
-
-  /**
-   * Parse XML
-   * @param  {document} displayOptionsDocument XML
-   * @return {DisplayOptions} self
-   */
-  parse(displayOptionsDocument) {
-    if (!displayOptionsDocument) {
-      return this;
-    }
-    const displayOptionsNode = qs(displayOptionsDocument, "display_options");
-    if (!displayOptionsNode) {
-      return this;
-    }
-    const options = qsa(displayOptionsNode, "option");
-    options.forEach(el => {
-      let value = "";
-      if (el.childNodes.length) {
-        value = el.childNodes[0].nodeValue;
-      }
-      switch (el.attributes.name.value) {
-        case "interactive":
-          this.interactive = value;
-          break;
-        case "fixed-layout":
-          this.fixedLayout = value;
-          break;
-        case "open-to-spread":
-          this.openToSpread = value;
-          break;
-        case "orientation-lock":
-          this.orientationLock = value;
-          break;
-      }
-    });
-    return this;
-  }
-  destroy() {
-    this.interactive = undefined;
-    this.fixedLayout = undefined;
-    this.openToSpread = undefined;
-    this.orientationLock = undefined;
-  }
-}
-/* harmony default export */ const displayoptions = (DisplayOptions);
 ;// CONCATENATED MODULE: ./src/book.js
 
 
@@ -25059,9 +24844,7 @@ class DisplayOptions {
 
 
 
-
 const CONTAINER_PATH = "META-INF/container.xml";
-const IBOOKS_DISPLAY_OPTIONS_PATH = "META-INF/com.apple.ibooks.display-options.xml";
 const INPUT_TYPE = {
   BINARY: "binary",
   BASE64: "base64",
@@ -25077,14 +24860,15 @@ const INPUT_TYPE = {
  * @class
  * @param {string} [url]
  * @param {object} [options]
- * @param {method} [options.requestMethod] a request function to use instead of the default
- * @param {boolean} [options.requestCredentials=undefined] send the xhr request withCredentials
- * @param {object} [options.requestHeaders=undefined] send the xhr request headers
- * @param {string} [options.encoding=binary] optional to pass 'binary' or base64' for archived Epubs
- * @param {string} [options.replacements=none] use base64, blobUrl, or none for replacing assets in archived Epubs
+ * @param {object} [options.request] object options to xhr request
+ * @param {method} [options.request.method=null] a request function to use instead of the default
+ * @param {boolean} [options.request.withCredentials=false] send the xhr request withCredentials
+ * @param {object} [options.request.headers=[]] send the xhr request headers
+ * @param {string} [options.encoding='binary'] optional to pass 'binary' or 'base64' for archived Epubs
+ * @param {string} [options.replacements='none'] use base64, blobUrl, or none for replacing assets in archived Epubs
  * @param {method} [options.canonical] optional function to determine canonical urls for a path
  * @param {string} [options.openAs] optional string to determine the input type
- * @param {string} [options.store=false] cache the contents in local storage, value should be the name of the reader
+ * @param {string} [options.store] cache the contents in local storage, value should be the name of the reader
  * @returns {Book}
  * @example new Book("/path/to/book.epub", {})
  * @example new Book({ replacements: "blobUrl" })
@@ -25097,9 +24881,11 @@ class Book {
       url = undefined;
     }
     this.settings = extend({
-      requestMethod: undefined,
-      requestCredentials: undefined,
-      requestHeaders: undefined,
+      request: {
+        method: null,
+        withCredentials: false,
+        headers: []
+      },
       encoding: undefined,
       replacements: undefined,
       canonical: undefined,
@@ -25120,14 +24906,13 @@ class Book {
      */
     this.isOpen = false;
     this.loading = {
-      manifest: new defer(),
-      spine: new defer(),
-      metadata: new defer(),
       cover: new defer(),
-      navigation: new defer(),
+      spine: new defer(),
+      manifest: new defer(),
+      metadata: new defer(),
       pageList: new defer(),
       resources: new defer(),
-      displayOptions: new defer()
+      navigation: new defer()
     };
     this.loaded = {
       cover: this.loading.cover.promise,
@@ -25135,16 +24920,15 @@ class Book {
       manifest: this.loading.manifest.promise,
       metadata: this.loading.metadata.promise,
       pageList: this.loading.pageList.promise,
-      navigation: this.loading.navigation.promise,
       resources: this.loading.resources.promise,
-      displayOptions: this.loading.displayOptions.promise
+      navigation: this.loading.navigation.promise
     };
     /**
      * @member {promise} ready returns after the book is loaded and parsed
      * @memberof Book
      * @readonly
      */
-    this.ready = Promise.all([this.loaded.manifest, this.loaded.spine, this.loaded.metadata, this.loaded.cover, this.loaded.navigation, this.loaded.resources, this.loaded.displayOptions]);
+    this.ready = Promise.all([this.loaded.manifest, this.loaded.spine, this.loaded.metadata, this.loaded.cover, this.loaded.navigation, this.loaded.resources]);
     /**
      * Queue for methods used before opening
      * @member {boolean} isRendered
@@ -25157,7 +24941,7 @@ class Book {
      * @memberof Book
      * @readonly
      */
-    this.request = this.settings.requestMethod || utils_request;
+    this.request = this.settings.request.method || utils_request;
     /**
      * @member {Spine} spine
      * @memberof Book
@@ -25236,12 +25020,6 @@ class Book {
      * @readonly
      */
     this.packaging = undefined;
-    /**
-     * @member {DisplayOptions} displayOptions
-     * @memberof DisplayOptions
-     * @readonly
-     */
-    this.displayOptions = undefined;
 
     // this.toc = undefined;
     if (this.settings.store) {
@@ -25262,9 +25040,14 @@ class Book {
   /**
    * Open a epub or url
    * @param {string|ArrayBuffer} input Url, Path or ArrayBuffer
-   * @param {string} [what="binary", "base64", "epub", "opf", "json", "directory"] force opening as a certain type
+   * @param {string} [what='binary', 'base64', 'epub', 'opf', 'json', 'directory'] force opening as a certain type
    * @returns {Promise} of when the book has been loaded
+   * @example book.open("/path/to/book/")
+   * @example book.open("/path/to/book/OPS/package.opf")
    * @example book.open("/path/to/book.epub")
+   * @example book.open("https://example.com/book/")
+   * @example book.open("https://example.com/book/OPS/package.opf")
+   * @example book.open("https://example.com/book.epub")
    */
   open(input, what) {
     let opening;
@@ -25280,7 +25063,7 @@ class Book {
     } else if (type === INPUT_TYPE.EPUB) {
       this.archived = true;
       this.url = new utils_url("/", "");
-      opening = this.request(input, "binary", this.settings.requestCredentials, this.settings.requestHeaders).then(this.openEpub.bind(this));
+      opening = this.request(input, "binary", this.settings.request.withCredentials, this.settings.request.headers).then(this.openEpub.bind(this));
     } else if (type == INPUT_TYPE.OPF) {
       this.url = new utils_url(input);
       opening = this.openPackaging(this.url.Path.toString());
@@ -25298,7 +25081,7 @@ class Book {
    * Open an archived epub
    * @param {binary} data
    * @param {string} [encoding]
-   * @return {Promise}
+   * @returns {Promise}
    * @private
    */
   async openEpub(data, encoding) {
@@ -25312,20 +25095,20 @@ class Book {
   /**
    * Open the epub container
    * @param {string} url
-   * @return {string} packagePath
+   * @returns {Promise}
    * @private
    */
-  openContainer(url) {
+  async openContainer(url) {
     return this.load(url).then(xml => {
       this.container = new container(xml);
-      return this.resolve(this.container.packagePath);
+      return this.resolve(this.container.fullPath);
     });
   }
 
   /**
    * Open the Open Packaging Format Xml
    * @param {string} url
-   * @return {Promise}
+   * @returns {Promise}
    * @private
    */
   async openPackaging(url) {
@@ -25339,7 +25122,7 @@ class Book {
   /**
    * Open the manifest JSON
    * @param {string} url
-   * @return {Promise}
+   * @returns {Promise}
    * @private
    */
   async openManifest(url) {
@@ -25353,25 +25136,25 @@ class Book {
 
   /**
    * Load a resource from the Book
-   * @param  {string} path path to the resource to load
-   * @return {Promise} returns a promise with the requested resource
+   * @param {string} path path to the resource to load
+   * @returns {Promise} returns a promise with the requested resource
    */
   load(path) {
     const resolved = this.resolve(path);
     if (this.archived) {
       return this.archive.request(resolved);
     } else {
-      return this.request(resolved, null, this.settings.requestCredentials, this.settings.requestHeaders);
+      return this.request(resolved, null, this.settings.request.withCredentials, this.settings.request.headers);
     }
   }
 
   /**
    * Resolve a path to it's absolute position in the Book
    * @param {string} path
-   * @param {boolean} [absolute] force resolving the full URL
-   * @return {string} the resolved path string
+   * @param {boolean} [absolute=false] force resolving the full URL
+   * @returns {string} the resolved path string
    */
-  resolve(path, absolute) {
+  resolve(path, absolute = false) {
     if (!path) return;
     const isAbsolute = path.indexOf("://") > -1;
     if (isAbsolute) {
@@ -25381,7 +25164,7 @@ class Book {
     if (this.path) {
       resolved = this.path.resolve(path);
     }
-    if (absolute != false && this.url) {
+    if (absolute === false && this.url) {
       resolved = this.url.resolve(resolved);
     }
     return resolved;
@@ -25390,7 +25173,7 @@ class Book {
   /**
    * Get a canonical link to a path
    * @param {string} path
-   * @return {string} the canonical path string
+   * @returns {string} the canonical path string
    */
   canonical(path) {
     if (!path) return "";
@@ -25406,14 +25189,14 @@ class Book {
   /**
    * Determine the type of they input passed to open
    * @param {string} input
-   * @return {string} values: `"binary"` OR `"directory"` OR `"epub"` OR `"opf"`
+   * @returns {string} values: `"binary"` OR `"directory"` OR `"epub"` OR `"opf"`
    * @private
    */
   determineType(input) {
     if (this.settings.encoding === "base64") {
       return INPUT_TYPE.BASE64;
     }
-    if (typeof input != "string") {
+    if (typeof input !== "string") {
       return INPUT_TYPE.BINARY;
     }
     const url = new utils_url(input);
@@ -25438,27 +25221,13 @@ class Book {
   }
 
   /**
-   * unpack the contents of the Books packaging
-   * @private
+   * Unpack the contents of the book packaging
    * @param {Packaging} packaging object
+   * @private
    */
-  unpack(packaging) {
+  async unpack(packaging) {
     this.package = packaging; //TODO: deprecated this
 
-    if (this.packaging.metadata.layout === "") {
-      // rendition:layout not set - check display options if book is pre-paginated
-      this.load(this.url.resolve(IBOOKS_DISPLAY_OPTIONS_PATH)).then(xml => {
-        this.displayOptions = new displayoptions(xml);
-        this.loading.displayOptions.resolve(this.displayOptions);
-      }).catch(err => {
-        this.displayOptions = new displayoptions();
-        this.loading.displayOptions.resolve(this.displayOptions);
-        console.error(err.message);
-      });
-    } else {
-      this.displayOptions = new displayoptions();
-      this.loading.displayOptions.resolve(this.displayOptions);
-    }
     this.spine.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
     this.resources = new resources(this.packaging.manifest, {
       archive: this.archive,
@@ -25483,23 +25252,17 @@ class Book {
     this.isOpen = true;
     if (this.archived || this.settings.replacements && this.settings.replacements !== "none") {
       this.replacements().then(() => {
-        this.loaded.displayOptions.then(() => {
-          this.opening.resolve(this);
-        });
-      }).catch(err => {
-        console.error(err.message);
-      });
-    } else {
-      // Resolve book opened promise
-      this.loaded.displayOptions.then(() => {
         this.opening.resolve(this);
-      });
+      }).catch(err => console.error(err.message));
+    } else {
+      this.opening.resolve(this);
     }
   }
 
   /**
    * Load Navigation and PageList from package
    * @param {Packaging} packaging
+   * @returns {Promise}
    * @private
    */
   async loadNavigation(packaging) {
@@ -25534,7 +25297,7 @@ class Book {
    * Gets a Section of the Book from the Spine
    * Alias for `book.spine.get`
    * @param {string} target
-   * @return {Section}
+   * @returns {Section|null}
    */
   section(target) {
     return this.spine.get(target);
@@ -25544,7 +25307,7 @@ class Book {
    * Sugar to render a book to an element
    * @param {Element|string} element element or string to add a rendition to
    * @param {object} [options]
-   * @return {Rendition}
+   * @returns {Rendition}
    */
   renderTo(element, options) {
     this.rendition = new rendition(this, options);
@@ -25557,7 +25320,7 @@ class Book {
    * @param {boolean} credentials
    */
   setRequestCredentials(credentials) {
-    this.settings.requestCredentials = credentials;
+    this.settings.request.withCredentials = credentials;
   }
 
   /**
@@ -25565,15 +25328,15 @@ class Book {
    * @param {object} headers
    */
   setRequestHeaders(headers) {
-    this.settings.requestHeaders = headers;
+    this.settings.request.headers = headers;
   }
 
   /**
    * Unarchive a zipped epub
-   * @private
    * @param {binary} input epub data
    * @param {string} [encoding]
-   * @return {Archive}
+   * @returns {Archive}
+   * @private
    */
   unarchive(input, encoding) {
     this.archive = new archive();
@@ -25582,15 +25345,15 @@ class Book {
 
   /**
    * Store the epubs contents
-   * @private
    * @param {binary} input epub data
-   * @return {Store}
+   * @returns {Store}
+   * @private
    */
   store(input) {
     // Use "blobUrl" or "base64" for replacements
     const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
     // Save original request method
-    const requester = this.settings.requestMethod || utils_request.bind(this);
+    const requester = this.settings.request.method || utils_request.bind(this);
     // Create new Store
     this.storage = new store(input, requester, this.resolve.bind(this));
     // Replace request method to go through store
@@ -25630,7 +25393,7 @@ class Book {
 
   /**
    * Get the cover url
-   * @return {Promise<?string>} coverUrl
+   * @returns {Promise<?string>} coverUrl
    */
   async coverUrl() {
     return this.loaded.cover.then(() => {
@@ -25647,7 +25410,7 @@ class Book {
 
   /**
    * Load replacement urls
-   * @return {Promise} completed loading urls
+   * @returns {Promise} completed loading urls
    * @private
    */
   async replacements() {
@@ -25662,7 +25425,7 @@ class Book {
   /**
    * Find a DOM Range for a given CFI Range
    * @param {EpubCFI} cfiRange a epub cfi range
-   * @return {Promise}
+   * @returns {Promise}
    */
   async getRange(cfiRange) {
     const cfi = new src_epubcfi(cfiRange);
@@ -25682,7 +25445,7 @@ class Book {
   /**
    * Generates the Book Key using the identifier in the manifest or other string provided
    * @param {string} [identifier] to use instead of metadata identifier
-   * @return {string} key
+   * @returns {string} key
    */
   key(identifier) {
     const ident = identifier || this.packaging.metadata.identifier || this.url.filename;
@@ -25707,7 +25470,6 @@ class Book {
     this.container && this.container.destroy();
     this.packaging && this.packaging.destroy();
     this.rendition && this.rendition.destroy();
-    this.displayOptions && this.displayOptions.destroy();
     this.spine = undefined;
     this.locations = undefined;
     this.pageList = undefined;
