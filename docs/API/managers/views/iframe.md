@@ -26,13 +26,10 @@ IframeView class
         * [.position()](#IframeView+position) ⇒ <code>DOMRect</code>
         * [.locationOf(target)](#IframeView+locationOf) ⇒ <code>object</code>
         * [.bounds([force])](#IframeView+bounds) ⇒ <code>Element</code>
-        * [.highlight(cfiRange, [data], cb, [className], [styles])](#IframeView+highlight) ⇒ <code>object</code>
-        * [.underline(cfiRange, [data], cb, [className], [styles])](#IframeView+underline) ⇒ <code>object</code>
-        * [.mark(cfiRange, [data], cb)](#IframeView+mark) ⇒ <code>object</code>
-        * [.placeMark(element, range)](#IframeView+placeMark)
-        * [.unhighlight(cfiRange)](#IframeView+unhighlight)
-        * [.ununderline(cfiRange)](#IframeView+ununderline)
-        * [.unmark(cfiRange)](#IframeView+unmark)
+        * [.highlight(cfiRange, [data], [cb], [className], [styles])](#IframeView+highlight) ⇒ <code>object</code>
+        * [.underline(cfiRange, [data], [cb], [className], [styles])](#IframeView+underline) ⇒ <code>object</code>
+        * [.unhighlight(cfiRange)](#IframeView+unhighlight) ⇒ <code>boolean</code>
+        * [.ununderline(cfiRange)](#IframeView+ununderline) ⇒ <code>boolean</code>
         * [.destroy()](#IframeView+destroy)
     * _static_
         * [.settings](#IframeView.settings) : <code>object</code>
@@ -40,6 +37,15 @@ IframeView class
         * [.section](#IframeView.section) : <code>Section</code>
         * [.epubcfi](#IframeView.epubcfi) : <code>EpubCFI</code>
         * [.layout](#IframeView.layout) : <code>Layout</code>
+        * [.marks](#IframeView.marks) : <code>Marks</code>
+        * ["loaderror" (err)](#IframeView.event_loaderror)
+        * ["rendered" (section)](#IframeView.event_rendered)
+        * ["resized" (size)](#IframeView.event_resized)
+        * ["displayed"](#IframeView.event_displayed)
+        * ["shown" (view)](#IframeView.event_shown)
+        * ["hidden" (view)](#IframeView.event_hidden)
+        * ["markClicked" (cfiRange, data)](#IframeView.event_markClicked)
+        * ["markClicked" (cfiRange, data)](#IframeView.event_markClicked)
 
 <a name="new_IframeView_new"></a>
 
@@ -186,7 +192,7 @@ display
 
 | Param | Type |
 | --- | --- |
-| request | <code>function</code> | 
+| request | <code>method</code> | 
 
 <a name="IframeView+show"></a>
 
@@ -236,91 +242,55 @@ bounds
 
 <a name="IframeView+highlight"></a>
 
-## iframeView.highlight(cfiRange, [data], cb, [className], [styles]) ⇒ <code>object</code>
+## iframeView.highlight(cfiRange, [data], [cb], [className], [styles]) ⇒ <code>object</code>
 highlight
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| cfiRange | <code>string</code> \| <code>EpubCFI</code> |  |  |
+| cfiRange | <code>string</code> |  |  |
 | [data] | <code>object</code> | <code>{}</code> |  |
-| cb | <code>function</code> |  | callback function |
+| [cb] | <code>method</code> | <code></code> | callback function |
 | [className] | <code>string</code> | <code>&quot;&#x27;epubjs-hl&#x27;&quot;</code> |  |
 | [styles] | <code>object</code> | <code>{}</code> |  |
 
 <a name="IframeView+underline"></a>
 
-## iframeView.underline(cfiRange, [data], cb, [className], [styles]) ⇒ <code>object</code>
+## iframeView.underline(cfiRange, [data], [cb], [className], [styles]) ⇒ <code>object</code>
 underline
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
 | Param | Type | Default |
 | --- | --- | --- |
-| cfiRange | <code>\*</code> |  | 
-| [data] | <code>\*</code> | <code>{}</code> | 
-| cb | <code>\*</code> |  | 
-| [className] | <code>\*</code> | <code>&#x27;epubjs-ul&#x27;</code> | 
-| [styles] | <code>\*</code> | <code>{}</code> | 
-
-<a name="IframeView+mark"></a>
-
-## iframeView.mark(cfiRange, [data], cb) ⇒ <code>object</code>
-mark
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-
-| Param | Type | Default |
-| --- | --- | --- |
-| cfiRange | <code>\*</code> |  | 
-| [data] | <code>\*</code> | <code>{}</code> | 
-| cb | <code>\*</code> |  | 
-
-<a name="IframeView+placeMark"></a>
-
-## iframeView.placeMark(element, range)
-placeMark
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-
-| Param | Type |
-| --- | --- |
-| element | <code>\*</code> | 
-| range | <code>\*</code> | 
+| cfiRange | <code>string</code> |  | 
+| [data] | <code>object</code> | <code>{}</code> | 
+| [cb] | <code>method</code> | <code></code> | 
+| [className] | <code>string</code> | <code>&quot;&#x27;epubjs-ul&#x27;&quot;</code> | 
+| [styles] | <code>object</code> | <code>{}</code> | 
 
 <a name="IframeView+unhighlight"></a>
 
-## iframeView.unhighlight(cfiRange)
+## iframeView.unhighlight(cfiRange) ⇒ <code>boolean</code>
 unhighlight
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
 | Param | Type |
 | --- | --- |
-| cfiRange | <code>\*</code> | 
+| cfiRange | <code>string</code> | 
 
 <a name="IframeView+ununderline"></a>
 
-## iframeView.ununderline(cfiRange)
+## iframeView.ununderline(cfiRange) ⇒ <code>boolean</code>
 ununderline
 
 **Kind**: instance method of [<code>IframeView</code>](#IframeView)  
 
 | Param | Type |
 | --- | --- |
-| cfiRange | <code>\*</code> | 
-
-<a name="IframeView+unmark"></a>
-
-## iframeView.unmark(cfiRange)
-unmark
-
-**Kind**: instance method of [<code>IframeView</code>](#IframeView)  
-
-| Param | Type |
-| --- | --- |
-| cfiRange | <code>\*</code> | 
+| cfiRange | <code>string</code> | 
 
 <a name="IframeView+destroy"></a>
 
@@ -355,3 +325,77 @@ Blank Cfi for Parsing
 ## IframeView.layout : <code>Layout</code>
 **Kind**: static property of [<code>IframeView</code>](#IframeView)  
 **Read only**: true  
+<a name="IframeView.marks"></a>
+
+## IframeView.marks : <code>Marks</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.event_loaderror"></a>
+
+## "loaderror" (err)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| err | <code>\*</code> | 
+
+<a name="IframeView.event_rendered"></a>
+
+## "rendered" (section)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| section | <code>Section</code> | 
+
+<a name="IframeView.event_resized"></a>
+
+## "resized" (size)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| size | <code>object</code> | 
+
+<a name="IframeView.event_displayed"></a>
+
+## "displayed"
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+<a name="IframeView.event_shown"></a>
+
+## "shown" (view)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| view | [<code>IframeView</code>](#IframeView) | 
+
+<a name="IframeView.event_hidden"></a>
+
+## "hidden" (view)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| view | [<code>IframeView</code>](#IframeView) | 
+
+<a name="IframeView.event_markClicked"></a>
+
+## "markClicked" (cfiRange, data)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| cfiRange | <code>string</code> | 
+| data | <code>object</code> | 
+
+<a name="IframeView.event_markClicked"></a>
+
+## "markClicked" (cfiRange, data)
+**Kind**: event emitted by [<code>IframeView</code>](#IframeView)  
+
+| Param | Type |
+| --- | --- |
+| cfiRange | <code>string</code> | 
+| data | <code>object</code> | 
+

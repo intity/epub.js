@@ -7,7 +7,7 @@ A collection of Spine Items
 
 * [Spine](#Spine)
     * _instance_
-        * [.unpack(packege, resolver, canonical)](#Spine+unpack)
+        * [.unpack(packaging, resolver, canonical)](#Spine+unpack)
         * [.get([target])](#Spine+get) ⇒ <code>Section</code> \| <code>null</code>
         * [.each()](#Spine+each) ⇒ <code>method</code>
         * [.first()](#Spine+first) ⇒ <code>Section</code>
@@ -19,14 +19,14 @@ A collection of Spine Items
 
 <a name="Spine+unpack"></a>
 
-## spine.unpack(packege, resolver, canonical)
+## spine.unpack(packaging, resolver, canonical)
 Unpack items from a opf into spine items
 
 **Kind**: instance method of [<code>Spine</code>](#Spine)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| packege | <code>Packaging</code> |  |
+| packaging | <code>Packaging</code> |  |
 | resolver | <code>method</code> | URL resolver |
 | canonical | <code>method</code> | Resolve canonical url |
 
