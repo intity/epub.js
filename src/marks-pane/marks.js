@@ -5,7 +5,7 @@ const NS_URI = "http://www.w3.org/2000/svg";
 /**
  * Marks class
  */
-class Pane {
+class Marks {
     /**
      * Constructor
      * @param {Node} target view
@@ -19,7 +19,7 @@ class Pane {
         this.element.setAttribute("pointer-events", "none");
         /**
          * @member {object[]} marks
-         * @memberof Pane
+         * @memberof Marks
          * @readonly
          */
         this.marks = [];
@@ -94,4 +94,4 @@ class Pane {
     }
 }
 
-export default Pane;
+export default Marks;

@@ -3,7 +3,7 @@ import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
 import { extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl } from "../../utils/core";
-import Pane from "../../marks-pane/pane";
+import Marks from "../../marks-pane/marks";
 import Highlight from "../../marks-pane/highlight";
 import Underline from "../../marks-pane/underline";
 
@@ -670,7 +670,7 @@ class IframeView {
 		data["epubcfi"] = cfiRange;
 
 		if (!this.pane) {
-			this.pane = new Pane(this.iframe, this.element);
+			this.pane = new Marks(this.iframe, this.element);
 		}
 
 		const attributes = Object.assign({
@@ -727,7 +727,7 @@ class IframeView {
 		data["epubcfi"] = cfiRange;
 
 		if (!this.pane) {
-			this.pane = new Pane(this.iframe, this.element);
+			this.pane = new Marks(this.iframe, this.element);
 		}
 
 		const attributes = Object.assign({
