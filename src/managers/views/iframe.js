@@ -372,15 +372,6 @@ class IframeView {
 		};
 
 		this.pane && this.pane.render();
-
-		requestAnimationFrame(() => {
-			for (let m in this.marks) {
-				if (this.marks.hasOwnProperty(m)) {
-					const mark = this.marks[m];
-					this.placeMark(mark.element, mark.range);
-				}
-			}
-		});
 		/**
 		 * @event resized
 		 * @param {object} size
@@ -766,112 +757,6 @@ class IframeView {
 	}
 
 	/**
-	 * mark
-	 * @param {string} cfiRange 
-	 * @param {object} [data={}] 
-	 * @param {method} [cb=null] 
-	 * @returns {HTMLElement|null}
-	 */
-	mark(cfiRange, data = {}, cb = null) {
-
-		if (!this.contents) {
-			return null;
-		}
-
-		if (cfiRange in this.marks) {
-			return this.marks[cfiRange];
-		}
-
-		let range = this.contents.range(cfiRange);
-		if (!range) {
-			return null;
-		}
-
-		const container = range.commonAncestorContainer;
-		const parent = (container.nodeType === 1) ? container : container.parentNode;
-
-		if (range.collapsed && container.nodeType === 1) {
-			range = new Range();
-			range.selectNodeContents(container);
-		} else if (range.collapsed) { // Webkit doesn't like collapsed ranges
-			range = new Range();
-			range.selectNodeContents(parent);
-		}
-
-		const mark = this.document.createElement("a");
-		mark.setAttribute("ref", "epubjs-mk");
-		mark.style.position = "absolute";
-		mark.dataset["epubcfi"] = cfiRange;
-
-		if (data) {
-			Object.keys(data).forEach((key) => {
-				mark.dataset[key] = data[key];
-			});
-		}
-
-		if (cb) {
-			mark.addEventListener("click", cb);
-			mark.addEventListener("touchstart", cb);
-		}
-
-		const emitter = (e) => {
-			/**
-			 * @event markClicked
-			 * @param {string} cfiRange
-			 * @param {object} data
-			 * @memberof IframeView
-			 */
-			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
-		};
-
-		mark.addEventListener("click", emitter);
-		mark.addEventListener("touchstart", emitter);
-
-		this.placeMark(mark, range);
-		this.element.appendChild(mark);
-		this.marks[cfiRange] = {
-			"element": mark,
-			"range": range,
-			"listeners": [emitter, cb]
-		};
-
-		return parent;
-	}
-
-	/**
-	 * placeMark
-	 * @param {Element} element 
-	 * @param {Range} range 
-	 */
-	placeMark(element, range) {
-
-		let top, right;
-
-		if (this.layout.name === "pre-paginated" ||
-			this.settings.axis !== AXIS_H) {
-			const pos = range.getBoundingClientRect();
-			top = pos.top;
-			right = pos.right;
-		} else {
-			// Element might break columns, so find the left most element
-			const rects = range.getClientRects();
-			let left;
-			for (let i = 0; i != rects.length; i++) {
-				const rect = rects[i];
-				if (!left || rect.left < left) {
-					left = rect.left;
-					// right = rect.right;
-					right = Math.ceil(left / this.layout.pageWidth) * this.layout.pageWidth - (this.layout.gap / 2);
-					top = rect.top;
-				}
-			}
-		}
-
-		element.style.top = `${top}px`;
-		element.style.left = `${right}px`;
-	}
-
-	/**
 	 * unhighlight
 	 * @param {string} cfiRange 
 	 * @returns {boolean}
@@ -918,29 +803,6 @@ class IframeView {
 	}
 
 	/**
-	 * unmark
-	 * @param {string} cfiRange 
-	 * @returns {boolean}
-	 */
-	unmark(cfiRange) {
-
-		let item, result = false;
-		if (cfiRange in this.marks) {
-			item = this.marks[cfiRange];
-			this.element.removeChild(item.element);
-			item.listeners.forEach((l) => {
-				if (l) {
-					item.element.removeEventListener("click", l);
-					item.element.removeEventListener("touchstart", l);
-				};
-			});
-			delete this.marks[cfiRange];
-			result = true;
-		}
-		return result;
-	}
-
-	/**
 	 * destroy
 	 */
 	destroy() {
@@ -951,10 +813,6 @@ class IframeView {
 
 		for (let cfiRange in this.underlines) {
 			this.ununderline(cfiRange);
-		}
-
-		for (let cfiRange in this.marks) {
-			this.unmark(cfiRange);
 		}
 
 		if (this.blobUrl) {

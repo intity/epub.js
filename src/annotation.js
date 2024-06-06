@@ -70,12 +70,6 @@ class Annotation {
                 this.className,
                 this.styles
             );
-        } else if (this.type === "mark") {
-            result = view.mark(
-                this.cfiRange,
-                this.data,
-                this.cb
-            );
         }
 
         this.mark = result;
@@ -102,8 +96,6 @@ class Annotation {
             result = view.unhighlight(this.cfiRange);
         } else if (this.type === "underline") {
             result = view.ununderline(this.cfiRange);
-        } else if (this.type === "mark") {
-            result = view.unmark(this.cfiRange);
         }
 
         this.mark = undefined;

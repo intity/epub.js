@@ -19,7 +19,7 @@ class Annotations extends Map {
 
 	/**
 	 * Append an annotation to store
-	 * @param {string} type Type of annotation to append: `"highlight"` OR `"underline"` OR `"mark"`
+	 * @param {string} type Type of annotation to append: `"highlight"` OR `"underline"`
 	 * @param {string} cfiRange EpubCFI range to attach annotation to
 	 * @param {object} [options]
 	 * @param {object} [options.data] Data to assign to annotation
@@ -56,7 +56,7 @@ class Annotations extends Map {
 
 	/**
 	 * Remove an annotation from store
-	 * @param {string} type Type of annotation to remove: `"highlight"` OR `"underline"` OR `"mark"`
+	 * @param {string} type Type of annotation to remove: `"highlight"` OR `"underline"`
 	 * @param {string} cfiRange EpubCFI range to attach annotation to
 	 */
 	remove(type, cfiRange) {
@@ -111,18 +111,6 @@ class Annotations extends Map {
 			className,
 			styles
 		});
-	}
-
-	/**
-	 * Add a mark to the store
-	 * @param {string} cfiRange EpubCFI range to attach annotation to
-	 * @param {object} [options]
-	 * @param {object} [options.data] Data to assign to annotation
-	 * @param {method} [options.cb] Callback after annotation is clicked
-	 */
-	mark(cfiRange, { data, cb }) {
-
-		return this.append("mark", cfiRange, { data, cb });
 	}
 
 	/**
