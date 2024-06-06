@@ -54,33 +54,20 @@ const clone = (e) => {
 }
 
 const dispatch = (e, target, marks) => {
-    // We walk through the set of tracked elements in reverse order so that
-    // events are sent to those most recently added first.
-    //
-    // This is the least surprising behaviour as it simulates the way the
-    // browser would work if items added later were drawn "on top of"
-    // earlier ones.
-    for (let i = marks.length - 1; i >= 0; i--) {
 
-        let x = e.clientX
-        let y = e.clientY;
+    let x = e.clientX;
+    let y = e.clientY;
 
-        if (e.touches && e.touches.length) {
-            x = e.touches[0].clientX;
-            y = e.touches[0].clientY;
-        }
-
-        const mark = marks[i];
-
-        if (!contains(mark, target, x, y)) {
-            continue;
-        }
-
-        // The event targets this mark, so dispatch a cloned event:
-        mark.dispatchEvent(clone(e));
-        // We only dispatch the cloned event to the first matching mark.
-        break;
+    if (e.touches && e.touches.length) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
     }
+
+    marks.forEach((mark, key) => {
+        if (contains(mark, target, x, y)) {
+            mark.dispatchEvent(clone(e));
+        }
+    });
 }
 
 /**

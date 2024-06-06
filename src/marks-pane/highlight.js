@@ -10,17 +10,25 @@ class Highlight extends Mark {
     /**
      * Constructor
      * @param {Range} range 
-     * @param {string} [className] 
-     * @param {object} [data={}] 
-     * @param {object} [attributes={}] 
+     * @param {object} [options]
+     * @param {string} [options.className] 
+     * @param {object} [options.data={}] 
+     * @param {object} [options.attributes={}] 
+     * @param {object[]} [options.listeners=[]]
      */
-    constructor(range, className, data, attributes) {
+    constructor(range, {
+        className,
+        data,
+        attributes,
+        listeners
+    }) {
 
         super();
         this.range = range;
         this.className = className;
         this.data = data || {};
         this.attributes = attributes || {};
+        this.listeners = listeners || [];
     }
 
     /**

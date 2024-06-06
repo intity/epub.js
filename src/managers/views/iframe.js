@@ -74,10 +74,12 @@ class IframeView {
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			this.updateLayout();
 		});
-		this.pane = undefined;
-		this.highlights = {};
-		this.underlines = {};
-		this.marks = {};
+		/**
+		 * @member {Marks} marks
+		 * @memberof IframeView
+		 * @readonly
+		 */
+		this.marks = null;
 		this.setAxis(this.settings.axis);
 	}
 
@@ -371,7 +373,7 @@ class IframeView {
 			heightDelta: this.prevBounds ? height - this.prevBounds.height : height,
 		};
 
-		this.pane && this.pane.render();
+		this.marks && this.marks.render();
 		/**
 		 * @event resized
 		 * @param {object} size
@@ -660,8 +662,8 @@ class IframeView {
 
 		data["epubcfi"] = cfiRange;
 
-		if (!this.pane) {
-			this.pane = new Marks(this.iframe, this.element);
+		if (this.marks === null) {
+			this.marks = new Marks(this.iframe, this.element);
 		}
 
 		const attributes = Object.assign({
@@ -669,9 +671,6 @@ class IframeView {
 			"fill-opacity": "0.3",
 			"mix-blend-mode": "multiply"
 		}, styles);
-		const range = this.contents.range(cfiRange);
-		const m = new Highlight(range, className, data, attributes);
-		const h = this.pane.addMark(m);
 		const emitter = (e) => {
 			/**
 			 * @event markClicked
@@ -681,12 +680,15 @@ class IframeView {
 			 */
 			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 		};
-
-		this.highlights[cfiRange] = {
-			"mark": h,
-			"element": h.element,
-			"listeners": [emitter, cb]
-		};
+		const key = encodeURI("epubjs-hl:" + cfiRange);
+		const range = this.contents.range(cfiRange);
+		const m = new Highlight(range, {
+			className,
+			data,
+			attributes,
+			listeners: [emitter, cb]
+		});
+		const h = this.marks.appendMark(key, m);
 
 		h.element.setAttribute("ref", className);
 		h.element.addEventListener("click", emitter);
@@ -717,8 +719,8 @@ class IframeView {
 
 		data["epubcfi"] = cfiRange;
 
-		if (!this.pane) {
-			this.pane = new Marks(this.iframe, this.element);
+		if (this.marks === null) {
+			this.marks = new Marks(this.iframe, this.element);
 		}
 
 		const attributes = Object.assign({
@@ -726,10 +728,7 @@ class IframeView {
 			"stroke-opacity": "0.3",
 			"mix-blend-mode": "multiply"
 		}, styles);
-		const range = this.contents.range(cfiRange);
-		const m = new Underline(range, className, data, attributes);
-		const h = this.pane.addMark(m);
-		const emitter = () => {
+		const emitter = (e) => {
 			/**
 			 * @event markClicked
 			 * @param {string} cfiRange
@@ -738,12 +737,15 @@ class IframeView {
 			 */
 			this.emit(EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 		};
-
-		this.underlines[cfiRange] = {
-			"mark": h,
-			"element": h.element,
-			"listeners": [emitter, cb]
-		};
+		const key = encodeURI("epubjs-ul:" + cfiRange);
+		const range = this.contents.range(cfiRange);
+		const m = new Underline(range, {
+			className,
+			data,
+			attributes,
+			listeners: [emitter, cb]
+		});
+		const h = this.marks.appendMark(key, m);
 
 		h.element.setAttribute("ref", className);
 		h.element.addEventListener("click", emitter);
@@ -763,17 +765,17 @@ class IframeView {
 	 */
 	unhighlight(cfiRange) {
 
-		let item, result = false;
-		if (cfiRange in this.highlights) {
-			item = this.highlights[cfiRange];
-			this.pane.removeMark(item.mark);
-			item.listeners.forEach((l) => {
+		const key = encodeURI("epubjs-hl:" + cfiRange);
+		const mark = this.marks.get(key);
+		let result = false;
+		if (mark) {
+			mark.listeners.forEach((l) => {
 				if (l) {
-					item.element.removeEventListener("click", l);
-					item.element.removeEventListener("touchstart", l);
+					mark.element.removeEventListener("click", l);
+					mark.element.removeEventListener("touchstart", l);
 				};
 			});
-			delete this.highlights[cfiRange];
+			this.marks.removeMark(key);
 			result = true;
 		}
 		return result;
@@ -786,17 +788,17 @@ class IframeView {
 	 */
 	ununderline(cfiRange) {
 
-		let item, result = false;
-		if (cfiRange in this.underlines) {
-			item = this.underlines[cfiRange];
-			this.pane.removeMark(item.mark);
-			item.listeners.forEach((l) => {
+		const key = encodeURI("epubjs-ul:" + cfiRange);
+		const mark = this.marks.get(key);
+		let result = false;
+		if (mark) {
+			mark.listeners.forEach((l) => {
 				if (l) {
-					item.element.removeEventListener("click", l);
-					item.element.removeEventListener("touchstart", l);
+					mark.element.removeEventListener("click", l);
+					mark.element.removeEventListener("touchstart", l);
 				};
 			});
-			delete this.underlines[cfiRange];
+			this.marks.removeMark(key);
 			result = true;
 		}
 		return result;
@@ -807,13 +809,13 @@ class IframeView {
 	 */
 	destroy() {
 
-		for (let cfiRange in this.highlights) {
-			this.unhighlight(cfiRange);
-		}
-
-		for (let cfiRange in this.underlines) {
-			this.ununderline(cfiRange);
-		}
+		this.marks.forEach((mark, key) => {
+			if (mark instanceof Highlight) {
+				this.unhighlight(mark.data["epubcfi"]);
+			} else {
+				this.ununderline(mark.data["epubcfi"]);
+			}
+		});
 
 		if (this.blobUrl) {
 			revokeBlobUrl(this.blobUrl);
@@ -828,9 +830,9 @@ class IframeView {
 			this.stopExpanding = true;
 			this.element.removeChild(this.iframe);
 
-			if (this.pane) {
-				this.pane.element.remove();
-				this.pane = undefined;
+			if (this.marks) {
+				this.marks.element.remove();
+				this.marks = undefined;
 			}
 
 			this.iframe = undefined;

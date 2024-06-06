@@ -10,13 +10,15 @@ class Underline extends Highlight {
     /**
      * Constructor
      * @param {Range} range 
-     * @param {string} [className] 
-     * @param {object} [data={}] 
-     * @param {object} [attributes={}] 
+     * @param {object} [options]
+     * @param {string} [options.className] 
+     * @param {object} [options.data={}] 
+     * @param {object} [options.attributes={}] 
+     * @param {object[]} [options.listeners=[]]
      */
-    constructor(range, className, data, attributes) {
+    constructor(range, options) {
 
-        super(range, className, data, attributes);
+        super(range, options);
     }
 
     /**
