@@ -20584,13 +20584,15 @@ class IframeView {
    * destroy
    */
   destroy() {
-    this.marks.forEach((mark, key) => {
-      if (mark instanceof highlight) {
-        this.unhighlight(mark.data["epubcfi"]);
-      } else {
-        this.ununderline(mark.data["epubcfi"]);
-      }
-    });
+    if (this.marks) {
+      this.marks.forEach((mark, key) => {
+        if (mark instanceof highlight) {
+          this.unhighlight(mark.data["epubcfi"]);
+        } else {
+          this.ununderline(mark.data["epubcfi"]);
+        }
+      });
+    }
     if (this.blobUrl) {
       revokeBlobUrl(this.blobUrl);
     }
@@ -20602,7 +20604,7 @@ class IframeView {
       this.element.removeChild(this.iframe);
       if (this.marks) {
         this.marks.element.remove();
-        this.marks = undefined;
+        this.marks.clear();
       }
       this.iframe = undefined;
       this.contents = undefined;
