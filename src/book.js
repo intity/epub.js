@@ -14,12 +14,9 @@ import Archive from "./archive";
 import request from "./utils/request";
 import EpubCFI from "./epubcfi";
 import Store from "./store";
-import DisplayOptions from "./displayoptions";
 import { EPUBJS_VERSION, EVENTS } from "./utils/constants";
 
 const CONTAINER_PATH = "META-INF/container.xml";
-const IBOOKS_DISPLAY_OPTIONS_PATH = "META-INF/com.apple.ibooks.display-options.xml";
-
 const INPUT_TYPE = {
 	BINARY: "binary",
 	BASE64: "base64",
@@ -35,14 +32,15 @@ const INPUT_TYPE = {
  * @class
  * @param {string} [url]
  * @param {object} [options]
- * @param {method} [options.requestMethod] a request function to use instead of the default
- * @param {boolean} [options.requestCredentials=undefined] send the xhr request withCredentials
- * @param {object} [options.requestHeaders=undefined] send the xhr request headers
- * @param {string} [options.encoding=binary] optional to pass 'binary' or base64' for archived Epubs
- * @param {string} [options.replacements=none] use base64, blobUrl, or none for replacing assets in archived Epubs
+ * @param {object} [options.request] object options to xhr request
+ * @param {method} [options.request.method=null] a request function to use instead of the default
+ * @param {boolean} [options.request.withCredentials=false] send the xhr request withCredentials
+ * @param {object} [options.request.headers=[]] send the xhr request headers
+ * @param {string} [options.encoding='binary'] optional to pass 'binary' or 'base64' for archived Epubs
+ * @param {string} [options.replacements='none'] use base64, blobUrl, or none for replacing assets in archived Epubs
  * @param {method} [options.canonical] optional function to determine canonical urls for a path
  * @param {string} [options.openAs] optional string to determine the input type
- * @param {string} [options.store=false] cache the contents in local storage, value should be the name of the reader
+ * @param {string} [options.store] cache the contents in local storage, value should be the name of the reader
  * @returns {Book}
  * @example new Book("/path/to/book.epub", {})
  * @example new Book({ replacements: "blobUrl" })
@@ -59,9 +57,11 @@ class Book {
 		}
 
 		this.settings = extend({
-			requestMethod: undefined,
-			requestCredentials: undefined,
-			requestHeaders: undefined,
+			request: {
+				method: null,
+				withCredentials: false,
+				headers: []
+			},
 			encoding: undefined,
 			replacements: undefined,
 			canonical: undefined,
@@ -84,14 +84,13 @@ class Book {
 		this.isOpen = false;
 
 		this.loading = {
-			manifest: new defer(),
-			spine: new defer(),
-			metadata: new defer(),
 			cover: new defer(),
-			navigation: new defer(),
+			spine: new defer(),
+			manifest: new defer(),
+			metadata: new defer(),
 			pageList: new defer(),
 			resources: new defer(),
-			displayOptions: new defer()
+			navigation: new defer()
 		};
 
 		this.loaded = {
@@ -100,9 +99,8 @@ class Book {
 			manifest: this.loading.manifest.promise,
 			metadata: this.loading.metadata.promise,
 			pageList: this.loading.pageList.promise,
-			navigation: this.loading.navigation.promise,
 			resources: this.loading.resources.promise,
-			displayOptions: this.loading.displayOptions.promise
+			navigation: this.loading.navigation.promise
 		};
 		/**
 		 * @member {promise} ready returns after the book is loaded and parsed
@@ -115,8 +113,7 @@ class Book {
 			this.loaded.metadata,
 			this.loaded.cover,
 			this.loaded.navigation,
-			this.loaded.resources,
-			this.loaded.displayOptions
+			this.loaded.resources
 		]);
 		/**
 		 * Queue for methods used before opening
@@ -130,7 +127,7 @@ class Book {
 		 * @memberof Book
 		 * @readonly
 		 */
-		this.request = this.settings.requestMethod || request;
+		this.request = this.settings.request.method || request;
 		/**
 		 * @member {Spine} spine
 		 * @memberof Book
@@ -209,12 +206,6 @@ class Book {
 		 * @readonly
 		 */
 		this.packaging = undefined;
-		/**
-		 * @member {DisplayOptions} displayOptions
-		 * @memberof DisplayOptions
-		 * @readonly
-		 */
-		this.displayOptions = undefined;
 
 		// this.toc = undefined;
 		if (this.settings.store) {
@@ -236,9 +227,14 @@ class Book {
 	/**
 	 * Open a epub or url
 	 * @param {string|ArrayBuffer} input Url, Path or ArrayBuffer
-	 * @param {string} [what="binary", "base64", "epub", "opf", "json", "directory"] force opening as a certain type
+	 * @param {string} [what='binary', 'base64', 'epub', 'opf', 'json', 'directory'] force opening as a certain type
 	 * @returns {Promise} of when the book has been loaded
+	 * @example book.open("/path/to/book/")
+	 * @example book.open("/path/to/book/OPS/package.opf")
 	 * @example book.open("/path/to/book.epub")
+	 * @example book.open("https://example.com/book/")
+	 * @example book.open("https://example.com/book/OPS/package.opf")
+	 * @example book.open("https://example.com/book.epub")
 	 */
 	open(input, what) {
 
@@ -256,8 +252,10 @@ class Book {
 		} else if (type === INPUT_TYPE.EPUB) {
 			this.archived = true;
 			this.url = new Url("/", "");
-			opening = this.request(input, "binary", this.settings.requestCredentials, this.settings.requestHeaders)
-				.then(this.openEpub.bind(this));
+			opening = this.request(input, "binary",
+				this.settings.request.withCredentials,
+				this.settings.request.headers
+			).then(this.openEpub.bind(this));
 		} else if (type == INPUT_TYPE.OPF) {
 			this.url = new Url(input);
 			opening = this.openPackaging(this.url.Path.toString());
@@ -277,7 +275,7 @@ class Book {
 	 * Open an archived epub
 	 * @param {binary} data
 	 * @param {string} [encoding]
-	 * @return {Promise}
+	 * @returns {Promise}
 	 * @private
 	 */
 	async openEpub(data, encoding) {
@@ -292,21 +290,21 @@ class Book {
 	/**
 	 * Open the epub container
 	 * @param {string} url
-	 * @return {string} packagePath
+	 * @returns {Promise}
 	 * @private
 	 */
-	openContainer(url) {
+	async openContainer(url) {
 
 		return this.load(url).then((xml) => {
 			this.container = new Container(xml);
-			return this.resolve(this.container.packagePath);
+			return this.resolve(this.container.fullPath);
 		});
 	}
 
 	/**
 	 * Open the Open Packaging Format Xml
 	 * @param {string} url
-	 * @return {Promise}
+	 * @returns {Promise}
 	 * @private
 	 */
 	async openPackaging(url) {
@@ -321,7 +319,7 @@ class Book {
 	/**
 	 * Open the manifest JSON
 	 * @param {string} url
-	 * @return {Promise}
+	 * @returns {Promise}
 	 * @private
 	 */
 	async openManifest(url) {
@@ -336,8 +334,8 @@ class Book {
 
 	/**
 	 * Load a resource from the Book
-	 * @param  {string} path path to the resource to load
-	 * @return {Promise} returns a promise with the requested resource
+	 * @param {string} path path to the resource to load
+	 * @returns {Promise} returns a promise with the requested resource
 	 */
 	load(path) {
 
@@ -346,17 +344,19 @@ class Book {
 		if (this.archived) {
 			return this.archive.request(resolved);
 		} else {
-			return this.request(resolved, null, this.settings.requestCredentials, this.settings.requestHeaders);
+			return this.request(resolved, null,
+				this.settings.request.withCredentials,
+				this.settings.request.headers);
 		}
 	}
 
 	/**
 	 * Resolve a path to it's absolute position in the Book
 	 * @param {string} path
-	 * @param {boolean} [absolute] force resolving the full URL
-	 * @return {string} the resolved path string
+	 * @param {boolean} [absolute=false] force resolving the full URL
+	 * @returns {string} the resolved path string
 	 */
-	resolve(path, absolute) {
+	resolve(path, absolute = false) {
 
 		if (!path) return;
 
@@ -371,7 +371,7 @@ class Book {
 			resolved = this.path.resolve(path);
 		}
 
-		if (absolute != false && this.url) {
+		if (absolute === false && this.url) {
 			resolved = this.url.resolve(resolved);
 		}
 
@@ -381,7 +381,7 @@ class Book {
 	/**
 	 * Get a canonical link to a path
 	 * @param {string} path
-	 * @return {string} the canonical path string
+	 * @returns {string} the canonical path string
 	 */
 	canonical(path) {
 
@@ -400,7 +400,7 @@ class Book {
 	/**
 	 * Determine the type of they input passed to open
 	 * @param {string} input
-	 * @return {string} values: `"binary"` OR `"directory"` OR `"epub"` OR `"opf"`
+	 * @returns {string} values: `"binary"` OR `"directory"` OR `"epub"` OR `"opf"`
 	 * @private
 	 */
 	determineType(input) {
@@ -409,7 +409,7 @@ class Book {
 			return INPUT_TYPE.BASE64;
 		}
 
-		if (typeof (input) != "string") {
+		if (typeof (input) !== "string") {
 			return INPUT_TYPE.BINARY;
 		}
 
@@ -440,30 +440,18 @@ class Book {
 	}
 
 	/**
-	 * unpack the contents of the Books packaging
-	 * @private
+	 * Unpack the contents of the book packaging
 	 * @param {Packaging} packaging object
+	 * @private
 	 */
-	unpack(packaging) {
+	async unpack(packaging) {
 
 		this.package = packaging; //TODO: deprecated this
 
-		if (this.packaging.metadata.layout === "") {
-			// rendition:layout not set - check display options if book is pre-paginated
-			this.load(this.url.resolve(IBOOKS_DISPLAY_OPTIONS_PATH)).then((xml) => {
-				this.displayOptions = new DisplayOptions(xml);
-				this.loading.displayOptions.resolve(this.displayOptions);
-			}).catch((err) => {
-				this.displayOptions = new DisplayOptions();
-				this.loading.displayOptions.resolve(this.displayOptions);
-				console.error(err.message);
-			});
-		} else {
-			this.displayOptions = new DisplayOptions();
-			this.loading.displayOptions.resolve(this.displayOptions);
-		}
-
-		this.spine.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
+		this.spine.unpack(this.packaging,
+			this.resolve.bind(this),
+			this.canonical.bind(this)
+		);
 
 		this.resources = new Resources(this.packaging.manifest, {
 			archive: this.archive,
@@ -490,25 +478,21 @@ class Book {
 
 		this.isOpen = true;
 
-		if (this.archived || this.settings.replacements && this.settings.replacements !== "none") {
+		if (this.archived ||
+			this.settings.replacements &&
+			this.settings.replacements !== "none") {
 			this.replacements().then(() => {
-				this.loaded.displayOptions.then(() => {
-					this.opening.resolve(this);
-				});
-			}).catch((err) => {
-				console.error(err.message);
-			});
-		} else {
-			// Resolve book opened promise
-			this.loaded.displayOptions.then(() => {
 				this.opening.resolve(this);
-			});
+			}).catch((err) => console.error(err.message));
+		} else {
+			this.opening.resolve(this);
 		}
 	}
 
 	/**
 	 * Load Navigation and PageList from package
 	 * @param {Packaging} packaging
+	 * @returns {Promise}
 	 * @private
 	 */
 	async loadNavigation(packaging) {
@@ -549,7 +533,7 @@ class Book {
 	 * Gets a Section of the Book from the Spine
 	 * Alias for `book.spine.get`
 	 * @param {string} target
-	 * @return {Section}
+	 * @returns {Section|null}
 	 */
 	section(target) {
 
@@ -560,7 +544,7 @@ class Book {
 	 * Sugar to render a book to an element
 	 * @param {Element|string} element element or string to add a rendition to
 	 * @param {object} [options]
-	 * @return {Rendition}
+	 * @returns {Rendition}
 	 */
 	renderTo(element, options) {
 
@@ -576,7 +560,7 @@ class Book {
 	 */
 	setRequestCredentials(credentials) {
 
-		this.settings.requestCredentials = credentials;
+		this.settings.request.withCredentials = credentials;
 	}
 
 	/**
@@ -585,15 +569,15 @@ class Book {
 	 */
 	setRequestHeaders(headers) {
 
-		this.settings.requestHeaders = headers;
+		this.settings.request.headers = headers;
 	}
 
 	/**
 	 * Unarchive a zipped epub
-	 * @private
 	 * @param {binary} input epub data
 	 * @param {string} [encoding]
-	 * @return {Archive}
+	 * @returns {Archive}
+	 * @private
 	 */
 	unarchive(input, encoding) {
 
@@ -603,15 +587,15 @@ class Book {
 
 	/**
 	 * Store the epubs contents
-	 * @private
 	 * @param {binary} input epub data
-	 * @return {Store}
+	 * @returns {Store}
+	 * @private
 	 */
 	store(input) {
 		// Use "blobUrl" or "base64" for replacements
 		const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
 		// Save original request method
-		const requester = this.settings.requestMethod || request.bind(this);
+		const requester = this.settings.request.method || request.bind(this);
 		// Create new Store
 		this.storage = new Store(input, requester, this.resolve.bind(this));
 		// Replace request method to go through store
@@ -656,11 +640,12 @@ class Book {
 
 	/**
 	 * Get the cover url
-	 * @return {Promise<?string>} coverUrl
+	 * @returns {Promise<?string>} coverUrl
 	 */
 	async coverUrl() {
 
 		return this.loaded.cover.then(() => {
+
 			if (!this.cover) {
 				return null;
 			}
@@ -675,7 +660,7 @@ class Book {
 
 	/**
 	 * Load replacement urls
-	 * @return {Promise} completed loading urls
+	 * @returns {Promise} completed loading urls
 	 * @private
 	 */
 	async replacements() {
@@ -692,7 +677,7 @@ class Book {
 	/**
 	 * Find a DOM Range for a given CFI Range
 	 * @param {EpubCFI} cfiRange a epub cfi range
-	 * @return {Promise}
+	 * @returns {Promise}
 	 */
 	async getRange(cfiRange) {
 
@@ -713,7 +698,7 @@ class Book {
 	/**
 	 * Generates the Book Key using the identifier in the manifest or other string provided
 	 * @param {string} [identifier] to use instead of metadata identifier
-	 * @return {string} key
+	 * @returns {string} key
 	 */
 	key(identifier) {
 
@@ -742,7 +727,6 @@ class Book {
 		this.container && this.container.destroy();
 		this.packaging && this.packaging.destroy();
 		this.rendition && this.rendition.destroy();
-		this.displayOptions && this.displayOptions.destroy();
 
 		this.spine = undefined;
 		this.locations = undefined;

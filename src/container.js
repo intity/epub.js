@@ -1,16 +1,40 @@
 import path from "path-webpack";
-import {qs} from "./utils/core";
+import { qs } from "./utils/core";
 
 /**
- * Handles Parsing and Accessing an Epub Container
- * @class
- * @param {document} [containerDocument] xml document
+ * Parsing the Epub Container
+ * @link https://www.w3.org/TR/epub/#sec-container-metainf
  */
 class Container {
+	/**
+	 * Constructor
+	 * @param {Document} [containerDocument] xml document
+	 */
 	constructor(containerDocument) {
-		this.packagePath = '';
-		this.directory = '';
-		this.encoding = '';
+		/**
+		 * @member {string} directory Package directory
+		 * @memberof Container
+		 * @readonly
+		 */
+		this.directory = "";
+		/**
+		 * @member {string} fullPath Path to package file
+		 * @memberof Container
+		 * @readonly
+		 */
+		this.fullPath = "";
+		/**
+		 * @member {string} encoding Encoding
+		 * @memberof Container
+		 * @readonly
+		 */
+		this.encoding = "";
+		/**
+		 * @member {string} mediaType Media type
+		 * @memberof Container
+		 * @readonly
+		 */
+		this.mediaType = "";
 
 		if (containerDocument) {
 			this.parse(containerDocument);
@@ -19,31 +43,38 @@ class Container {
 
 	/**
 	 * Parse the Container XML
-	 * @param  {document} containerDocument
+	 * @param {Document} containerDocument
 	 */
-	parse(containerDocument){
-		//-- <rootfile full-path="OPS/package.opf" media-type="application/oebps-package+xml"/>
-		var rootfile;
+	parse(containerDocument) {
 
-		if(!containerDocument) {
+		if (!containerDocument) {
 			throw new Error("Container File Not Found");
 		}
 
-		rootfile = qs(containerDocument, "rootfile");
+		// <rootfile
+		//   full-path="OPS/package.opf" 
+		//   media-type="application/oebps-package+xml"/>
+		const rootfile = qs(containerDocument, "rootfile");
 
-		if(!rootfile) {
+		if (!rootfile) {
 			throw new Error("No RootFile Found");
 		}
 
-		this.packagePath = rootfile.getAttribute("full-path");
-		this.directory = path.dirname(this.packagePath);
+		this.fullPath = rootfile.getAttribute("full-path");
+		this.directory = path.dirname(this.fullPath);
 		this.encoding = containerDocument.xmlEncoding;
+		this.mediaType = rootfile.getAttribute("media-type");
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
-		this.packagePath = undefined;
+
 		this.directory = undefined;
+		this.fullPath = undefined;
 		this.encoding = undefined;
+		this.mediaType = undefined;
 	}
 }
 

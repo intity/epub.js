@@ -19,7 +19,6 @@ const docs = [
     "book",
     "container",
     "contents",
-    "displayoptions",
     "epub",
     "epubcfi",
     "layout",

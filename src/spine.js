@@ -46,16 +46,16 @@ class Spine {
 
 	/**
 	 * Unpack items from a opf into spine items
-	 * @param {Packaging} packege
+	 * @param {Packaging} packaging
 	 * @param {method} resolver URL resolver
 	 * @param {method} canonical Resolve canonical url
 	 */
-	unpack(packege, resolver, canonical) {
+	unpack(packaging, resolver, canonical) {
 
-		this.items = packege.spine;
-		this.manifest = packege.manifest;
-		this.spineNodeIndex = packege.spineNodeIndex;
-		this.baseUrl = packege.baseUrl || packege.basePath || "";
+		this.items = packaging.spine;
+		this.manifest = packaging.manifest;
+		this.spineNodeIndex = packaging.spineNodeIndex;
+		this.baseUrl = packaging.baseUrl || packaging.basePath || "";
 		this.length = this.items.length;
 
 		this.items.forEach((item, index) => {

@@ -12,8 +12,7 @@ const read = (e, def) => {
 	if (xhr.status === 403) {
 		def.reject({
 			message: "Forbidden",
-			responseURL: xhr.responseURL,
-			status: xhr.status,
+			target: xhr,
 			stack: new Error().stack
 		});
 	}
@@ -29,7 +28,7 @@ const load = (e, type, def) => {
 			xhr.responseXML === null) {
 			def.reject({
 				message: "Empty Response",
-				status: xhr.status,
+				target: xhr,
 				stack: new Error().stack
 			});
 		} else if (xhr.responseXML) {
@@ -38,7 +37,7 @@ const load = (e, type, def) => {
 			r = parse(xhr.response, "text/xml");
 		} else if (type === "xhtml") {
 			r = parse(xhr.response, "application/xhtml+xml");
-		} else if (type == "html" || type == "htm") {
+		} else if (type === "html" || type === "htm") {
 			r = parse(xhr.response, "text/html");
 		}
 	} else if (xhr.responseType === "json") {
@@ -72,19 +71,16 @@ const request = (url, type, withCredentials = false, headers = []) => {
 	const xhr = new XMLHttpRequest();
 
 	type = type || new Path(url).extension;
-
-	if (withCredentials) {
-		xhr.withCredentials = true;
-	}
+	xhr.withCredentials = withCredentials;
 
 	if (isXml(type)) {
 		xhr.responseType = "document";
 		xhr.overrideMimeType("text/xml"); // for OPF parsing
 	} else if (type === "xhtml") {
 		xhr.responseType = "document";
-	} else if (type == "html" || type == "htm") {
+	} else if (type === "html" || type === "htm") {
 		xhr.responseType = "document";
-	} else if (type == "binary") {
+	} else if (type === "binary") {
 		xhr.responseType = "arraybuffer";
 	} else if (type === "blob") {
 		xhr.responseType = BLOB_RESPONSE;
@@ -95,7 +91,13 @@ const request = (url, type, withCredentials = false, headers = []) => {
 
 	xhr.onreadystatechange = (e) => read(e, def);
 	xhr.onload = (e) => load(e, type, def);
-	xhr.onerror = (e) => def.reject(e);
+	xhr.onerror = (e) => {
+		def.reject({
+			message: "Error",
+			target: e.target,
+			stack: new Error().stack
+		});
+	};
 	xhr.open("GET", url, true);
 
 	for (const header in headers) {
