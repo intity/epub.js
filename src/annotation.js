@@ -20,6 +20,7 @@ class Annotation {
         /**
          * @member {string} type
          * @memberof Annotation
+         * @readonly
          */
         this.type = type;
         this.cfiRange = cfiRange;
@@ -33,6 +34,11 @@ class Annotation {
         this.cb = cb;
         this.className = className;
         this.styles = styles;
+        /**
+         * @member {Mark} mark
+         * @memberof Annotation
+         * @readonly
+         */
         this.mark = undefined;
     }
 
@@ -76,7 +82,7 @@ class Annotation {
         this.mark = result;
         /**
          * @event attach
-         * @param {any} result
+         * @param {Mark} result
          * @memberof Annotation
          */
         this.emit(EVENTS.ANNOTATION.ATTACH, result);
