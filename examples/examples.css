@@ -346,29 +346,28 @@ svg {
     fill: #777;
 }
 
-#extras {
+#annotations {
     width: 600px;
-    height: 100px;
+    height: calc((100% - 600px)/2 - 80px);
     margin: 40px auto;
     position: relative;
     z-index: 10;
 }
 
-#highlights {
+#annotations ul {
     height: 100%;
-    list-style: none;
     margin-left: 0;
     padding: 0;
     overflow: auto;
 }
 
-#highlights li {
+#annotations li {
     list-style: none;
     border-top: 1px solid #E2E2E2;
     padding: 10px;
 }
 
-#highlights a {
+#annotations a {
     display: block;
 }
 

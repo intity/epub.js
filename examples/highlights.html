@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB.js Highlights Example</title>
+    <title>EPUB.JS: Highlights Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="../dist/epub.js"></script>
 </head>
@@ -15,11 +15,11 @@
         <a id="prev" href="#prev" class="arrow"></a>
         <a id="next" href="#next" class="arrow"></a>
     </div>
-    <div id="extras">
-        <ul id="highlights"></ul>
+    <div id="annotations">
+        <ul id="list"></ul>
     </div>
     <script>
-        const highlights = document.getElementById("highlights")
+        const list = document.getElementById("list")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
         const book = ePub("../test/fixtures/alice/")
@@ -66,7 +66,7 @@
             })
             book.getRange(cfiRange).then((range) => {
 
-                const list = document.createElement("li")
+                const item = document.createElement("li")
                 const link = document.createElement("a")
                 const ctrl = document.createElement("a")
 
@@ -87,14 +87,14 @@
                     ctrl.onclick = (e) => {
 
                         rendition.annotations.remove("highlight", cfiRange)
-                        highlights.removeChild(list)
+                        list.removeChild(item)
                         e.preventDefault()
                     }
 
-                    list.appendChild(link)
-                    list.appendChild(node)
-                    list.appendChild(ctrl)
-                    highlights.appendChild(list)
+                    item.appendChild(link)
+                    item.appendChild(node)
+                    item.appendChild(ctrl)
+                    list.appendChild(item)
                 }
             })
             contents.window.getSelection().removeAllRanges()
