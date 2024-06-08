@@ -76,44 +76,6 @@ class Annotations extends Map {
 	}
 
 	/**
-	 * Add a highlight to the store
-	 * @param {string} cfiRange EpubCFI range to attach annotation to
-	 * @param {object} [options]
-	 * @param {object} [options.data] Data to assign to annotation
-	 * @param {method} [options.cb] Callback after annotation is clicked
-	 * @param {string} [options.className] CSS class to assign to annotation
-	 * @param {object} [options.styles] CSS styles to assign to annotation
-	 */
-	highlight(cfiRange, { data, cb, className, styles }) {
-
-		return this.append("highlight", cfiRange, {
-			data,
-			cb,
-			className,
-			styles
-		});
-	}
-
-	/**
-	 * Add a underline to the store
-	 * @param {string} cfiRange EpubCFI range to attach annotation to
-	 * @param {object} [options]
-	 * @param {object} [options.data] Data to assign to annotation
-	 * @param {method} [options.cb] Callback after annotation is clicked
-	 * @param {string} [options.className] CSS class to assign to annotation
-	 * @param {object} [options.styles] CSS styles to assign to annotation
-	 */
-	underline(cfiRange, { data, cb, className, styles }) {
-
-		return this.append("underline", cfiRange, {
-			data,
-			cb,
-			className,
-			styles
-		});
-	}
-
-	/**
 	 * Hook for injecting annotation into a view
 	 * @param {View} view
 	 * @private
