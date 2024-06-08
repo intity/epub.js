@@ -1,4 +1,3 @@
-import EpubCFI from "./epubcfi";
 import Annotation from "./annotation";
 
 /**
@@ -28,20 +27,10 @@ class Annotations extends Map {
 	 * @param {object} [options.styles] CSS styles to assign to annotation
 	 * @returns {Annotation} Annotation that was append
 	 */
-	append(type, cfiRange, { data, cb, className, styles }) {
+	append(type, cfiRange, options) {
 
 		const key = encodeURI(type + ":" + cfiRange);
-		const cfi = new EpubCFI(cfiRange);
-		const sectionIndex = cfi.spinePos;
-		const annotation = new Annotation({
-			type,
-			cfiRange,
-			sectionIndex,
-			data,
-			cb,
-			className,
-			styles
-		});
+		const annotation = new Annotation(type, cfiRange, options);
 
 		this.rendition.views().forEach((view) => {
 			const index = view.section.index;
