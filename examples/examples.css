@@ -399,6 +399,8 @@ only screen and (min-width: 568px) and (max-width: 932px) and (orientation: land
     }
     #content.mobile #viewer.scrolled {
         width: 100%;
+        height: 100%;
+        margin: 0;
         box-shadow: none;
         border-radius: 0;
     }
@@ -429,6 +431,8 @@ only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: la
     }
     #content.mobile #viewer.scrolled {
         width: 100%;
+        height: 100%;
+        margin: 0;
         box-shadow: none;
         border-radius: 0;
     }
