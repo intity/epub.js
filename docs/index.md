@@ -6,8 +6,9 @@
 
 ### global classes (dependencies graph)
 
-- [Annotations](API/annotations.md) `from ./annotations`
+- [Annotation](API/annotation.md) `from ./annotation`
     - [EpubCFI](API/epubcfi.md)
+- [Annotations](API/annotations.md) `from ./annotations`
     - [constants](API/utils/constants.md) `from ./utils/constants`
         - EVENTS
 - [Book](API/book.md) `from ./book`
