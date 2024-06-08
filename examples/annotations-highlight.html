@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB.JS: Highlights Example</title>
+    <title>EPUB.JS: Highlight Example</title>
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="../dist/epub.js"></script>
 </head>
@@ -61,7 +61,7 @@
         })
         rendition.on("selected", (cfiRange, contents) => {
 
-            const note = rendition.annotations.highlight(cfiRange, {
+            const note = rendition.annotations.append("highlight", cfiRange, {
                 cb: (e) => console.log(e.target)
             })
             book.getRange(cfiRange).then((range) => {
