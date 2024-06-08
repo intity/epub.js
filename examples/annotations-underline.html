@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Underline Example</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="content">
+        <div id="viewer" class="paginated"></div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <div id="annotations">
+        <ul id="list"></ul>
+    </div>
+    <script>
+        const list = document.getElementById("list")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("../test/fixtures/alice/")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%",
+            spread: "none"
+        })
+        rendition.display(6)
+        prev.onclick = (e) => {
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (loc) => {
+
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+        }
+        const keybinding = (e) => {
+
+            switch (e.key) {
+                case "ArrowLeft":
+                    rendition.prev()
+                    break
+                case "ArrowRight":
+                    rendition.next()
+                    break
+            }
+        }
+        rendition.on("displayed", (section) => {
+
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+            console.log(rendition)
+        })
+        rendition.on("selected", (cfiRange, contents) => {
+
+            const note = rendition.annotations.append("underline", cfiRange, {
+                cb: (e) => console.log(e.target)
+            })
+            book.getRange(cfiRange).then((range) => {
+
+                const item = document.createElement("li")
+                const link = document.createElement("a")
+                const ctrl = document.createElement("a")
+
+                if (range) {
+                    const text = range.toString()
+                    const node = document.createTextNode(text)
+
+                    link.textContent = cfiRange
+                    link.href = "#" + cfiRange
+                    link.onclick = (e) => {
+
+                        rendition.display(cfiRange)
+                        e.preventDefault()
+                    }
+
+                    ctrl.textContent = "remove"
+                    ctrl.href = "#"
+                    ctrl.onclick = (e) => {
+
+                        rendition.annotations.remove("underline", cfiRange)
+                        list.removeChild(item)
+                        e.preventDefault()
+                    }
+
+                    item.appendChild(link)
+                    item.appendChild(node)
+                    item.appendChild(ctrl)
+                    list.appendChild(item)
+                }
+            })
+            contents.window.getSelection().removeAllRanges()
+            console.log(note)
+        })
+        rendition.on("relocated", (location) => {
+
+            update(location)
+            console.log(location)
+        })
+    </script>
+</body>
+
+</html>
