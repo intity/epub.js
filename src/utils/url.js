@@ -1,5 +1,4 @@
 import Path from "./path";
-import path from "path-webpack";
 
 /**
  * creates a Url object for parsing and manipulation of a url string
@@ -85,7 +84,7 @@ class Url {
 			return what;
 		}
 
-		fullpath = path.resolve(this.directory, what);
+		fullpath =  Path.prototype.resolve(this.directory, what);
 		return this.origin + fullpath;
 	}
 
@@ -95,7 +94,7 @@ class Url {
 	 * @returns {string} path
 	 */
 	relative (what) {
-		return path.relative(what, this.directory);
+		return Path.prototype.relative(what, this.directory);
 	}
 
 	/**

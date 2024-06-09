@@ -3,7 +3,6 @@ import {createBase64Url, createBlobUrl, blob2base64} from "./utils/core";
 import Url from "./utils/url";
 import mime from "./utils/mime";
 import Path from "./utils/path";
-import path from "path-webpack";
 
 /**
  * Handle Package Resources
@@ -195,8 +194,9 @@ class Resources {
 	 */
 	createCssFile(href){
 		var newUrl;
+		var path = new Path(href);
 
-		if (path.isAbsolute(href)) {
+		if (path.isAbsolute(path.toString())) {
 			return new Promise(function(resolve){
 				resolve();
 			});
@@ -216,7 +216,8 @@ class Resources {
 		// Get asset links relative to css file
 		var relUrls = this.urls.map( (assetHref) => {
 			var resolved = this.settings.resolver(assetHref);
-			var relative = new Path(absolute).relative(resolved);
+			var path = new Path(absolute);
+			var relative = path.relative(path.directory, resolved);
 
 			return relative;
 		});
@@ -262,7 +263,8 @@ class Resources {
 		return this.urls.
 			map(function(href) {
 				var resolved = resolver(href);
-				var relative = new Path(absolute).relative(resolved);
+				var path = new Path(absolute);
+				var relative = path.relative(path.directory, resolved);
 				return relative;
 			}.bind(this));
 	}

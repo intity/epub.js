@@ -106,19 +106,22 @@ describe("Core", () => {
 			it("should resolve a path", () => {
 				const a = "/fred/chasen/index.html"
 				const b = "derf.html"
-				const resolved = new Path(a).resolve(b)
+				const path = new Path(a)
+				const resolved = path.resolve(path.directory, b)
 				assert.equal(resolved, "/fred/chasen/derf.html")
 			})
 			it("should resolve a relative path", () => {
 				const a = "fred/chasen/index.html"
 				const b = "derf.html"
-				const resolved = new Path(a).resolve(b)
+				const path = new Path(a);
+				const resolved = path.resolve(path.directory, b)
 				assert.equal(resolved, "/fred/chasen/derf.html")
 			})
 			it("should resolve a level up", () => {
 				const a = "/fred/chasen/index.html"
 				const b = "../derf.html"
-				const resolved = new Path(a).resolve(b)
+				const path = new Path(a)
+				const resolved = path.resolve(path.directory, b)
 				assert.equal(resolved, "/fred/derf.html")
 			})
 		})
@@ -126,19 +129,22 @@ describe("Core", () => {
 			it("should find a relative path at the same level", () => {
 				const a = "/fred/chasen/index.html"
 				const b = "/fred/chasen/derf.html"
-				const relative = new Path(a).relative(b)
+				const path = new Path(a)
+				const relative = path.relative(path.directory, b)
 				assert.equal(relative, "derf.html")
 			})
 			it("should find a relative path down a level", () => {
 				const a = "/fred/chasen/index.html"
 				const b = "/fred/chasen/ops/derf.html"
-				const relative = new Path(a).relative(b)
+				const path = new Path(a)
+				const relative = path.relative(path.directory, b)
 				assert.equal(relative, "ops/derf.html")
 			})
 			it("should resolve a level up", () => {
 				const a = "/fred/chasen/index.html"
 				const b = "/fred/derf.html"
-				const relative = new Path(a).relative(b)
+				const path = new Path(a)
+				const relative = path.relative(path.directory, b)
 				assert.equal(relative, "../derf.html")
 			})
 		})

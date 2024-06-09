@@ -41,7 +41,6 @@
     "karma-sourcemap-loader": "^0.4.0",
     "karma-webpack": "^5.0.1",
     "mocha": "^10.4.0",
-    "path-webpack": "^0.0.3",
     "process": "^0.11.10",
     "terser-webpack-plugin": "^5.3.10",
     "webpack": "^5.91.0",

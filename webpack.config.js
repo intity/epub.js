@@ -46,7 +46,6 @@ module.exports = {
 	],
 	resolve: {
 		alias: {
-			path: "path-webpack",
 			process: "process/browser"
 		}
 	},

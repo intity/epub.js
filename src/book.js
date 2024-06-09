@@ -368,7 +368,7 @@ class Book {
 
 		let resolved = path;
 		if (this.path) {
-			resolved = this.path.resolve(path);
+			resolved = this.path.resolve(this.path.directory, path);
 		}
 
 		if (absolute === false && this.url) {

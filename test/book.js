@@ -8,7 +8,7 @@ describe("Book", () => {
 			await book.opened
 			assert.equal(book.isOpen, true, "book is opened")
 			assert.equal(book.url.toString(), "http://localhost:9876/fixtures/alice/", "book url is passed to new Book instance")
-			assert.equal(book.container.directory, "OPS")
+			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")
 			assert.equal(book.container.encoding, "UTF-8")
 			assert.equal(book.container.mediaType, "application/oebps-package+xml")
