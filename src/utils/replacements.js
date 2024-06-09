@@ -22,7 +22,6 @@ export function replaceBase(doc, section){
 
 	head = qs(doc, "head");
 	base = qs(head, "base");
-	console.log(doc.documentURI)
 
 	if(!base) {
 		base = doc.createElement("base");
