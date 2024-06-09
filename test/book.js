@@ -19,7 +19,6 @@ describe("Book", () => {
 		it("should open a epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true, "book is opened")
-			console.log(book.url.toString())
 			assert.equal(book.url.toString(), "https://s3.amazonaws.com/moby-dick/", "book url is passed to new Book instance")
 			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")
