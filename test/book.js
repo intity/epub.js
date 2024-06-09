@@ -2,12 +2,25 @@ import assert from "assert"
 import Book from "../src/book"
 
 describe("Book", () => {
-	describe("Unarchived: open book from directory", () => {
+	describe("Unarchived: open book from localhost server directory", () => {
 		const book = new Book("/fixtures/alice/")
-		it ("should open a epub", async () => {
+		it("should open a epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true, "book is opened")
 			assert.equal(book.url.toString(), "http://localhost:9876/fixtures/alice/", "book url is passed to new Book instance")
+			assert.equal(book.container.directory, "OPS/")
+			assert.equal(book.container.fullPath, "OPS/package.opf")
+			assert.equal(book.container.encoding, "UTF-8")
+			assert.equal(book.container.mediaType, "application/oebps-package+xml")
+		})
+	})
+	describe("Unarchived: open book from external server directory", () => {
+		const book = new Book("https://s3.amazonaws.com/moby-dick/")
+		it("should open a epub", async () => {
+			await book.opened
+			assert.equal(book.isOpen, true, "book is opened")
+			console.log(book.url.toString())
+			assert.equal(book.url.toString(), "https://s3.amazonaws.com/moby-dick/", "book url is passed to new Book instance")
 			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")
 			assert.equal(book.container.encoding, "UTF-8")
