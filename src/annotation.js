@@ -1,37 +1,44 @@
 import EventEmitter from "event-emitter";
+import EpubCFI from "./epubcfi";
 import { EVENTS } from "./utils/constants";
 
 /**
- * Annotation object
- * @class
- * @param {object} options
- * @param {string} options.type Type of annotation to add: `"highlight"` OR `"underline"` OR `"mark"`
- * @param {string} options.cfiRange EpubCFI range to attach annotation to
- * @param {number} options.sectionIndex Index in the Spine of the Section annotation belongs to
- * @param {object} [options.data] Data to assign to annotation
- * @param {method} [options.cb] Callback after annotation is clicked
- * @param {string} [options.className] CSS class to assign to annotation
- * @param {object} [options.styles] CSS styles to assign to annotation
- * @returns {Annotation} annotation
+ * Annotation class
  */
 class Annotation {
-
-    constructor({
-        type,
-        cfiRange,
-        sectionIndex,
-        data,
-        cb,
-        className,
-        styles
-    }) {
+    /**
+     * Constructor
+     * @param {string} type Type of annotation to add: `"highlight"` OR `"underline"`
+     * @param {string} cfiRange EpubCFI range to attach annotation to
+     * @param {object} [options]
+     * @param {object} [options.data] Data to assign to annotation
+     * @param {method} [options.cb] Callback after annotation is clicked
+     * @param {string} [options.className] CSS class to assign to annotation
+     * @param {object} [options.styles] CSS styles to assign to annotation
+     */
+    constructor(type, cfiRange, { data, cb, className, styles }) {
+        /**
+         * @member {string} type
+         * @memberof Annotation
+         * @readonly
+         */
         this.type = type;
         this.cfiRange = cfiRange;
-        this.sectionIndex = sectionIndex;
+        /**
+         * @member {number} sectionIndex
+         * @memberof Annotation
+         * @readonly
+         */
+        this.sectionIndex = new EpubCFI(cfiRange).spinePos;
         this.data = data;
         this.cb = cb;
         this.className = className;
         this.styles = styles;
+        /**
+         * @member {Mark} mark
+         * @memberof Annotation
+         * @readonly
+         */
         this.mark = undefined;
     }
 
@@ -75,7 +82,7 @@ class Annotation {
         this.mark = result;
         /**
          * @event attach
-         * @param {any} result
+         * @param {Mark} result
          * @memberof Annotation
          */
         this.emit(EVENTS.ANNOTATION.ATTACH, result);

@@ -14,6 +14,7 @@ const output = (dir, filename, data) => {
 }
 
 const docs = [
+    "annotation",
     "annotations",
     "archive",
     "book",

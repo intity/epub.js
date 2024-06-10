@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS Example: Open book from external server</title>
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="content">
+        <div id="viewer" class="paginated">
+            <div id="divider"></div>
+        </div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const url = new URL(window.location)
+        const path = url.searchParams.get("bookPath") || "../test/fixtures/alice/"
+        const content = document.getElementById("content")
+        const divider = document.getElementById("divider")
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const time = Date.now()
+        const book = ePub(path)
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%"
+        })
+        rendition.display()
+        prev.onclick = (e) => {
+
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (location) => {
+
+            const dir = rendition.layout.direction
+            const div = rendition.layout.divisor
+            const loc = location || rendition.currentLocation()
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+            divider.style.display = div === 1 ? "none" : "block"
+            content.dir = dir
+        }
+        const keybinding = (e) => {
+
+            const dir = rendition.layout.direction
+            switch (e.key) {
+                case "ArrowLeft":
+                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    break
+                case "ArrowRight":
+                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    break
+            }
+        }
+        book.ready.then(() => {
+
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+        })
+        rendition.on("relocated", (location) => {
+
+            update(location)
+            console.log(location)
+        })
+        rendition.on("displayed", (section) => {
+
+            console.log(`displayed: ${Date.now() - time} ms`)
+            console.log(rendition)
+        })
+        rendition.on("displayerror", (err) => {
+            
+            console.log(err)
+        })
+    </script>
+</body>
+
+</html>

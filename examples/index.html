@@ -89,7 +89,10 @@
                             percentage. First, the <code>book.locations</code> array is generated. This data is then
                             used to calculate each location's percentage.</p>
                     </li>
-                    <li><a href="highlights.html">Highlights</a>
+                </ol>
+                <h2>Annotations</h2>
+                <ol start="9">
+                    <li><a href="annotations-highlight.html">Highlight</a>
                         <p>Adds the ability to highlight text in the ebook. This version provides no mechanism for
                             saving highlights after the browser is closed. It is an example of capability rather than a
                             working implementation. It works as follows: When a section of text is selected a
@@ -98,9 +101,13 @@
                             page in a list at the bottom describing the selection and providing a "remove" link.
                         </p>
                     </li>
+                    <li><a href="annotations-underline.html">Underline</a>
+                        <p>Unlike example (9), this example demonstrates underlining annotations (without background
+                            color).</p>
+                    </li>
                 </ol>
                 <h2>Other means of rendering</h2>
-                <ol start="10">
+                <ol start="11">
                     <li><a href="contents.html">Contents</a>
                         <p>This example demonstrates the <code>innerText</code> rendering from range, which was obtained
                             from EpubCFI format string.</p>
@@ -115,14 +122,25 @@
                     </li>
                 </ol>
                 <h2>Other examples</h2>
-                <ol start="12">
+                <ol start="13">
                     <li><a href="archived.html">Archived</a>
                         <p>Display ebook from an XXXX.epub file rather than an unzipped folder. This may be
                             substantially slower for large ebooks.</p>
                     </li>
-                    <li><a href="input.html">Open from File</a>
+                    <li><a href="input.html">Open book from File</a>
                         <p>Allows you to select an epub file from your local computer that gets rendered in the browser.
                         </p>
+                    </li>
+                    <li><a href="input-bookpath.html">Open book from external server</a>
+                        <p>Use the <code>bookPath</code> search parameter to override the path from the external server.
+                        </p>
+                        <p>Input examples (add to the end of the URL):</p>
+                        <ul style="list-style: none;">
+                            <li><code>?bookPath=https://s3.amazonaws.com/moby-dick/</code></li>
+                            <li><code>?bookPath=https://s3.amazonaws.com/moby-dick/OPS/package.opf</code></li>
+                            <li><code>?bookPath=https://s3.amazonaws.com/moby-dick/moby-dick.epub</code></li>
+                        </ul>
+                        <p>By default, the relative path to the Alice book located on the local server is used.</p>
                     </li>
                     <li><a href="hooks.html">Hooks</a>
                         <p>This example shows how to insert external javascript and external css files into a book after
@@ -147,7 +165,8 @@
                             and run them after the book is rendered.</p>
                     </li>
                     <li><a href="themes.html">Themes</a>
-                        <p>This example demonstrates the features to register and configure custom themes for a book.</p>
+                        <p>This example demonstrates the features to register and configure custom themes for a book.
+                        </p>
                     </li>
                 </ol>
             </div>

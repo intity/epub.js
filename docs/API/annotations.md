@@ -9,8 +9,6 @@ Handles managing adding & removing Annotations
     * [new Annotations(rendition)](#new_Annotations_new)
     * [.append(type, cfiRange, [options])](#Annotations+append) ⇒ <code>Annotation</code>
     * [.remove(type, cfiRange)](#Annotations+remove)
-    * [.highlight(cfiRange, [options])](#Annotations+highlight)
-    * [.underline(cfiRange, [options])](#Annotations+underline)
     * [.show()](#Annotations+show)
     * [.hide()](#Annotations+hide)
 
@@ -53,38 +51,6 @@ Remove an annotation from store
 | --- | --- | --- |
 | type | <code>string</code> | Type of annotation to remove: `"highlight"` OR `"underline"` |
 | cfiRange | <code>string</code> | EpubCFI range to attach annotation to |
-
-<a name="Annotations+highlight"></a>
-
-## annotations.highlight(cfiRange, [options])
-Add a highlight to the store
-
-**Kind**: instance method of [<code>Annotations</code>](#Annotations)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| cfiRange | <code>string</code> | EpubCFI range to attach annotation to |
-| [options] | <code>object</code> |  |
-| [options.data] | <code>object</code> | Data to assign to annotation |
-| [options.cb] | <code>method</code> | Callback after annotation is clicked |
-| [options.className] | <code>string</code> | CSS class to assign to annotation |
-| [options.styles] | <code>object</code> | CSS styles to assign to annotation |
-
-<a name="Annotations+underline"></a>
-
-## annotations.underline(cfiRange, [options])
-Add a underline to the store
-
-**Kind**: instance method of [<code>Annotations</code>](#Annotations)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| cfiRange | <code>string</code> | EpubCFI range to attach annotation to |
-| [options] | <code>object</code> |  |
-| [options.data] | <code>object</code> | Data to assign to annotation |
-| [options.cb] | <code>method</code> | Callback after annotation is clicked |
-| [options.className] | <code>string</code> | CSS class to assign to annotation |
-| [options.styles] | <code>object</code> | CSS styles to assign to annotation |
 
 <a name="Annotations+show"></a>
 

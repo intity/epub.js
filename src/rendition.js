@@ -4,10 +4,10 @@ import Hook from "./utils/hook";
 import EpubCFI from "./epubcfi";
 import Queue from "./utils/queue";
 import Layout from "./layout";
-// import Mapping from "./mapping";
 import Themes from "./themes";
 import Contents from "./contents";
 import Annotations from "./annotations";
+import Path from "./utils/path";
 import { EVENTS, DOM_EVENTS } from "./utils/constants";
 
 // Default View Managers
@@ -816,7 +816,8 @@ class Rendition {
 
 		if (contents) {
 			contents.on(EVENTS.CONTENTS.LINK_CLICKED, (href) => {
-				let relative = this.book.path.relative(href);
+				const path = new Path(href);
+				const relative = path.relative(path.directory, href);
 				this.display(relative);
 			});
 		}

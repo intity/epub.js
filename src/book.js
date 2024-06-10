@@ -258,10 +258,10 @@ class Book {
 			).then(this.openEpub.bind(this));
 		} else if (type == INPUT_TYPE.OPF) {
 			this.url = new Url(input);
-			opening = this.openPackaging(this.url.Path.toString());
+			opening = this.openPackaging(this.url.path.toString());
 		} else if (type == INPUT_TYPE.MANIFEST) {
 			this.url = new Url(input);
-			opening = this.openManifest(this.url.Path.toString());
+			opening = this.openManifest(this.url.path.toString());
 		} else {
 			this.url = new Url(input);
 			opening = this.openContainer(CONTAINER_PATH)
@@ -280,7 +280,9 @@ class Book {
 	 */
 	async openEpub(data, encoding) {
 
-		return this.unarchive(data, encoding || this.settings.encoding).then(() => {
+		encoding = encoding || this.settings.encoding;
+		
+		return this.unarchive(data, encoding).then(() => {
 			return this.openContainer(CONTAINER_PATH);
 		}).then((packagePath) => {
 			return this.openPackaging(packagePath);
@@ -360,15 +362,13 @@ class Book {
 
 		if (!path) return;
 
-		const isAbsolute = (path.indexOf("://") > -1);
-
-		if (isAbsolute) {
-			return path;
+		if (path.indexOf("://") > -1) {
+			return path; // is absolute
 		}
 
 		let resolved = path;
 		if (this.path) {
-			resolved = this.path.resolve(path);
+			resolved = this.path.resolve(this.path.directory, path);
 		}
 
 		if (absolute === false && this.url) {
@@ -413,8 +413,7 @@ class Book {
 			return INPUT_TYPE.BINARY;
 		}
 
-		const url = new Url(input);
-		const path = url.path();
+		const path = new Url(input).path;
 
 		let extension = path.extension;
 		// If there's a search string, remove it before determining type
@@ -456,7 +455,7 @@ class Book {
 		this.resources = new Resources(this.packaging.manifest, {
 			archive: this.archive,
 			request: this.request.bind(this),
-			resolver: this.resolve.bind(this),
+			resolve: this.resolve.bind(this),
 			replacements: this.settings.replacements || (this.archived ? "blobUrl" : "base64")
 		});
 
