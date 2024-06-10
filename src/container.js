@@ -1,4 +1,4 @@
-import path from "path-webpack";
+import Path from "./utils/path";
 import { qs } from "./utils/core";
 
 /**
@@ -61,7 +61,7 @@ class Container {
 		}
 
 		this.fullPath = rootfile.getAttribute("full-path");
-		this.directory = path.dirname(this.fullPath);
+		this.directory = Path.prototype.dirname(this.fullPath);
 		this.encoding = containerDocument.xmlEncoding;
 		this.mediaType = rootfile.getAttribute("media-type");
 	}

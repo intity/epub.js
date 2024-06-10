@@ -1,4 +1,3 @@
-import EpubCFI from "./epubcfi";
 import Annotation from "./annotation";
 
 /**
@@ -28,20 +27,10 @@ class Annotations extends Map {
 	 * @param {object} [options.styles] CSS styles to assign to annotation
 	 * @returns {Annotation} Annotation that was append
 	 */
-	append(type, cfiRange, { data, cb, className, styles }) {
+	append(type, cfiRange, options) {
 
 		const key = encodeURI(type + ":" + cfiRange);
-		const cfi = new EpubCFI(cfiRange);
-		const sectionIndex = cfi.spinePos;
-		const annotation = new Annotation({
-			type,
-			cfiRange,
-			sectionIndex,
-			data,
-			cb,
-			className,
-			styles
-		});
+		const annotation = new Annotation(type, cfiRange, options);
 
 		this.rendition.views().forEach((view) => {
 			const index = view.section.index;
@@ -73,44 +62,6 @@ class Annotations extends Map {
 			});
 			this.delete(key);
 		}
-	}
-
-	/**
-	 * Add a highlight to the store
-	 * @param {string} cfiRange EpubCFI range to attach annotation to
-	 * @param {object} [options]
-	 * @param {object} [options.data] Data to assign to annotation
-	 * @param {method} [options.cb] Callback after annotation is clicked
-	 * @param {string} [options.className] CSS class to assign to annotation
-	 * @param {object} [options.styles] CSS styles to assign to annotation
-	 */
-	highlight(cfiRange, { data, cb, className, styles }) {
-
-		return this.append("highlight", cfiRange, {
-			data,
-			cb,
-			className,
-			styles
-		});
-	}
-
-	/**
-	 * Add a underline to the store
-	 * @param {string} cfiRange EpubCFI range to attach annotation to
-	 * @param {object} [options]
-	 * @param {object} [options.data] Data to assign to annotation
-	 * @param {method} [options.cb] Callback after annotation is clicked
-	 * @param {string} [options.className] CSS class to assign to annotation
-	 * @param {object} [options.styles] CSS styles to assign to annotation
-	 */
-	underline(cfiRange, { data, cb, className, styles }) {
-
-		return this.append("underline", cfiRange, {
-			data,
-			cb,
-			className,
-			styles
-		});
 	}
 
 	/**

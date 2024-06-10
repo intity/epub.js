@@ -25,7 +25,7 @@ body {
     background: white;
 }
 
-#page a, p, li::marker {
+#page a, p, ul, li::marker {
     font-size: 0.9em;
 }
 
@@ -346,29 +346,28 @@ svg {
     fill: #777;
 }
 
-#extras {
+#annotations {
     width: 600px;
-    height: 100px;
+    height: calc((100% - 600px)/2 - 80px);
     margin: 40px auto;
     position: relative;
     z-index: 10;
 }
 
-#highlights {
+#annotations ul {
     height: 100%;
-    list-style: none;
     margin-left: 0;
     padding: 0;
     overflow: auto;
 }
 
-#highlights li {
+#annotations li {
     list-style: none;
     border-top: 1px solid #E2E2E2;
     padding: 10px;
 }
 
-#highlights a {
+#annotations a {
     display: block;
 }
 
@@ -399,6 +398,8 @@ only screen and (min-width: 568px) and (max-width: 932px) and (orientation: land
     }
     #content.mobile #viewer.scrolled {
         width: 100%;
+        height: 100%;
+        margin: 0;
         box-shadow: none;
         border-radius: 0;
     }
@@ -429,6 +430,8 @@ only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: la
     }
     #content.mobile #viewer.scrolled {
         width: 100%;
+        height: 100%;
+        margin: 0;
         box-shadow: none;
         border-radius: 0;
     }

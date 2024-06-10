@@ -67,7 +67,7 @@
 
 			if (typeof percentage === "undefined") {
 				book.locations.set({ cfi: location.start.cfi })
-				percentage = book.locations.current.percentage
+				percentage = book.locations.current.percentage || 0
 			}
 
 			const value = Math.floor(percentage * 100)

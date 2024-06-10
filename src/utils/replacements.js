@@ -28,9 +28,8 @@ export function replaceBase(doc, section){
 		head.insertBefore(base, head.firstChild);
 	}
 
-	// Fix for Safari crashing if the url doesn't have an origin
-	if (!absolute && window && window.location) {
-		url = window.location.origin + url;
+	if (!absolute) {
+		url = doc.documentURI;
 	}
 
 	base.setAttribute("href", url);
