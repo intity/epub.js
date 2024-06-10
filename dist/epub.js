@@ -9209,564 +9209,193 @@ module.exports = toNumber;
 
 /***/ }),
 
-/***/ 6841:
+/***/ 5606:
 /***/ ((module) => {
 
-"use strict";
+// shim for using process in browser
+var process = module.exports = {};
 
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
 
-if (!process) {
-  var process = {
-    "cwd" : function () { return '/' }
-  };
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
 }
-
-function assertPath(path) {
-  if (typeof path !== 'string') {
-    throw new TypeError('Path must be a string. Received ' + path);
-  }
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
 }
-
-// Resolves . and .. elements in a path with directory names
-function normalizeStringPosix(path, allowAboveRoot) {
-  var res = '';
-  var lastSlash = -1;
-  var dots = 0;
-  var code;
-  for (var i = 0; i <= path.length; ++i) {
-    if (i < path.length)
-      code = path.charCodeAt(i);
-    else if (code === 47/*/*/)
-      break;
-    else
-      code = 47/*/*/;
-    if (code === 47/*/*/) {
-      if (lastSlash === i - 1 || dots === 1) {
-        // NOOP
-      } else if (lastSlash !== i - 1 && dots === 2) {
-        if (res.length < 2 ||
-            res.charCodeAt(res.length - 1) !== 46/*.*/ ||
-            res.charCodeAt(res.length - 2) !== 46/*.*/) {
-          if (res.length > 2) {
-            var start = res.length - 1;
-            var j = start;
-            for (; j >= 0; --j) {
-              if (res.charCodeAt(j) === 47/*/*/)
-                break;
-            }
-            if (j !== start) {
-              if (j === -1)
-                res = '';
-              else
-                res = res.slice(0, j);
-              lastSlash = i;
-              dots = 0;
-              continue;
-            }
-          } else if (res.length === 2 || res.length === 1) {
-            res = '';
-            lastSlash = i;
-            dots = 0;
-            continue;
-          }
-        }
-        if (allowAboveRoot) {
-          if (res.length > 0)
-            res += '/..';
-          else
-            res = '..';
-        }
-      } else {
-        if (res.length > 0)
-          res += '/' + path.slice(lastSlash + 1, i);
-        else
-          res = path.slice(lastSlash + 1, i);
-      }
-      lastSlash = i;
-      dots = 0;
-    } else if (code === 46/*.*/ && dots !== -1) {
-      ++dots;
-    } else {
-      dots = -1;
-    }
-  }
-  return res;
-}
-
-function _format(sep, pathObject) {
-  var dir = pathObject.dir || pathObject.root;
-  var base = pathObject.base ||
-    ((pathObject.name || '') + (pathObject.ext || ''));
-  if (!dir) {
-    return base;
-  }
-  if (dir === pathObject.root) {
-    return dir + base;
-  }
-  return dir + sep + base;
-}
-
-var posix = {
-  // path.resolve([from ...], to)
-  resolve: function resolve() {
-    var resolvedPath = '';
-    var resolvedAbsolute = false;
-    var cwd;
-
-    for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-      var path;
-      if (i >= 0)
-        path = arguments[i];
-      else {
-        if (cwd === undefined)
-          cwd = process.cwd();
-        path = cwd;
-      }
-
-      assertPath(path);
-
-      // Skip empty entries
-      if (path.length === 0) {
-        continue;
-      }
-
-      resolvedPath = path + '/' + resolvedPath;
-      resolvedAbsolute = path.charCodeAt(0) === 47/*/*/;
-    }
-
-    // At this point the path should be resolved to a full absolute path, but
-    // handle relative paths to be safe (might happen when process.cwd() fails)
-
-    // Normalize the path
-    resolvedPath = normalizeStringPosix(resolvedPath, !resolvedAbsolute);
-
-    if (resolvedAbsolute) {
-      if (resolvedPath.length > 0)
-        return '/' + resolvedPath;
-      else
-        return '/';
-    } else if (resolvedPath.length > 0) {
-      return resolvedPath;
-    } else {
-      return '.';
-    }
-  },
-
-
-  normalize: function normalize(path) {
-    assertPath(path);
-
-    if (path.length === 0)
-      return '.';
-
-    var isAbsolute = path.charCodeAt(0) === 47/*/*/;
-    var trailingSeparator = path.charCodeAt(path.length - 1) === 47/*/*/;
-
-    // Normalize the path
-    path = normalizeStringPosix(path, !isAbsolute);
-
-    if (path.length === 0 && !isAbsolute)
-      path = '.';
-    if (path.length > 0 && trailingSeparator)
-      path += '/';
-
-    if (isAbsolute)
-      return '/' + path;
-    return path;
-  },
-
-
-  isAbsolute: function isAbsolute(path) {
-    assertPath(path);
-    return path.length > 0 && path.charCodeAt(0) === 47/*/*/;
-  },
-
-
-  join: function join() {
-    if (arguments.length === 0)
-      return '.';
-    var joined;
-    for (var i = 0; i < arguments.length; ++i) {
-      var arg = arguments[i];
-      assertPath(arg);
-      if (arg.length > 0) {
-        if (joined === undefined)
-          joined = arg;
-        else
-          joined += '/' + arg;
-      }
-    }
-    if (joined === undefined)
-      return '.';
-    return posix.normalize(joined);
-  },
-
-
-  relative: function relative(from, to) {
-    assertPath(from);
-    assertPath(to);
-
-    if (from === to)
-      return '';
-
-    from = posix.resolve(from);
-    to = posix.resolve(to);
-
-    if (from === to)
-      return '';
-
-    // Trim any leading backslashes
-    var fromStart = 1;
-    for (; fromStart < from.length; ++fromStart) {
-      if (from.charCodeAt(fromStart) !== 47/*/*/)
-        break;
-    }
-    var fromEnd = from.length;
-    var fromLen = (fromEnd - fromStart);
-
-    // Trim any leading backslashes
-    var toStart = 1;
-    for (; toStart < to.length; ++toStart) {
-      if (to.charCodeAt(toStart) !== 47/*/*/)
-        break;
-    }
-    var toEnd = to.length;
-    var toLen = (toEnd - toStart);
-
-    // Compare paths to find the longest common path from root
-    var length = (fromLen < toLen ? fromLen : toLen);
-    var lastCommonSep = -1;
-    var i = 0;
-    for (; i <= length; ++i) {
-      if (i === length) {
-        if (toLen > length) {
-          if (to.charCodeAt(toStart + i) === 47/*/*/) {
-            // We get here if `from` is the exact base path for `to`.
-            // For example: from='/foo/bar'; to='/foo/bar/baz'
-            return to.slice(toStart + i + 1);
-          } else if (i === 0) {
-            // We get here if `from` is the root
-            // For example: from='/'; to='/foo'
-            return to.slice(toStart + i);
-          }
-        } else if (fromLen > length) {
-          if (from.charCodeAt(fromStart + i) === 47/*/*/) {
-            // We get here if `to` is the exact base path for `from`.
-            // For example: from='/foo/bar/baz'; to='/foo/bar'
-            lastCommonSep = i;
-          } else if (i === 0) {
-            // We get here if `to` is the root.
-            // For example: from='/foo'; to='/'
-            lastCommonSep = 0;
-          }
-        }
-        break;
-      }
-      var fromCode = from.charCodeAt(fromStart + i);
-      var toCode = to.charCodeAt(toStart + i);
-      if (fromCode !== toCode)
-        break;
-      else if (fromCode === 47/*/*/)
-        lastCommonSep = i;
-    }
-
-    var out = '';
-    // Generate the relative path based on the path difference between `to`
-    // and `from`
-    for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
-      if (i === fromEnd || from.charCodeAt(i) === 47/*/*/) {
-        if (out.length === 0)
-          out += '..';
-        else
-          out += '/..';
-      }
-    }
-
-    // Lastly, append the rest of the destination (`to`) path that comes after
-    // the common path parts
-    if (out.length > 0)
-      return out + to.slice(toStart + lastCommonSep);
-    else {
-      toStart += lastCommonSep;
-      if (to.charCodeAt(toStart) === 47/*/*/)
-        ++toStart;
-      return to.slice(toStart);
-    }
-  },
-
-
-  _makeLong: function _makeLong(path) {
-    return path;
-  },
-
-
-  dirname: function dirname(path) {
-    assertPath(path);
-    if (path.length === 0)
-      return '.';
-    var code = path.charCodeAt(0);
-    var hasRoot = (code === 47/*/*/);
-    var end = -1;
-    var matchedSlash = true;
-    for (var i = path.length - 1; i >= 1; --i) {
-      code = path.charCodeAt(i);
-      if (code === 47/*/*/) {
-        if (!matchedSlash) {
-          end = i;
-          break;
-        }
-      } else {
-        // We saw the first non-path separator
-        matchedSlash = false;
-      }
-    }
-
-    if (end === -1)
-      return hasRoot ? '/' : '.';
-    if (hasRoot && end === 1)
-      return '//';
-    return path.slice(0, end);
-  },
-
-
-  basename: function basename(path, ext) {
-    if (ext !== undefined && typeof ext !== 'string')
-      throw new TypeError('"ext" argument must be a string');
-    assertPath(path);
-
-    var start = 0;
-    var end = -1;
-    var matchedSlash = true;
-    var i;
-
-    if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
-      if (ext.length === path.length && ext === path)
-        return '';
-      var extIdx = ext.length - 1;
-      var firstNonSlashEnd = -1;
-      for (i = path.length - 1; i >= 0; --i) {
-        var code = path.charCodeAt(i);
-        if (code === 47/*/*/) {
-          // If we reached a path separator that was not part of a set of path
-          // separators at the end of the string, stop now
-          if (!matchedSlash) {
-            start = i + 1;
-            break;
-          }
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
         } else {
-          if (firstNonSlashEnd === -1) {
-            // We saw the first non-path separator, remember this index in case
-            // we need it if the extension ends up not matching
-            matchedSlash = false;
-            firstNonSlashEnd = i + 1;
-          }
-          if (extIdx >= 0) {
-            // Try to match the explicit extension
-            if (code === ext.charCodeAt(extIdx)) {
-              if (--extIdx === -1) {
-                // We matched the extension, so mark this as the end of our path
-                // component
-                end = i;
-              }
-            } else {
-              // Extension does not match, so our result is the entire path
-              // component
-              extIdx = -1;
-              end = firstNonSlashEnd;
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
             }
-          }
         }
-      }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
 
-      if (start === end)
-        end = firstNonSlashEnd;
-      else if (end === -1)
-        end = path.length;
-      return path.slice(start, end);
-    } else {
-      for (i = path.length - 1; i >= 0; --i) {
-        if (path.charCodeAt(i) === 47/*/*/) {
-          // If we reached a path separator that was not part of a set of path
-          // separators at the end of the string, stop now
-          if (!matchedSlash) {
-            start = i + 1;
-            break;
-          }
-        } else if (end === -1) {
-          // We saw the first non-path separator, mark this as the end of our
-          // path component
-          matchedSlash = false;
-          end = i + 1;
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
         }
-      }
-
-      if (end === -1)
-        return '';
-      return path.slice(start, end);
     }
-  },
-
-
-  extname: function extname(path) {
-    assertPath(path);
-    var startDot = -1;
-    var startPart = 0;
-    var end = -1;
-    var matchedSlash = true;
-    // Track the state of characters (if any) we see before our first dot and
-    // after any path separator we find
-    var preDotState = 0;
-    for (var i = path.length - 1; i >= 0; --i) {
-      var code = path.charCodeAt(i);
-      if (code === 47/*/*/) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          startPart = i + 1;
-          break;
-        }
-        continue;
-      }
-      if (end === -1) {
-        // We saw the first non-path separator, mark this as the end of our
-        // extension
-        matchedSlash = false;
-        end = i + 1;
-      }
-      if (code === 46/*.*/) {
-        // If this is our first dot, mark it as the start of our extension
-        if (startDot === -1)
-          startDot = i;
-        else if (preDotState !== 1)
-          preDotState = 1;
-      } else if (startDot !== -1) {
-        // We saw a non-dot and non-path separator before our dot, so we should
-        // have a good chance at having a non-empty extension
-        preDotState = -1;
-      }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
     }
-
-    if (startDot === -1 ||
-        end === -1 ||
-        // We saw a non-dot character immediately before the dot
-        preDotState === 0 ||
-        // The (right-most) trimmed path component is exactly '..'
-        (preDotState === 1 &&
-         startDot === end - 1 &&
-         startDot === startPart + 1)) {
-      return '';
-    }
-    return path.slice(startDot, end);
-  },
-
-
-  format: function format(pathObject) {
-    if (pathObject === null || typeof pathObject !== 'object') {
-      throw new TypeError(
-        'Parameter "pathObject" must be an object, not ' + typeof(pathObject)
-      );
-    }
-    return _format('/', pathObject);
-  },
-
-
-  parse: function parse(path) {
-    assertPath(path);
-
-    var ret = { root: '', dir: '', base: '', ext: '', name: '' };
-    if (path.length === 0)
-      return ret;
-    var code = path.charCodeAt(0);
-    var isAbsolute = (code === 47/*/*/);
-    var start;
-    if (isAbsolute) {
-      ret.root = '/';
-      start = 1;
-    } else {
-      start = 0;
-    }
-    var startDot = -1;
-    var startPart = 0;
-    var end = -1;
-    var matchedSlash = true;
-    var i = path.length - 1;
-
-    // Track the state of characters (if any) we see before our first dot and
-    // after any path separator we find
-    var preDotState = 0;
-
-    // Get non-dir info
-    for (; i >= start; --i) {
-      code = path.charCodeAt(i);
-      if (code === 47/*/*/) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          startPart = i + 1;
-          break;
-        }
-        continue;
-      }
-      if (end === -1) {
-        // We saw the first non-path separator, mark this as the end of our
-        // extension
-        matchedSlash = false;
-        end = i + 1;
-      }
-      if (code === 46/*.*/) {
-        // If this is our first dot, mark it as the start of our extension
-        if (startDot === -1)
-          startDot = i;
-        else if (preDotState !== 1)
-          preDotState = 1;
-      } else if (startDot !== -1) {
-        // We saw a non-dot and non-path separator before our dot, so we should
-        // have a good chance at having a non-empty extension
-        preDotState = -1;
-      }
-    }
-
-    if (startDot === -1 ||
-        end === -1 ||
-        // We saw a non-dot character immediately before the dot
-        preDotState === 0 ||
-        // The (right-most) trimmed path component is exactly '..'
-        (preDotState === 1 &&
-         startDot === end - 1 &&
-         startDot === startPart + 1)) {
-      if (end !== -1) {
-        if (startPart === 0 && isAbsolute)
-          ret.base = ret.name = path.slice(1, end);
-        else
-          ret.base = ret.name = path.slice(startPart, end);
-      }
-    } else {
-      if (startPart === 0 && isAbsolute) {
-        ret.name = path.slice(1, startDot);
-        ret.base = path.slice(1, end);
-      } else {
-        ret.name = path.slice(startPart, startDot);
-        ret.base = path.slice(startPart, end);
-      }
-      ret.ext = path.slice(startDot, end);
-    }
-
-    if (startPart > 0)
-      ret.dir = path.slice(0, startPart - 1);
-    else if (isAbsolute)
-      ret.dir = '/';
-
-    return ret;
-  },
-
-
-  sep: '/',
-  delimiter: ':',
-  posix: null
 };
 
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
 
-module.exports = posix;
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
 
 
 /***/ }),
@@ -12659,91 +12288,188 @@ class RangeObject {
     // TODO: implement walking between start and end to find text
   }
 }
-// EXTERNAL MODULE: ./node_modules/path-webpack/path.js
-var path = __webpack_require__(6841);
-var path_default = /*#__PURE__*/__webpack_require__.n(path);
 ;// CONCATENATED MODULE: ./src/utils/path.js
-
-
+/* provided dependency */ var process = __webpack_require__(5606);
 /**
  * Creates a Path object for parsing and manipulation of a path strings
- *
- * Uses a polyfill for Nodejs path: https://nodejs.org/api/path.html
- * @param	{string} pathString	a url string (relative or absolute)
- * @class
+ * @link https://nodejs.org/api/path.html
  */
 class Path {
-  constructor(pathString) {
-    var protocol;
-    var parsed;
-    protocol = pathString.indexOf("://");
-    if (protocol > -1) {
-      pathString = new URL(pathString).pathname;
+  /**
+   * Constructor
+   * @param {string} uri a url string (relative or absolute)
+   */
+  constructor(uri) {
+    if (uri.indexOf("://") > -1) {
+      uri = new URL(uri).pathname;
     }
-    parsed = this.parse(pathString);
-    this.path = pathString;
-    if (this.isDirectory(pathString)) {
-      this.directory = pathString;
-    } else {
-      this.directory = parsed.dir + "/";
-    }
+    const parsed = this.parse(uri);
+    /**
+     * @member {string} directory
+     * @memberof Path
+     * @readonly
+     */
+    this.directory = parsed.dir + "/";
+    /**
+     * @member {string} filename
+     * @memberof Path
+     * @readonly
+     */
     this.filename = parsed.base;
+    /**
+     * @member {string} extension
+     * @memberof Path
+     * @readonly
+     */
     this.extension = parsed.ext.slice(1);
+    /**
+     * @member {string} path
+     * @memberof Path
+     * @readonly
+     */
+    this.path = uri;
   }
 
   /**
-   * Parse the path: https://nodejs.org/api/path.html#path_path_parse_path
-   * @param	{string} what
+   * Parse the path
+   * @link https://nodejs.org/api/path.html#path_path_parse_path
+   * @param {string} path
    * @returns {object}
    */
-  parse(what) {
-    return path_default().parse(what);
+  parse(path) {
+    const ret = {
+      root: "",
+      dir: "",
+      base: "",
+      ext: "",
+      name: ""
+    };
+    if (path.length === 0) {
+      return ret;
+    }
+    const parts = this.splitPath(path);
+    if (!parts || parts.length !== 4) {
+      throw new Error(`Invalid path: ${path}`);
+    }
+    ret.root = parts[0];
+    if (this.isDirectory(path)) {
+      ret.dir = parts[0] + parts[1] + parts[2];
+    } else {
+      ret.dir = parts[0] + parts[1].slice(0, -1);
+      ret.base = parts[2];
+      ret.ext = parts[3];
+      ret.name = parts[2].slice(0, parts[2].length - parts[3].length);
+    }
+    return ret;
   }
 
   /**
-   * @param	{string} what
+   * dirname
+   * @link https://nodejs.org/api/path.html#pathdirnamepath
+   * @param {string} path 
+   * @returns {string}
+   */
+  dirname(path) {
+    const result = this.splitPath(path);
+    const root = result[0];
+    const dir = result[1];
+    if (!root && !dir) {
+      return ".";
+    }
+    return root + dir;
+  }
+
+  /**
+   * isAbsolute
+   * @link https://nodejs.org/api/path.html#pathisabsolutepath
+   * @param {string} path
    * @returns {boolean}
    */
-  isAbsolute(what) {
-    return path_default().isAbsolute(what || this.path);
+  isAbsolute(path) {
+    return path.charAt(0) === '/';
   }
 
   /**
    * Check if path ends with a directory
-   * @param	{string} what
+   * @param {string} path
    * @returns {boolean}
    */
-  isDirectory(what) {
-    return what.charAt(what.length - 1) === "/";
+  isDirectory(path) {
+    return path.charAt(path.length - 1) === '/';
   }
 
   /**
-   * Resolve a path against the directory of the Path
-   *
-   * https://nodejs.org/api/path.html#path_path_resolve_paths
-   * @param	{string} what
+   * Resolve path
+   * @link https://nodejs.org/api/path.html#pathresolvepaths
    * @returns {string} resolved
    */
-  resolve(what) {
-    return path_default().resolve(this.directory, what);
+  resolve() {
+    let resolvedPath = "";
+    let resolvedAbsolute = false;
+    for (let i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+      let path;
+      if (i >= 0) {
+        path = arguments[i];
+      } else {
+        path = process ? process.cwd() : "/";
+      }
+      if (path.length === 0) {
+        continue;
+      }
+      resolvedPath = path + "/" + resolvedPath;
+      resolvedAbsolute = this.isAbsolute(path);
+    }
+    resolvedPath = this.normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
+    return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
   }
 
   /**
-   * Resolve a path relative to the directory of the Path
-   *
-   * https://nodejs.org/api/path.html#path_path_relative_from_to
-   * @param	{string} what
-   * @returns {string} relative
+   * Relative path resolve
+   * @link https://nodejs.org/api/path.html#pathrelativefrom-to
+   * @param {string} from
+   * @param {string} to 
+   * @returns {string} relative path
    */
-  relative(what) {
-    var isAbsolute = what && what.indexOf("://") > -1;
-    if (isAbsolute) {
-      return what;
+  relative(from, to) {
+    if (from === to) return "";
+    from = this.resolve(from);
+    to = this.resolve(to);
+    if (from === to) return "";
+    const fromParts = this.trimArray(from.split('/'));
+    const toParts = this.trimArray(to.split('/'));
+    const length = Math.min(fromParts.length, toParts.length);
+    let samePartsLength = length;
+    for (let i = 0; i < length; i++) {
+      if (fromParts[i] !== toParts[i]) {
+        samePartsLength = i;
+        break;
+      }
     }
-    return path_default().relative(this.directory, what);
+    let outputParts = [];
+    for (let i = samePartsLength; i < fromParts.length; i++) {
+      outputParts.push("..");
+    }
+    outputParts = outputParts.concat(toParts.slice(samePartsLength));
+    return outputParts.join('/');
   }
-  splitPath(filename) {
-    return this.splitPathRe.exec(filename).slice(1);
+
+  /**
+   * Normalize path
+   * @link https://nodejs.org/api/path.html#pathnormalizepath
+   * @param {string} path 
+   * @returns {string}
+   */
+  normalize(path) {
+    const isAbsolute = this.isAbsolute(path);
+    const trailingSlash = path && path[path.length - 1] === '/';
+    path = this.normalizeArray(path.split('/'), !isAbsolute).join('/');
+    if (!path && !isAbsolute) {
+      path = ".";
+    }
+    if (path && trailingSlash) {
+      path += "/";
+    }
+    return (isAbsolute ? "/" : "") + path;
   }
 
   /**
@@ -12753,99 +12479,143 @@ class Path {
   toString() {
     return this.path;
   }
+  normalizeArray(parts, allowAboveRoot) {
+    const res = [];
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      if (!p || p === ".") {
+        continue;
+      }
+      if (p === "..") {
+        if (res.length && res[res.length - 1] !== "..") {
+          res.pop();
+        } else if (allowAboveRoot) {
+          res.push("..");
+        }
+      } else {
+        res.push(p);
+      }
+    }
+    return res;
+  }
+  splitPath(filename) {
+    const pattern = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+    return pattern.exec(filename).slice(1);
+  }
+  trimArray(arr) {
+    const lastIndex = arr.length - 1;
+    let start = 0;
+    for (; start <= lastIndex; start++) {
+      if (arr[start]) {
+        break;
+      }
+    }
+    let end = lastIndex;
+    for (; end >= 0; end--) {
+      if (arr[end]) {
+        break;
+      }
+    }
+    if (start === 0 && end === lastIndex) {
+      return arr;
+    }
+    if (start > end) {
+      return [];
+    }
+    return arr.slice(start, end + 1);
+  }
 }
 /* harmony default export */ const utils_path = (Path);
 ;// CONCATENATED MODULE: ./src/utils/url.js
 
 
-
 /**
- * creates a Url object for parsing and manipulation of a url string
- * @class
- * @param {string} urlString a url string (relative or absolute)
- * @param {string} [baseString] optional base for the url,
- * default to window.location.href
+ * Creates a Url object for parsing and manipulation of a url string
  */
 class Url {
-  constructor(urlString, baseString) {
-    var absolute = urlString.indexOf("://") > -1;
-    var pathname = urlString;
-    var basePath;
+  /**
+   * 
+   * @param {string} url a url string (relative or absolute)
+   * @param {string} [base] optional base for the url, default to window.location.href
+   */
+  constructor(url, base) {
     this.Url = undefined;
-    this.href = urlString;
+    this.href = url;
     this.protocol = "";
     this.origin = "";
     this.hash = "";
     this.hash = "";
     this.search = "";
-    this.base = baseString;
-    if (!absolute && baseString !== false && typeof baseString !== "string" && window && window.location) {
+    this.base = base;
+    const absolute = url.indexOf("://") > -1;
+    if (!absolute && base !== false && typeof base !== "string" && window && window.location) {
       this.base = window.location.href;
     }
-
+    let pathname = url;
     // URL Polyfill doesn't throw an error if base is empty
     if (absolute || this.base) {
       try {
         if (this.base) {
           // Safari doesn't like an undefined base
-          this.Url = new URL(urlString, this.base);
+          this.Url = new URL(url, this.base);
         } else {
-          this.Url = new URL(urlString);
+          this.Url = new URL(url);
         }
         this.href = this.Url.href;
         this.protocol = this.Url.protocol;
         this.origin = this.Url.origin;
         this.hash = this.Url.hash;
         this.search = this.Url.search;
-        pathname = this.Url.pathname + (this.Url.search ? this.Url.search : '');
+        pathname = this.Url.pathname + (this.Url.search ? this.Url.search : "");
       } catch (e) {
         // Skip URL parsing
         this.Url = undefined;
         // resolve the pathname from the base
         if (this.base) {
-          basePath = new utils_path(this.base);
+          const basePath = new utils_path(this.base);
           pathname = basePath.resolve(pathname);
         }
+        console.error(e);
       }
     }
-    this.Path = new utils_path(pathname);
-    this.directory = this.Path.directory;
-    this.filename = this.Path.filename;
-    this.extension = this.Path.extension;
-  }
-
-  /**
-   * @returns {Path}
-   */
-  path() {
-    return this.Path;
+    /**
+     * @member {Path} path
+     * @memberof Url
+     * @readonly
+     */
+    this.path = new utils_path(pathname);
+    this.directory = this.path.directory;
+    this.filename = this.path.filename;
+    this.extension = this.path.extension;
   }
 
   /**
    * Resolves a relative path to a absolute url
-   * @param {string} what
+   * @param {string} path
    * @returns {string} url
    */
-  resolve(what) {
-    var isAbsolute = what.indexOf("://") > -1;
-    var fullpath;
-    if (isAbsolute) {
-      return what;
+  resolve(path) {
+    if (path.indexOf("://") > -1) {
+      // is absolute
+      return path;
     }
-    fullpath = path_default().resolve(this.directory, what);
+    const dir = this.path.directory;
+    const fullpath = utils_path.prototype.resolve(dir, path);
     return this.origin + fullpath;
   }
 
   /**
    * Resolve a path relative to the url
-   * @param {string} what
+   * @param {string} path
    * @returns {string} path
    */
-  relative(what) {
-    return path_default().relative(what, this.directory);
+  relative(path) {
+    const dir = this.path.directory;
+    return utils_path.prototype.relative(path, dir);
   }
 
   /**
+   * toString
    * @returns {string}
    */
   toString() {
@@ -13939,10 +13709,8 @@ function replaceBase(doc, section) {
     base = doc.createElement("base");
     head.insertBefore(base, head.firstChild);
   }
-
-  // Fix for Safari crashing if the url doesn't have an origin
-  if (!absolute && window && window.location) {
-    url = window.location.origin + url;
+  if (!absolute) {
+    url = doc.documentURI;
   }
   base.setAttribute("href", url);
 }
@@ -15339,7 +15107,7 @@ class Container {
       throw new Error("No RootFile Found");
     }
     this.fullPath = rootfile.getAttribute("full-path");
-    this.directory = path_default().dirname(this.fullPath);
+    this.directory = utils_path.prototype.dirname(this.fullPath);
     this.encoding = containerDocument.xmlEncoding;
     this.mediaType = rootfile.getAttribute("media-type");
   }
@@ -16229,24 +15997,31 @@ function lookup(filename) {
 
 
 
-
 /**
  * Handle Package Resources
- * @class
- * @param {Manifest} manifest
- * @param {object} [options]
- * @param {string} [options.replacements="base64"]
- * @param {Archive} [options.archive]
- * @param {method} [options.resolver]
  */
 class Resources {
-  constructor(manifest, options) {
+  /**
+   * Constructor
+   * @param {Manifest} manifest
+   * @param {object} [options]
+   * @param {Archive} [options.archive]
+   * @param {method} [options.request]
+   * @param {method} [options.resolve]
+   * @param {string} [options.replacements='base64']
+   */
+  constructor(manifest, {
+    archive,
+    request,
+    resolve,
+    replacements
+  }) {
     this.settings = {
-      replacements: options && options.replacements || "base64",
-      archive: options && options.archive,
-      resolver: options && options.resolver,
-      request: options && options.request
+      replacements: replacements || "base64"
     };
+    this.archive = archive;
+    this.request = request;
+    this.resolve = resolve;
     this.process(manifest);
   }
 
@@ -16256,7 +16031,7 @@ class Resources {
    */
   process(manifest) {
     this.manifest = manifest;
-    this.resources = Object.keys(manifest).map(function (key) {
+    this.resources = Object.keys(manifest).map(key => {
       return manifest[key];
     });
     this.replacementUrls = [];
@@ -16275,21 +16050,21 @@ class Resources {
    */
   split() {
     // HTML
-    this.html = this.resources.filter(function (item) {
+    this.html = this.resources.filter(item => {
       if (item.type === "application/xhtml+xml" || item.type === "text/html") {
         return true;
       }
     });
 
     // Exclude HTML
-    this.assets = this.resources.filter(function (item) {
+    this.assets = this.resources.filter(item => {
       if (item.type !== "application/xhtml+xml" && item.type !== "text/html") {
         return true;
       }
     });
 
     // Only CSS
-    this.css = this.resources.filter(function (item) {
+    this.css = this.resources.filter(item => {
       if (item.type === "text/css") {
         return true;
       }
@@ -16302,12 +16077,12 @@ class Resources {
    */
   splitUrls() {
     // All Assets Urls
-    this.urls = this.assets.map(function (item) {
+    this.urls = this.assets.map(item => {
       return item.href;
-    }.bind(this));
+    });
 
     // Css Urls
-    this.cssUrls = this.css.map(function (item) {
+    this.cssUrls = this.css.map(item => {
       return item.href;
     });
   }
@@ -16317,117 +16092,121 @@ class Resources {
    * @param {string} url
    * @return {Promise<string>} Promise resolves with url string
    */
-  createUrl(url) {
-    var parsedUrl = new utils_url(url);
-    var mimeType = mime.lookup(parsedUrl.filename);
-    if (this.settings.archive) {
-      return this.settings.archive.createUrl(url, {
-        "base64": this.settings.replacements === "base64"
+  async createUrl(url) {
+    const parsedUrl = new utils_url(url);
+    const mimeType = mime.lookup(parsedUrl.filename);
+    const base64 = this.settings.replacements === "base64";
+    if (this.archive) {
+      return this.archive.createUrl(url, {
+        base64: base64
+      });
+    } else if (base64) {
+      return this.request(url, "blob").then(blob => {
+        return blob2base64(blob);
+      }).then(blob => {
+        return createBase64Url(blob, mimeType);
       });
     } else {
-      if (this.settings.replacements === "base64") {
-        return this.settings.request(url, 'blob').then(blob => {
-          return blob2base64(blob);
-        }).then(blob => {
-          return createBase64Url(blob, mimeType);
-        });
-      } else {
-        return this.settings.request(url, 'blob').then(blob => {
-          return createBlobUrl(blob, mimeType);
-        });
-      }
+      return this.request(url, "blob").then(blob => {
+        return createBlobUrl(blob, mimeType);
+      });
     }
   }
 
   /**
    * Create blob urls for all the assets
-   * @return {Promise}         returns replacement urls
+   * @return {Promise} returns replacement urls
    */
-  replacements() {
+  async replacements() {
     if (this.settings.replacements === "none") {
-      return new Promise(function (resolve) {
+      return new Promise(resolve => {
         resolve(this.urls);
-      }.bind(this));
+      });
     }
-    var replacements = this.urls.map(url => {
-      var absolute = this.settings.resolver(url);
+    const replacements = this.replaceUrls();
+    return Promise.all(replacements).then(urls => {
+      this.replacementUrls = urls.filter(url => {
+        return typeof url === "string";
+      });
+      return urls;
+    });
+  }
+
+  /**
+   * Replace URLs
+   * @param {string} absoluteUri 
+   * @returns {Promise[]} replacements
+   * @private
+   */
+  replaceUrls() {
+    return this.urls.map(async url => {
+      const absolute = this.resolve(url);
       return this.createUrl(absolute).catch(err => {
         console.error(err);
         return null;
       });
     });
-    return Promise.all(replacements).then(replacementUrls => {
-      this.replacementUrls = replacementUrls.filter(url => {
-        return typeof url === "string";
-      });
-      return replacementUrls;
-    });
   }
 
   /**
    * Replace URLs in CSS resources
-   * @private
-   * @param  {Archive} [archive]
-   * @param  {method} [resolver]
+   * @param {Archive} [archive]
+   * @param {method} [resolve]
    * @return {Promise}
+   * @private
    */
-  replaceCss(archive, resolver) {
-    var replaced = [];
-    archive = archive || this.settings.archive;
-    resolver = resolver || this.settings.resolver;
-    this.cssUrls.forEach(function (href) {
-      var replacement = this.createCssFile(href, archive, resolver).then(function (replacementUrl) {
+  replaceCss(archive, resolve) {
+    const replaced = [];
+    archive = archive || this.archive;
+    resolve = resolve || this.resolve;
+    this.cssUrls.forEach(href => {
+      const replacement = this.createCssFile(href, archive, resolve).then(url => {
         // switch the url in the replacementUrls
-        var indexInUrls = this.urls.indexOf(href);
-        if (indexInUrls > -1) {
-          this.replacementUrls[indexInUrls] = replacementUrl;
+        const index = this.urls.indexOf(href);
+        if (index > -1) {
+          this.replacementUrls[index] = url;
         }
-      }.bind(this));
+      });
       replaced.push(replacement);
-    }.bind(this));
+    });
     return Promise.all(replaced);
   }
 
   /**
    * Create a new CSS file with the replaced URLs
+   * @param {string} href the original css file
+   * @return {Promise} returns a BlobUrl to the new CSS file or a data url
    * @private
-   * @param  {string} href the original css file
-   * @return {Promise}  returns a BlobUrl to the new CSS file or a data url
    */
   createCssFile(href) {
-    var newUrl;
-    if (path_default().isAbsolute(href)) {
-      return new Promise(function (resolve) {
+    let path = new utils_path(href);
+    if (path.isAbsolute(path.toString())) {
+      return new Promise(resolve => {
         resolve();
       });
     }
-    var absolute = this.settings.resolver(href);
+    const absoluteUri = this.resolve(href);
 
     // Get the text of the css file from the archive
-    var textResponse;
-    if (this.settings.archive) {
-      textResponse = this.settings.archive.getText(absolute);
+    let textResponse;
+    if (this.archive) {
+      textResponse = this.archive.getText(absoluteUri);
     } else {
-      textResponse = this.settings.request(absolute, "text");
+      textResponse = this.request(absoluteUri, "text");
+    }
+    if (!textResponse) {
+      // file not found, don't replace
+      return new Promise(resolve => {
+        resolve();
+      });
     }
 
     // Get asset links relative to css file
-    var relUrls = this.urls.map(assetHref => {
-      var resolved = this.settings.resolver(assetHref);
-      var relative = new utils_path(absolute).relative(resolved);
-      return relative;
-    });
-    if (!textResponse) {
-      // file not found, don't replace
-      return new Promise(function (resolve) {
-        resolve();
-      });
-    }
+    const urls = this.relativeTo(absoluteUri);
     return textResponse.then(text => {
       // Replacements in the css text
-      text = substitute(text, relUrls, this.replacementUrls);
-
-      // Get the new url
+      text = substitute(text, urls, this.replacementUrls);
+      let newUrl;
       if (this.settings.replacements === "base64") {
         newUrl = createBase64Url(text, "text/css");
       } else {
@@ -16435,8 +16214,9 @@ class Resources {
       }
       return newUrl;
     }, err => {
+      console.error(err);
       // handle response errors
-      return new Promise(function (resolve) {
+      return new Promise(resolve => {
         resolve();
       });
     });
@@ -16444,35 +16224,34 @@ class Resources {
 
   /**
    * Resolve all resources URLs relative to an absolute URL
-   * @param  {string} absolute to be resolved to
-   * @param  {resolver} [resolver]
+   * @param {string} absoluteUri to be resolved to
+   * @param {method} [resolve]
    * @return {string[]} array with relative Urls
    */
-  relativeTo(absolute, resolver) {
-    resolver = resolver || this.settings.resolver;
+  relativeTo(absoluteUri, resolve) {
+    resolve = resolve || this.resolve;
 
     // Get Urls relative to current sections
-    return this.urls.map(function (href) {
-      var resolved = resolver(href);
-      var relative = new utils_path(absolute).relative(resolved);
-      return relative;
-    }.bind(this));
+    return this.urls.map(href => {
+      const resolved = resolve(href);
+      const path = new utils_path(absoluteUri);
+      return path.relative(path.directory, resolved);
+    });
   }
 
   /**
    * Get a URL for a resource
-   * @param  {string} path
-   * @return {string} url
+   * @param {string} path
+   * @return {string|null} url
    */
   get(path) {
-    var indexInUrls = this.urls.indexOf(path);
-    if (indexInUrls === -1) {
-      return;
-    }
-    if (this.replacementUrls.length) {
-      return new Promise(function (resolve, reject) {
-        resolve(this.replacementUrls[indexInUrls]);
-      }.bind(this));
+    const index = this.urls.indexOf(path);
+    if (index === -1) {
+      return null;
+    } else if (this.replacementUrls.length) {
+      return new Promise((resolve, reject) => {
+        resolve(this.replacementUrls[index]);
+      });
     } else {
       return this.createUrl(path);
     }
@@ -16481,12 +16260,12 @@ class Resources {
   /**
    * Substitute urls in content, with replacements,
    * relative to a url if provided
-   * @param  {string} content
-   * @param  {string} [url]   url to resolve to
-   * @return {string}         content with urls substituted
+   * @param {string} content
+   * @param {string} [url] url to resolve to
+   * @return {string} content with urls substituted
    */
   substitute(content, url) {
-    var relUrls;
+    let relUrls;
     if (url) {
       relUrls = this.relativeTo(url);
     } else {
@@ -16494,6 +16273,10 @@ class Resources {
     }
     return substitute(content, relUrls, this.replacementUrls);
   }
+
+  /**
+   * destroy
+   */
   destroy() {
     this.settings = undefined;
     this.manifest = undefined;
@@ -18732,36 +18515,49 @@ event_emitter_default()(Contents.prototype);
 
 
 
+
 /**
- * Annotation object
- * @class
- * @param {object} options
- * @param {string} options.type Type of annotation to add: `"highlight"` OR `"underline"` OR `"mark"`
- * @param {string} options.cfiRange EpubCFI range to attach annotation to
- * @param {number} options.sectionIndex Index in the Spine of the Section annotation belongs to
- * @param {object} [options.data] Data to assign to annotation
- * @param {method} [options.cb] Callback after annotation is clicked
- * @param {string} [options.className] CSS class to assign to annotation
- * @param {object} [options.styles] CSS styles to assign to annotation
- * @returns {Annotation} annotation
+ * Annotation class
  */
 class Annotation {
-  constructor({
-    type,
-    cfiRange,
-    sectionIndex,
+  /**
+   * Constructor
+   * @param {string} type Type of annotation to add: `"highlight"` OR `"underline"`
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   * @param {object} [options]
+   * @param {object} [options.data] Data to assign to annotation
+   * @param {method} [options.cb] Callback after annotation is clicked
+   * @param {string} [options.className] CSS class to assign to annotation
+   * @param {object} [options.styles] CSS styles to assign to annotation
+   */
+  constructor(type, cfiRange, {
     data,
     cb,
     className,
     styles
   }) {
+    /**
+     * @member {string} type
+     * @memberof Annotation
+     * @readonly
+     */
     this.type = type;
     this.cfiRange = cfiRange;
-    this.sectionIndex = sectionIndex;
+    /**
+     * @member {number} sectionIndex
+     * @memberof Annotation
+     * @readonly
+     */
+    this.sectionIndex = new src_epubcfi(cfiRange).spinePos;
     this.data = data;
     this.cb = cb;
     this.className = className;
     this.styles = styles;
+    /**
+     * @member {Mark} mark
+     * @memberof Annotation
+     * @readonly
+     */
     this.mark = undefined;
   }
 
@@ -18790,7 +18586,7 @@ class Annotation {
     this.mark = result;
     /**
      * @event attach
-     * @param {any} result
+     * @param {Mark} result
      * @memberof Annotation
      */
     this.emit(EVENTS.ANNOTATION.ATTACH, result);
@@ -18832,7 +18628,6 @@ event_emitter_default()(Annotation.prototype);
 ;// CONCATENATED MODULE: ./src/annotations.js
 
 
-
 /**
  * Handles managing adding & removing Annotations
  */
@@ -18859,24 +18654,9 @@ class Annotations extends Map {
    * @param {object} [options.styles] CSS styles to assign to annotation
    * @returns {Annotation} Annotation that was append
    */
-  append(type, cfiRange, {
-    data,
-    cb,
-    className,
-    styles
-  }) {
+  append(type, cfiRange, options) {
     const key = encodeURI(type + ":" + cfiRange);
-    const cfi = new src_epubcfi(cfiRange);
-    const sectionIndex = cfi.spinePos;
-    const annotation = new src_annotation({
-      type,
-      cfiRange,
-      sectionIndex,
-      data,
-      cb,
-      className,
-      styles
-    });
+    const annotation = new src_annotation(type, cfiRange, options);
     this.rendition.views().forEach(view => {
       const index = view.section.index;
       if (annotation.sectionIndex === index) {
@@ -18904,52 +18684,6 @@ class Annotations extends Map {
       });
       this.delete(key);
     }
-  }
-
-  /**
-   * Add a highlight to the store
-   * @param {string} cfiRange EpubCFI range to attach annotation to
-   * @param {object} [options]
-   * @param {object} [options.data] Data to assign to annotation
-   * @param {method} [options.cb] Callback after annotation is clicked
-   * @param {string} [options.className] CSS class to assign to annotation
-   * @param {object} [options.styles] CSS styles to assign to annotation
-   */
-  highlight(cfiRange, {
-    data,
-    cb,
-    className,
-    styles
-  }) {
-    return this.append("highlight", cfiRange, {
-      data,
-      cb,
-      className,
-      styles
-    });
-  }
-
-  /**
-   * Add a underline to the store
-   * @param {string} cfiRange EpubCFI range to attach annotation to
-   * @param {object} [options]
-   * @param {object} [options.data] Data to assign to annotation
-   * @param {method} [options.cb] Callback after annotation is clicked
-   * @param {string} [options.className] CSS class to assign to annotation
-   * @param {object} [options.styles] CSS styles to assign to annotation
-   */
-  underline(cfiRange, {
-    data,
-    cb,
-    className,
-    styles
-  }) {
-    return this.append("underline", cfiRange, {
-      data,
-      cb,
-      className,
-      styles
-    });
   }
 
   /**
@@ -22653,7 +22387,7 @@ class ContinuousViewManager extends managers_default {
 
 
 
-// import Mapping from "./mapping";
+
 
 
 
@@ -23402,7 +23136,8 @@ class Rendition {
   handleLinks(contents) {
     if (contents) {
       contents.on(EVENTS.CONTENTS.LINK_CLICKED, href => {
-        let relative = this.book.path.relative(href);
+        const path = new utils_path(href);
+        const relative = path.relative(path.directory, href);
         this.display(relative);
       });
     }
@@ -24361,10 +24096,10 @@ class Book {
       opening = this.request(input, "binary", this.settings.request.withCredentials, this.settings.request.headers).then(this.openEpub.bind(this));
     } else if (type == INPUT_TYPE.OPF) {
       this.url = new utils_url(input);
-      opening = this.openPackaging(this.url.Path.toString());
+      opening = this.openPackaging(this.url.path.toString());
     } else if (type == INPUT_TYPE.MANIFEST) {
       this.url = new utils_url(input);
-      opening = this.openManifest(this.url.Path.toString());
+      opening = this.openManifest(this.url.path.toString());
     } else {
       this.url = new utils_url(input);
       opening = this.openContainer(CONTAINER_PATH).then(this.openPackaging.bind(this));
@@ -24380,7 +24115,8 @@ class Book {
    * @private
    */
   async openEpub(data, encoding) {
-    return this.unarchive(data, encoding || this.settings.encoding).then(() => {
+    encoding = encoding || this.settings.encoding;
+    return this.unarchive(data, encoding).then(() => {
       return this.openContainer(CONTAINER_PATH);
     }).then(packagePath => {
       return this.openPackaging(packagePath);
@@ -24451,13 +24187,12 @@ class Book {
    */
   resolve(path, absolute = false) {
     if (!path) return;
-    const isAbsolute = path.indexOf("://") > -1;
-    if (isAbsolute) {
-      return path;
+    if (path.indexOf("://") > -1) {
+      return path; // is absolute
     }
     let resolved = path;
     if (this.path) {
-      resolved = this.path.resolve(path);
+      resolved = this.path.resolve(this.path.directory, path);
     }
     if (absolute === false && this.url) {
       resolved = this.url.resolve(resolved);
@@ -24494,8 +24229,7 @@ class Book {
     if (typeof input !== "string") {
       return INPUT_TYPE.BINARY;
     }
-    const url = new utils_url(input);
-    const path = url.path();
+    const path = new utils_url(input).path;
     let extension = path.extension;
     // If there's a search string, remove it before determining type
     if (extension) {
@@ -24527,7 +24261,7 @@ class Book {
     this.resources = new resources(this.packaging.manifest, {
       archive: this.archive,
       request: this.request.bind(this),
-      resolver: this.resolve.bind(this),
+      resolve: this.resolve.bind(this),
       replacements: this.settings.replacements || (this.archived ? "blobUrl" : "base64")
     });
     this.loadNavigation(this.packaging).then(() => {
