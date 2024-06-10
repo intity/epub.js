@@ -25,7 +25,7 @@ body {
     background: white;
 }
 
-#page a, p, li::marker {
+#page a, p, ul, li::marker {
     font-size: 0.9em;
 }
 
