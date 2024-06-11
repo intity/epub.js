@@ -107,4 +107,4 @@ class Annotations extends Map {
 	hide() { }
 }
 
-export default Annotations
+export default Annotations;
