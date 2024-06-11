@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Storage - Example</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="../node_modules/localforage/dist/localforage.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="content">
+        <div id="viewer" class="paginated"></div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const book = ePub("../test/fixtures/alice/", { store: "epub-js" })
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%",
+            spread: "none"
+        })
+        rendition.display(5)
+        prev.onclick = (e) => {
+
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (loc) => {
+
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+        }
+        const keybinding = (e) => {
+
+            switch (e.key) {
+                case "ArrowLeft":
+                    rendition.prev()
+                    break
+                case "ArrowRight":
+                    rendition.next()
+                    break
+            }
+        }
+        book.ready.then(() => {
+
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+        })
+        rendition.on("displayed", (section) => {
+
+            console.log(rendition)
+        })
+        rendition.on("relocated", (location) => {
+
+            update(location)
+            console.log(location)
+        })
+    </script>
+</body>
+
+</html>
