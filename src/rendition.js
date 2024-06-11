@@ -1,14 +1,13 @@
 import EventEmitter from "event-emitter";
-import { extend, isFloat } from "./utils/core";
-import Defer from "./utils/defer";
-import Hook from "./utils/hook";
+import Annotations from "./annotations";
 import EpubCFI from "./epubcfi";
-import Queue from "./utils/queue";
 import Layout from "./layout";
 import Themes from "./themes";
-import Contents from "./contents";
-import Annotations from "./annotations";
+import Defer from "./utils/defer";
+import Hook from "./utils/hook";
 import Path from "./utils/path";
+import Queue from "./utils/queue";
+import { extend, isFloat } from "./utils/core";
 import { EVENTS, DOM_EVENTS } from "./utils/constants";
 
 // Default View Managers
