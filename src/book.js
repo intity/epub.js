@@ -594,10 +594,11 @@ class Book {
 	store(input) {
 		// Use "blobUrl" or "base64" for replacements
 		const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
-		// Save original request method
-		const requester = this.settings.request.method || request.bind(this);
 		// Create new Storage
-		this.storage = new Storage(input, requester, this.resolve.bind(this));
+		this.storage = new Storage(input,
+			this.request.bind(this),
+			this.resolve.bind(this)
+		);
 		// Replace request method to go through store
 		this.request = this.storage.request.bind(this.storage);
 
