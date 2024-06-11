@@ -10,21 +10,25 @@ Handle Package Resources
     * [.process(manifest)](#Resources+process)
     * [.createUrl(url)](#Resources+createUrl) ⇒ <code>Promise.&lt;string&gt;</code>
     * [.replacements()](#Resources+replacements) ⇒ <code>Promise</code>
-    * [.relativeTo(absolute, [resolver])](#Resources+relativeTo) ⇒ <code>Array.&lt;string&gt;</code>
-    * [.get(path)](#Resources+get) ⇒ <code>string</code>
+    * [.relativeTo(absoluteUri, [resolve])](#Resources+relativeTo) ⇒ <code>Array.&lt;string&gt;</code>
+    * [.get(path)](#Resources+get) ⇒ <code>string</code> \| <code>null</code>
     * [.substitute(content, [url])](#Resources+substitute) ⇒ <code>string</code>
+    * [.destroy()](#Resources+destroy)
 
 <a name="new_Resources_new"></a>
 
 ## new Resources(manifest, [options])
+Constructor
+
 
 | Param | Type | Default |
 | --- | --- | --- |
 | manifest | <code>Manifest</code> |  | 
 | [options] | <code>object</code> |  | 
-| [options.replacements] | <code>string</code> | <code>&quot;\&quot;base64\&quot;&quot;</code> | 
 | [options.archive] | <code>Archive</code> |  | 
-| [options.resolver] | <code>method</code> |  | 
+| [options.request] | <code>method</code> |  | 
+| [options.resolve] | <code>method</code> |  | 
+| [options.replacements] | <code>string</code> | <code>&quot;&#x27;base64&#x27;&quot;</code> | 
 
 <a name="Resources+process"></a>
 
@@ -58,7 +62,7 @@ Create blob urls for all the assets
 **Returns**: <code>Promise</code> - returns replacement urls  
 <a name="Resources+relativeTo"></a>
 
-## resources.relativeTo(absolute, [resolver]) ⇒ <code>Array.&lt;string&gt;</code>
+## resources.relativeTo(absoluteUri, [resolve]) ⇒ <code>Array.&lt;string&gt;</code>
 Resolve all resources URLs relative to an absolute URL
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
@@ -66,16 +70,16 @@ Resolve all resources URLs relative to an absolute URL
 
 | Param | Type | Description |
 | --- | --- | --- |
-| absolute | <code>string</code> | to be resolved to |
-| [resolver] | <code>resolver</code> |  |
+| absoluteUri | <code>string</code> | to be resolved to |
+| [resolve] | <code>method</code> |  |
 
 <a name="Resources+get"></a>
 
-## resources.get(path) ⇒ <code>string</code>
+## resources.get(path) ⇒ <code>string</code> \| <code>null</code>
 Get a URL for a resource
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
-**Returns**: <code>string</code> - url  
+**Returns**: <code>string</code> \| <code>null</code> - url  
 
 | Param | Type |
 | --- | --- |
@@ -95,3 +99,9 @@ relative to a url if provided
 | content | <code>string</code> |  |
 | [url] | <code>string</code> | url to resolve to |
 
+<a name="Resources+destroy"></a>
+
+## resources.destroy()
+destroy
+
+**Kind**: instance method of [<code>Resources</code>](#Resources)  

@@ -80,7 +80,7 @@ fill
 
 | Param | Type |
 | --- | --- |
-| value | <code>defer</code> | 
+| value | <code>Defer</code> | 
 
 <a name="ContinuousViewManager+moveTo"></a>
 

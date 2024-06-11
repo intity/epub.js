@@ -6,10 +6,10 @@ Open Packaging Format Parser
 **Kind**: global class  
 
 * [Packaging](#Packaging)
-    * [new Packaging(packageDocument)](#new_Packaging_new)
+    * [new Packaging(packageXml)](#new_Packaging_new)
     * _instance_
-        * [.parse(packageDocument)](#Packaging+parse) ⇒ <code>object</code>
-        * [.load(packageDocument)](#Packaging+load) ⇒ <code>object</code>
+        * [.parse(packageXml)](#Packaging+parse) ⇒ <code>object</code>
+        * [.load(json)](#Packaging+load) ⇒ <code>object</code>
         * [.destroy()](#Packaging+destroy)
     * _static_
         * [.manifest](#Packaging.manifest) : <code>object</code>
@@ -19,20 +19,21 @@ Open Packaging Format Parser
         * [.coverPath](#Packaging.coverPath) : <code>string</code>
         * [.spine](#Packaging.spine) : <code>Array.&lt;object&gt;</code>
         * [.spineNodeIndex](#Packaging.spineNodeIndex) : <code>number</code>
+        * [.version](#Packaging.version) : <code>string</code>
 
 <a name="new_Packaging_new"></a>
 
-## new Packaging(packageDocument)
+## new Packaging(packageXml)
 Constructor
 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| packageDocument | <code>\*</code> | OPF XML |
+| packageXml | <code>Document</code> | OPF XML |
 
 <a name="Packaging+parse"></a>
 
-## packaging.parse(packageDocument) ⇒ <code>object</code>
+## packaging.parse(packageXml) ⇒ <code>object</code>
 Parse OPF XML
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
@@ -40,19 +41,19 @@ Parse OPF XML
 
 | Param | Type | Description |
 | --- | --- | --- |
-| packageDocument | <code>document</code> | OPF XML |
+| packageXml | <code>Document</code> | OPF XML |
 
 <a name="Packaging+load"></a>
 
-## packaging.load(packageDocument) ⇒ <code>object</code>
+## packaging.load(json) ⇒ <code>object</code>
 Load JSON Manifest
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
 **Returns**: <code>object</code> - parsed package parts  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| packageDocument | <code>document</code> | OPF XML |
+| Param | Type |
+| --- | --- |
+| json | <code>json</code> | 
 
 <a name="Packaging+destroy"></a>
 
@@ -112,5 +113,12 @@ destroy
 <a name="Packaging.spineNodeIndex"></a>
 
 ## Packaging.spineNodeIndex : <code>number</code>
+**Kind**: static property of [<code>Packaging</code>](#Packaging)  
+**Read only**: true  
+<a name="Packaging.version"></a>
+
+## Packaging.version : <code>string</code>
+Package version
+
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  

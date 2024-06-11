@@ -34,7 +34,7 @@ of its contents.
         * [.url](#Book.url) : <code>Url</code>
         * [.path](#Book.path) : <code>Path</code>
         * [.archived](#Book.archived) : <code>boolean</code>
-        * [.storage](#Book.storage) : <code>Store</code>
+        * [.storage](#Book.storage) : <code>Storage</code>
         * [.resources](#Book.resources) : <code>Resources</code>
         * [.rendition](#Book.rendition) : <code>Rendition</code>
         * [.container](#Book.container) : <code>Container</code>
@@ -291,7 +291,7 @@ Queue for methods used before opening
 **Read only**: true  
 <a name="Book.storage"></a>
 
-## Book.storage : <code>Store</code>
+## Book.storage : <code>Storage</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 **Read only**: true  
 <a name="Book.resources"></a>
