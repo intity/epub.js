@@ -368,7 +368,7 @@ class EpubCFI {
 	filter(node, ignoreClass) {
 
 		let parent;
-		let isText = false;
+		let isText;
 		let needsIgnoring;
 
 		if (node.nodeType === Node.TEXT_NODE) {
@@ -983,7 +983,7 @@ class EpubCFI {
 
 		const _doc = doc || document;
 		let start, end, startContainer, endContainer;
-		let startSteps, endSteps, hasOffset = false;
+		let startSteps, endSteps, hasOffset;
 		const needsIgnoring = ignoreClass && (_doc.querySelector("." + ignoreClass) != null);
 		const reqClass = needsIgnoring ? ignoreClass : undefined;
 
