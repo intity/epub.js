@@ -1,5 +1,4 @@
 import { isXml, parse } from "./utils/core";
-import { EVENTS } from "./utils/constants";
 import Defer from "./utils/defer";
 import httpRequest from "./utils/request";
 import mime from "./utils/mime";
