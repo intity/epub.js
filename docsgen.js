@@ -46,6 +46,7 @@ const docs = [
     "themes",
     "utils/constants",
     "utils/core",
+    "utils/defer",
     "utils/hook",
     "utils/mime",
     "utils/path",
