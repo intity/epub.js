@@ -22,10 +22,10 @@ const _URL = typeof URL != "undefined" ? URL : (typeof window != "undefined" ? (
  */
 export function uuid() {
 	var d = new Date().getTime();
-	var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-		var r = (d + Math.random()*16)%16 | 0;
-		d = Math.floor(d/16);
-		return (c=="x" ? r : (r&0x7|0x8)).toString(16);
+	var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+		var r = (d + Math.random() * 16) % 16 | 0;
+		d = Math.floor(d / 16);
+		return (c == "x" ? r : (r & 0x7 | 0x8)).toString(16);
 	});
 	return uuid;
 }
@@ -36,11 +36,11 @@ export function uuid() {
  */
 export function documentHeight() {
 	return Math.max(
-			document.documentElement.clientHeight,
-			document.body.scrollHeight,
-			document.documentElement.scrollHeight,
-			document.body.offsetHeight,
-			document.documentElement.offsetHeight
+		document.documentElement.clientHeight,
+		document.body.scrollHeight,
+		document.documentElement.scrollHeight,
+		document.body.offsetHeight,
+		document.documentElement.offsetHeight
 	);
 }
 
@@ -85,17 +85,17 @@ export function isFloat(n) {
  * @returns {string}
  */
 export function prefixed(unprefixed) {
-	var vendors = ["Webkit", "webkit", "Moz", "O", "ms" ];
+	var vendors = ["Webkit", "webkit", "Moz", "O", "ms"];
 	var prefixes = ["-webkit-", "-webkit-", "-moz-", "-o-", "-ms-"];
 	var lower = unprefixed.toLowerCase();
 	var length = vendors.length;
 
-	if (typeof(document) === "undefined" || typeof(document.body.style[lower]) != "undefined") {
+	if (typeof (document) === "undefined" || typeof (document.body.style[lower]) != "undefined") {
 		return unprefixed;
 	}
 
 	for (var i = 0; i < length; i++) {
-		if (typeof(document.body.style[prefixes[i] + lower]) != "undefined") {
+		if (typeof (document.body.style[prefixes[i] + lower]) != "undefined") {
 			return prefixes[i] + lower;
 		}
 	}
@@ -126,8 +126,8 @@ export function defaults(obj) {
 export function extend(target) {
 	var sources = [].slice.call(arguments, 1);
 	sources.forEach(function (source) {
-		if(!source) return;
-		Object.getOwnPropertyNames(source).forEach(function(propName) {
+		if (!source) return;
+		Object.getOwnPropertyNames(source).forEach(function (propName) {
 			Object.defineProperty(target, propName, Object.getOwnPropertyDescriptor(source, propName));
 		});
 	});
@@ -163,27 +163,27 @@ export function locationOf(item, array, compareFunction, _start, _end) {
 	var end = _end || array.length;
 	var pivot = parseInt(start + (end - start) / 2);
 	var compared;
-	if(!compareFunction){
-		compareFunction = function(a, b) {
-			if(a > b) return 1;
-			if(a < b) return -1;
-			if(a == b) return 0;
+	if (!compareFunction) {
+		compareFunction = function (a, b) {
+			if (a > b) return 1;
+			if (a < b) return -1;
+			if (a == b) return 0;
 		};
 	}
-	if(end-start <= 0) {
+	if (end - start <= 0) {
 		return pivot;
 	}
 
 	compared = compareFunction(array[pivot], item);
-	if(end-start === 1) {
+	if (end - start === 1) {
 		return compared >= 0 ? pivot : pivot + 1;
 	}
-	if(compared === 0) {
+	if (compared === 0) {
 		return pivot;
 	}
-	if(compared === -1) {
+	if (compared === -1) {
 		return locationOf(item, array, compareFunction, pivot, end);
-	} else{
+	} else {
 		return locationOf(item, array, compareFunction, start, pivot);
 	}
 }
@@ -203,27 +203,27 @@ export function indexOfSorted(item, array, compareFunction, _start, _end) {
 	var end = _end || array.length;
 	var pivot = parseInt(start + (end - start) / 2);
 	var compared;
-	if(!compareFunction){
-		compareFunction = function(a, b) {
-			if(a > b) return 1;
-			if(a < b) return -1;
-			if(a == b) return 0;
+	if (!compareFunction) {
+		compareFunction = function (a, b) {
+			if (a > b) return 1;
+			if (a < b) return -1;
+			if (a == b) return 0;
 		};
 	}
-	if(end-start <= 0) {
+	if (end - start <= 0) {
 		return -1; // Not found
 	}
 
 	compared = compareFunction(array[pivot], item);
-	if(end-start === 1) {
+	if (end - start === 1) {
 		return compared === 0 ? pivot : -1;
 	}
-	if(compared === 0) {
+	if (compared === 0) {
 		return pivot; // Found
 	}
-	if(compared === -1) {
+	if (compared === -1) {
 		return indexOfSorted(item, array, compareFunction, pivot, end);
-	} else{
+	} else {
 		return indexOfSorted(item, array, compareFunction, start, pivot);
 	}
 }
@@ -242,11 +242,11 @@ export function bounds(el) {
 	var width = 0;
 	var height = 0;
 
-	widthProps.forEach(function(prop){
+	widthProps.forEach(function (prop) {
 		width += parseFloat(style[prop]) || 0;
 	});
 
-	heightProps.forEach(function(prop){
+	heightProps.forEach(function (prop) {
 		height += parseFloat(style[prop]) || 0;
 	});
 
@@ -272,11 +272,11 @@ export function borders(el) {
 	var width = 0;
 	var height = 0;
 
-	widthProps.forEach(function(prop){
+	widthProps.forEach(function (prop) {
 		width += parseFloat(style[prop]) || 0;
 	});
 
-	heightProps.forEach(function(prop){
+	heightProps.forEach(function (prop) {
 		height += parseFloat(style[prop]) || 0;
 	});
 
@@ -296,7 +296,7 @@ export function borders(el) {
 export function nodeBounds(node) {
 	let elPos;
 	let doc = node.ownerDocument;
-	if(node.nodeType == Node.TEXT_NODE){
+	if (node.nodeType == Node.TEXT_NODE) {
 		let elRange = doc.createRange();
 		elRange.selectNodeContents(node);
 		elPos = elRange.getBoundingClientRect();
@@ -381,8 +381,8 @@ export function isXml(ext) {
  * @param {string} mime
  * @returns {Blob}
  */
-export function createBlob(content, mime){
-	return new Blob([content], {type : mime });
+export function createBlob(content, mime) {
+	return new Blob([content], { type: mime });
 }
 
 /**
@@ -391,7 +391,7 @@ export function createBlob(content, mime){
  * @param {string} mime
  * @returns {string} url
  */
-export function createBlobUrl(content, mime){
+export function createBlobUrl(content, mime) {
 	var tempUrl;
 	var blob = createBlob(content, mime);
 
@@ -404,7 +404,7 @@ export function createBlobUrl(content, mime){
  * Remove a blob url
  * @param {string} url
  */
-export function revokeBlobUrl(url){
+export function revokeBlobUrl(url) {
 	return _URL.revokeObjectURL(url);
 }
 
@@ -414,11 +414,11 @@ export function revokeBlobUrl(url){
  * @param {string} mime
  * @returns {string} url
  */
-export function createBase64Url(content, mime){
+export function createBase64Url(content, mime) {
 	var data;
 	var datauri;
 
-	if (typeof(content) !== "string") {
+	if (typeof (content) !== "string") {
 		// Only handles strings
 		return;
 	}
@@ -435,7 +435,7 @@ export function createBase64Url(content, mime){
  * @param {object} obj
  * @returns {string} type
  */
-export function type(obj){
+export function type(obj) {
 	return Object.prototype.toString.call(obj).slice(8, -1);
 }
 
@@ -458,7 +458,7 @@ export function parse(markup, mime, forceXMLDom) {
 
 	// Remove byte order mark before parsing
 	// https://www.w3.org/International/questions/qa-byte-order-mark
-	if(markup.charCodeAt(0) === 0xFEFF) {
+	if (markup.charCodeAt(0) === 0xFEFF) {
 		markup = markup.slice(1);
 	}
 
@@ -522,9 +522,9 @@ export function qsp(el, sel, props) {
 		return el.querySelector(sel);
 	} else {
 		q = el.getElementsByTagName(sel);
-		filtered = Array.prototype.slice.call(q, 0).filter(function(el) {
+		filtered = Array.prototype.slice.call(q, 0).filter(function (el) {
 			for (var prop in props) {
-				if(el.getAttribute(prop) === props[prop]){
+				if (el.getAttribute(prop) === props[prop]) {
 					return true;
 				}
 			}
@@ -545,10 +545,10 @@ export function qsp(el, sel, props) {
  */
 export function sprint(root, func) {
 	var doc = root.ownerDocument || root;
-	if (typeof(doc.createTreeWalker) !== "undefined") {
+	if (typeof (doc.createTreeWalker) !== "undefined") {
 		treeWalker(root, func, NodeFilter.SHOW_TEXT);
 	} else {
-		walk(root, function(node) {
+		walk(root, function (node) {
 			if (node && node.nodeType === 3) { // Node.TEXT_NODE
 				func(node);
 			}
@@ -576,19 +576,19 @@ export function treeWalker(root, func, filter) {
  * @param {node} node
  * @param {callback} return false for continue,true for break inside callback
  */
-export function walk(node,callback){
-	if(callback(node)){
+export function walk(node, callback) {
+	if (callback(node)) {
 		return true;
 	}
 	node = node.firstChild;
-	if(node){
-		do{
-			let walked = walk(node,callback);
-			if(walked){
+	if (node) {
+		do {
+			let walked = walk(node, callback);
+			if (walked) {
 				return true;
 			}
 			node = node.nextSibling;
-		} while(node);
+		} while (node);
 	}
 }
 
@@ -598,10 +598,10 @@ export function walk(node,callback){
  * @returns {string}
  */
 export function blob2base64(blob) {
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		var reader = new FileReader();
 		reader.readAsDataURL(blob);
-		reader.onloadend = function() {
+		reader.onloadend = function () {
 			resolve(reader.result);
 		};
 	});
@@ -651,17 +651,17 @@ export function defer() {
  * @param {string} type epub type to find
  * @returns {element[]} elements
  */
-export function querySelectorByType(html, element, type){
+export function querySelectorByType(html, element, type) {
 	var query;
 	if (typeof html.querySelector != "undefined") {
 		query = html.querySelector(`${element}[*|type="${type}"]`);
 	}
 	// Handle IE not supporting namespaced epub:type in querySelector
-	if(!query || query.length === 0) {
+	if (!query || query.length === 0) {
 		query = qsa(html, element);
 		for (var i = 0; i < query.length; i++) {
-			if(query[i].getAttributeNS("http://www.idpf.org/2007/ops", "type") === type ||
-				 query[i].getAttribute("epub:type") === type) {
+			if (query[i].getAttributeNS("http://www.idpf.org/2007/ops", "type") === type ||
+				query[i].getAttribute("epub:type") === type) {
 				return query[i];
 			}
 		}
@@ -740,101 +740,5 @@ export function getParentByTagName(node, tagname) {
 			return parent;
 		}
 		parent = parent.parentNode;
-	}
-}
-
-/**
- * Lightweight Polyfill for DOM Range
- * @class
- */
-export class RangeObject {
-	constructor() {
-		this.collapsed = false;
-		this.commonAncestorContainer = undefined;
-		this.endContainer = undefined;
-		this.endOffset = undefined;
-		this.startContainer = undefined;
-		this.startOffset = undefined;
-	}
-
-	setStart(startNode, startOffset) {
-		this.startContainer = startNode;
-		this.startOffset = startOffset;
-
-		if (!this.endContainer) {
-			this.collapse(true);
-		} else {
-			this.commonAncestorContainer = this._commonAncestorContainer();
-		}
-
-		this._checkCollapsed();
-	}
-
-	setEnd(endNode, endOffset) {
-		this.endContainer = endNode;
-		this.endOffset = endOffset;
-
-		if (!this.startContainer) {
-			this.collapse(false);
-		} else {
-			this.collapsed = false;
-			this.commonAncestorContainer = this._commonAncestorContainer();
-		}
-
-		this._checkCollapsed();
-	}
-
-	collapse(toStart) {
-		this.collapsed = true;
-		if (toStart) {
-			this.endContainer = this.startContainer;
-			this.endOffset = this.startOffset;
-			this.commonAncestorContainer = this.startContainer.parentNode;
-		} else {
-			this.startContainer = this.endContainer;
-			this.startOffset = this.endOffset;
-			this.commonAncestorContainer = this.endOffset.parentNode;
-		}
-	}
-
-	selectNode(referenceNode) {
-		let parent = referenceNode.parentNode;
-		let index = Array.prototype.indexOf.call(parent.childNodes, referenceNode);
-		this.setStart(parent, index);
-		this.setEnd(parent, index + 1);
-	}
-
-	selectNodeContents(referenceNode) {
-		let end = referenceNode.childNodes[referenceNode.childNodes - 1];
-		let endIndex = (referenceNode.nodeType === 3) ?
-				referenceNode.textContent.length : parent.childNodes.length;
-		this.setStart(referenceNode, 0);
-		this.setEnd(referenceNode, endIndex);
-	}
-
-	_commonAncestorContainer(startContainer, endContainer) {
-		var startParents = parents(startContainer || this.startContainer);
-		var endParents = parents(endContainer || this.endContainer);
-
-		if (startParents[0] != endParents[0]) return undefined;
-
-		for (var i = 0; i < startParents.length; i++) {
-			if (startParents[i] != endParents[i]) {
-				return startParents[i - 1];
-			}
-		}
-	}
-
-	_checkCollapsed() {
-		if (this.startContainer === this.endContainer &&
-				this.startOffset === this.endOffset) {
-			this.collapsed = true;
-		} else {
-			this.collapsed = false;
-		}
-	}
-
-	toString() {
-		// TODO: implement walking between start and end to find text
 	}
 }
