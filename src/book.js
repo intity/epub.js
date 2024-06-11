@@ -388,7 +388,7 @@ class Book {
 
 		if (!path) return "";
 
-		let url = path;
+		let url;
 		if (this.settings.canonical) {
 			url = this.settings.canonical(path);
 		} else {
