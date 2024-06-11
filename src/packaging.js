@@ -266,7 +266,7 @@ class Packaging {
 	 */
 	findNcxPath(manifestNode, spineNode) {
 
-		const node = qsp(manifestNode, "item", {
+		let node = qsp(manifestNode, "item", {
 			"media-type": "application/x-dtbncx+xml"
 		});
 		// If we can't find the toc by media-type then try to look for id of the item in the spine attributes as
