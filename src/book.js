@@ -14,7 +14,7 @@ import Rendition from "./rendition";
 import Archive from "./archive";
 import request from "./utils/request";
 import EpubCFI from "./epubcfi";
-import Store from "./store";
+import Storage from "./storage";
 import { EPUBJS_VERSION, EVENTS } from "./utils/constants";
 
 const CONTAINER_PATH = "META-INF/container.xml";
@@ -178,7 +178,7 @@ class Book {
 		 */
 		this.archive = undefined;
 		/**
-		 * @member {Store} storage
+		 * @member {Storage} storage
 		 * @memberof Book
 		 * @readonly
 		 */
@@ -586,9 +586,9 @@ class Book {
 	}
 
 	/**
-	 * Store the epubs contents
+	 * Storage the epubs contents
 	 * @param {binary} input epub data
-	 * @returns {Store}
+	 * @returns {Storage}
 	 * @private
 	 */
 	store(input) {
@@ -596,8 +596,8 @@ class Book {
 		const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
 		// Save original request method
 		const requester = this.settings.request.method || request.bind(this);
-		// Create new Store
-		this.storage = new Store(input, requester, this.resolve.bind(this));
+		// Create new Storage
+		this.storage = new Storage(input, requester, this.resolve.bind(this));
 		// Replace request method to go through store
 		this.request = this.storage.request.bind(this.storage);
 

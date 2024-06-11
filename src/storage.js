@@ -11,7 +11,7 @@ const _URL = window.URL || window.webkitURL || window.mozURL;
 /**
  * Handles saving and requesting files from local storage
  */
-class Store {
+class Storage {
 	/**
 	 * Constructor
 	 * @param {string} name This should be the name of the application for modals
@@ -27,7 +27,7 @@ class Store {
 		this.storage = undefined;
 		/**
 		 * @member {boolean} online Current status
-		 * @memberof Store
+		 * @memberof Storage
 		 * @readonly
 		 */
 		this.online = true;
@@ -211,9 +211,9 @@ class Store {
 		let r;
 		if (isXml(type)) {
 			r = parse(response, "text/xml");
-		} else if (type == "xhtml") {
+		} else if (type === "xhtml") {
 			r = parse(response, "application/xhtml+xml");
-		} else if (type == "html" || type == "htm") {
+		} else if (type === "html" || type === "htm") {
 			r = parse(response, "text/html");
 		} else if (type === "json") {
 			r = JSON.parse(response);
@@ -364,6 +364,6 @@ class Store {
 	}
 }
 
-EventEmitter(Store.prototype);
+EventEmitter(Storage.prototype);
 
-export default Store;
+export default Storage;
