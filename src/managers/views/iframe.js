@@ -604,7 +604,7 @@ class IframeView {
 		return {
 			top: this.element.offsetTop,
 			left: this.element.offsetLeft
-		}
+		};
 	}
 
 	/**
@@ -618,17 +618,17 @@ class IframeView {
 
 	/**
 	 * locationOf
-	 * @param {*} target 
+	 * @param {string|EpubCFI} target 
 	 * @returns {object}
 	 */
 	locationOf(target) {
 
-		const parentPos = this.iframe.getBoundingClientRect();
-		const targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
+		const pos = this.contents.locationOf(
+			target, this.settings.ignoreClass);
 
 		return {
-			"left": targetPos.left,
-			"top": targetPos.top
+			left: pos.left,
+			top: pos.top
 		};
 	}
 
