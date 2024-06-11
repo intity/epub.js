@@ -5,8 +5,9 @@ import Views from "../helpers/views";
 import Queue from "../../utils/queue";
 import IframeView from "../views/iframe";
 import scrollType from "../../utils/scrolltype";
+import Defer from "../../utils/defer";
 import { EVENTS } from "../../utils/constants";
-import { extend, defer, windowBounds, isNumber } from "../../utils/core";
+import { extend, windowBounds, isNumber } from "../../utils/core";
 
 const AXIS_H = "horizontal";
 const AXIS_V = "vertical";
@@ -353,7 +354,7 @@ class DefaultViewManager {
 	 */
 	display(section, target) {
 
-		const displaying = new defer();
+		const displaying = new Defer();
 		const displayed = displaying.promise;
 
 		// Check if moving to target is needed

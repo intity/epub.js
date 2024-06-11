@@ -1,5 +1,6 @@
 import EventEmitter from "event-emitter";
-import {extend, borders, uuid, isNumber, bounds, defer, qs, parse} from "../../utils/core";
+import Defer from "../../utils/defer";
+import {extend, borders, uuid, isNumber, bounds, qs, parse} from "../../utils/core";
 import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
@@ -277,7 +278,7 @@ class InlineView {
 
 
 	load(contents) {
-		var loading = new defer();
+		var loading = new Defer();
 		var loaded = loading.promise;
 		var doc = parse(contents, "text/html");
 		var body = qs(doc, "body");
@@ -333,7 +334,7 @@ class InlineView {
 	}
 
 	display(request) {
-		var displayed = new defer();
+		var displayed = new Defer();
 
 		if (!this.displayed) {
 

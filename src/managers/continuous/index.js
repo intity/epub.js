@@ -1,4 +1,5 @@
-import { extend, defer, requestAnimationFrame } from "../../utils/core";
+import { extend, requestAnimationFrame } from "../../utils/core";
+import Defer from "../../utils/defer";
 import DefaultViewManager from "../default";
 import Snap from "../helpers/snap";
 import { EVENTS } from "../../utils/constants";
@@ -77,12 +78,12 @@ class ContinuousViewManager extends DefaultViewManager {
 
 	/**
 	 * fill
-	 * @param {defer} value
+	 * @param {Defer} value
 	 * @returns {Promise}
 	 */
 	fill(value) {
 
-		const full = value || new defer();
+		const full = value || new Defer();
 
 		this.q.enqueue(() => {
 			return this.check();
@@ -234,7 +235,7 @@ class ContinuousViewManager extends DefaultViewManager {
 		const views = this.views;
 		const visible = [];
 		const _offset = typeof offset !== "undefined" ? offset : (this.settings.offset || 0);
-		const updating = new defer();
+		const updating = new Defer();
 		const promises = [];
 
 		for (let i = 0; i < views.length; i++) {
@@ -285,7 +286,7 @@ class ContinuousViewManager extends DefaultViewManager {
 	 */
 	check(offsetLeft, offsetTop) {
 
-		const checking = new defer();
+		const checking = new Defer();
 		const newViews = [];
 		const horizontal = (this.settings.axis === "horizontal");
 		let delta = this.settings.offset || 0;
@@ -382,7 +383,7 @@ class ContinuousViewManager extends DefaultViewManager {
 	 */
 	trim() {
 
-		const task = new defer();
+		const task = new Defer();
 		const displayed = this.views.displayed();
 		const first = displayed[0];
 		const last = displayed[displayed.length - 1];

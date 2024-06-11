@@ -1,5 +1,6 @@
 import EventEmitter from "event-emitter";
-import { extend, defer, isFloat } from "./utils/core";
+import { extend, isFloat } from "./utils/core";
+import Defer from "./utils/defer";
 import Hook from "./utils/hook";
 import EpubCFI from "./epubcfi";
 import Queue from "./utils/queue";
@@ -149,7 +150,7 @@ class Rendition {
 		// Hold queue until book is opened
 		this.q.enqueue(this.book.opened);
 
-		this.starting = new defer();
+		this.starting = new Defer();
 		/**
 		 * returns after the rendition has started
 		 * @member {Promise} started
@@ -300,7 +301,7 @@ class Rendition {
 	_display(target) {
 
 		if (!this.book) return;
-		const displaying = new defer();
+		const displaying = new Defer();
 		const displayed = displaying.promise;
 		this.displaying = displaying;
 

@@ -1,8 +1,9 @@
 import EventEmitter from "event-emitter";
 import Queue from "./utils/queue";
 import EpubCFI from "./epubcfi";
+import Defer from "./utils/defer";
 import { EVENTS } from "./utils/constants";
-import { qs, sprint, locationOf, defer } from "./utils/core";
+import { qs, sprint, locationOf } from "./utils/core";
 
 /**
  * Find Locations for a Book
@@ -93,7 +94,7 @@ class Locations extends Array {
 	async process(section) {
 
 		return section.load(this.request).then((contents) => {
-			const completed = new defer();
+			const completed = new Defer();
 			const locations = this.parse(contents, section.cfiBase);
 			locations.forEach(i => this.push(i));
 

@@ -1,4 +1,5 @@
-import {defer, requestAnimationFrame} from "./core";
+import Defer from "./defer";
+import {requestAnimationFrame} from "./core";
 
 /**
  * Queue for handling tasks one at a time
@@ -34,7 +35,7 @@ class Queue {
 
 		if(typeof task === "function"){
 
-			deferred = new defer();
+			deferred = new Defer();
 			promise = deferred.promise;
 
 			queued = {
@@ -101,7 +102,7 @@ class Queue {
 			}
 
 		} else {
-			inwait = new defer();
+			inwait = new Defer();
 			inwait.deferred.resolve();
 			return inwait.promise;
 		}
@@ -123,7 +124,7 @@ class Queue {
 
 		if(!this.running){
 			this.running = true;
-			this.defered = new defer();
+			this.defered = new Defer();
 		}
 
 		this.tick.call(window, () => {

@@ -1,5 +1,6 @@
 import EventEmitter from "event-emitter";
-import { extend, defer } from "./utils/core";
+import { extend } from "./utils/core";
+import Defer from "./utils/defer";
 import Url from "./utils/url";
 import Path from "./utils/path";
 import Spine from "./spine";
@@ -69,7 +70,7 @@ class Book {
 			store: undefined
 		}, options || {});
 
-		this.opening = new defer(); // Promises
+		this.opening = new Defer(); // Promises
 		/**
 		 * @member {promise} opened returns after the book is loaded
 		 * @memberof Book
@@ -84,13 +85,13 @@ class Book {
 		this.isOpen = false;
 
 		this.loading = {
-			cover: new defer(),
-			spine: new defer(),
-			manifest: new defer(),
-			metadata: new defer(),
-			pageList: new defer(),
-			resources: new defer(),
-			navigation: new defer()
+			cover: new Defer(),
+			spine: new Defer(),
+			manifest: new Defer(),
+			metadata: new Defer(),
+			pageList: new Defer(),
+			resources: new Defer(),
+			navigation: new Defer()
 		};
 
 		this.loaded = {

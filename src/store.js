@@ -1,4 +1,5 @@
-import {defer, isXml, parse} from "./utils/core";
+import {isXml, parse} from "./utils/core";
+import Defer from "./utils/defer";
 import httpRequest from "./utils/request";
 import mime from "./utils/mime";
 import Path from "./utils/path";
@@ -160,7 +161,7 @@ class Store {
 	 * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
 	 */
 	retrieve(url, type) {
-		var deferred = new defer();
+		var deferred = new Defer();
 		var response;
 		var path = new Path(url);
 
@@ -177,7 +178,7 @@ class Store {
 
 
 		return response.then((r) => {
-			var deferred = new defer();
+			var deferred = new Defer();
 			var result;
 			if (r) {
 				result = this.handleResponse(r, type);
@@ -254,7 +255,7 @@ class Store {
 		mimeType = mimeType || mime.lookup(url);
 
 		return this.storage.getItem(encodedUrl).then(function(uint8array) {
-			var deferred = new defer();
+			var deferred = new Defer();
 			var reader = new FileReader();
 			var blob;
 
@@ -284,7 +285,7 @@ class Store {
 		mimeType = mimeType || mime.lookup(url);
 
 		return this.storage.getItem(encodedUrl).then((uint8array) => {
-			var deferred = new defer();
+			var deferred = new Defer();
 			var reader = new FileReader();
 			var blob;
 
@@ -308,7 +309,7 @@ class Store {
 	 * @return {Promise} url promise with Url string
 	 */
 	createUrl(url, options){
-		var deferred = new defer();
+		var deferred = new Defer();
 		var _URL = window.URL || window.webkitURL || window.mozURL;
 		var tempUrl;
 		var response;

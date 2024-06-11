@@ -1,4 +1,5 @@
-import { defer, isXml, parse } from "./utils/core";
+import { isXml, parse } from "./utils/core";
+import Defer from "./utils/defer";
 import request from "./utils/request";
 import mime from "./utils/mime";
 import Path from "./utils/path";
@@ -66,7 +67,7 @@ class Archive {
 	 */
 	request(url, type) {
 
-		const deferred = new defer();
+		const deferred = new Defer();
 		const path = new Path(url);
 
 		// If type isn't set, determine it from the file extension
@@ -186,7 +187,7 @@ class Archive {
 	 */
 	createUrl(url, options) {
 
-		const deferred = new defer();
+		const deferred = new Defer();
 		const _URL = window.URL || window.webkitURL || window.mozURL;
 		const base64 = options && options.base64;
 
