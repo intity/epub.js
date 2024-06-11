@@ -443,7 +443,7 @@ class DefaultViewManager {
 	 */
 	moveTo(offset, width) {
 
-		let distX = 0, distY = 0;
+		let distX = 0, distY;
 
 		if (this.paginated) {
 			distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
