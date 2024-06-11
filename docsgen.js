@@ -42,7 +42,7 @@ const docs = [
     "resources",
     "section",
     "spine",
-    "store",
+    "storage",
     "themes",
     "utils/constants",
     "utils/core",
