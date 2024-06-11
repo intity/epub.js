@@ -41,7 +41,7 @@ class Snap {
 			duration: 300,
 			minVelocity: 0.2,
 			minDistance: 10,
-			easing: EASING_EQUATIONS['easeInCubic']
+			easing: EASING_EQUATIONS["easeInCubic"]
 		}, options || {});
 
 		if (this.supportsTouch()) {
