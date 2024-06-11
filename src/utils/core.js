@@ -9,21 +9,18 @@ import { DOMParser as XMLDOMParser } from "@xmldom/xmldom";
  * @returns {function} requestAnimationFrame
  */
 export const requestAnimationFrame = (typeof window != "undefined") ? (window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame) : false;
-const ELEMENT_NODE = 1;
-const TEXT_NODE = 3;
-const COMMENT_NODE = 8;
-const DOCUMENT_NODE = 9;
 const _URL = typeof URL != "undefined" ? URL : (typeof window != "undefined" ? (window.URL || window.webkitURL || window.mozURL) : undefined);
 
 /**
  * Generates a UUID
- * based on: http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+ * @link https://stackoverflow.com/questions/105034/how-do-i-create-a-guid-uuid
  * @returns {string} uuid
  */
-export function uuid() {
-	var d = new Date().getTime();
-	var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-		var r = (d + Math.random() * 16) % 16 | 0;
+export const uuid = () => {
+
+	let d = new Date().getTime();
+	const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+		const r = (d + Math.random() * 16) % 16 | 0;
 		d = Math.floor(d / 16);
 		return (c == "x" ? r : (r & 0x7 | 0x8)).toString(16);
 	});
@@ -34,7 +31,8 @@ export function uuid() {
  * Gets the height of a document
  * @returns {number} height
  */
-export function documentHeight() {
+export const documentHeight = () => {
+
 	return Math.max(
 		document.documentElement.clientHeight,
 		document.body.scrollHeight,
@@ -49,24 +47,29 @@ export function documentHeight() {
  * @param {object} obj
  * @returns {boolean}
  */
-export function isElement(obj) {
-	return !!(obj && obj.nodeType == 1);
+export const isElement = (obj) => {
+
+	return !!(obj && obj.nodeType == Node.ELEMENT_NODE);
 }
 
 /**
+ * isNumber
  * @param {any} n
  * @returns {boolean}
  */
-export function isNumber(n) {
+export const isNumber = (n) => {
+
 	return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
 /**
+ * isFloat
  * @param {any} n
  * @returns {boolean}
  */
-export function isFloat(n) {
-	let f = parseFloat(n);
+export const isFloat = (n) => {
+
+	const f = parseFloat(n);
 
 	if (isNumber(n) === false) {
 		return false;
@@ -84,18 +87,19 @@ export function isFloat(n) {
  * @param {string} unprefixed
  * @returns {string}
  */
-export function prefixed(unprefixed) {
-	var vendors = ["Webkit", "webkit", "Moz", "O", "ms"];
-	var prefixes = ["-webkit-", "-webkit-", "-moz-", "-o-", "-ms-"];
-	var lower = unprefixed.toLowerCase();
-	var length = vendors.length;
+export const prefixed = (unprefixed) => {
 
-	if (typeof (document) === "undefined" || typeof (document.body.style[lower]) != "undefined") {
+	const vendors = ["Webkit", "webkit", "Moz", "O", "ms"];
+	const prefixes = ["-webkit-", "-webkit-", "-moz-", "-o-", "-ms-"];
+	const lower = unprefixed.toLowerCase();
+	const length = vendors.length;
+
+	if (typeof (document) === "undefined" || typeof (document.body.style[lower]) !== "undefined") {
 		return unprefixed;
 	}
 
-	for (var i = 0; i < length; i++) {
-		if (typeof (document.body.style[prefixes[i] + lower]) != "undefined") {
+	for (let i = 0; i < length; i++) {
+		if (typeof (document.body.style[prefixes[i] + lower]) !== "undefined") {
 			return prefixes[i] + lower;
 		}
 	}
@@ -108,10 +112,11 @@ export function prefixed(unprefixed) {
  * @param {object} obj
  * @returns {object}
  */
-export function defaults(obj) {
-	for (var i = 1, length = arguments.length; i < length; i++) {
-		var source = arguments[i];
-		for (var prop in source) {
+export const defaults = (obj, ...args) => {
+
+	for (let i = 1, length = args.length; i < length; i++) {
+		const source = args[i];
+		for (const prop in source) {
 			if (obj[prop] === void 0) obj[prop] = source[prop];
 		}
 	}
@@ -123,30 +128,19 @@ export function defaults(obj) {
  * @param {object} target
  * @returns {object}
  */
-export function extend(target) {
-	var sources = [].slice.call(arguments, 1);
-	sources.forEach(function (source) {
+export const extend = (target, ...args) => {
+
+	args.forEach((source) => {
 		if (!source) return;
-		Object.getOwnPropertyNames(source).forEach(function (propName) {
-			Object.defineProperty(target, propName, Object.getOwnPropertyDescriptor(source, propName));
+		Object.getOwnPropertyNames(source).forEach((prop) => {
+			Object.defineProperty(
+				target,
+				prop,
+				Object.getOwnPropertyDescriptor(source, prop)
+			);
 		});
 	});
 	return target;
-}
-
-/**
- * Fast quicksort insert for sorted array -- based on:
- *  http://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
- * @param {any} item
- * @param {array} array
- * @param {function} [compareFunction]
- * @returns {number} location (in array)
- */
-export function insert(item, array, compareFunction) {
-	var location = locationOf(item, array, compareFunction);
-	array.splice(location, 0, item);
-
-	return location;
 }
 
 /**
@@ -154,38 +148,56 @@ export function insert(item, array, compareFunction) {
  * @param {any} item
  * @param {array} array
  * @param {function} [compareFunction]
- * @param {function} [_start]
- * @param {function} [_end]
+ * @param {function} [start]
+ * @param {function} [end]
  * @returns {number} location (in array)
  */
-export function locationOf(item, array, compareFunction, _start, _end) {
-	var start = _start || 0;
-	var end = _end || array.length;
-	var pivot = parseInt(start + (end - start) / 2);
-	var compared;
+export const locationOf = (item, array, compareFunction, start, end) => {
+
+	const _start = start || 0;
+	const _end = end || array.length;
+	const pivot = parseInt(_start + (_end - _start) / 2);
+
 	if (!compareFunction) {
-		compareFunction = function (a, b) {
+		compareFunction = (a, b) => {
 			if (a > b) return 1;
 			if (a < b) return -1;
 			if (a == b) return 0;
 		};
 	}
-	if (end - start <= 0) {
+	if (_end - _start <= 0) {
 		return pivot;
 	}
 
-	compared = compareFunction(array[pivot], item);
-	if (end - start === 1) {
+	const compared = compareFunction(array[pivot], item);
+
+	if (_end - _start === 1) {
 		return compared >= 0 ? pivot : pivot + 1;
 	}
 	if (compared === 0) {
 		return pivot;
 	}
 	if (compared === -1) {
-		return locationOf(item, array, compareFunction, pivot, end);
+		return locationOf(item, array, compareFunction, pivot, _end);
 	} else {
-		return locationOf(item, array, compareFunction, start, pivot);
+		return locationOf(item, array, compareFunction, _start, pivot);
 	}
+}
+
+/**
+ * Fast quicksort insert for sorted array -- based on:
+ * @link https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
+ * @param {any} item
+ * @param {array} array
+ * @param {function} [compareFunction]
+ * @returns {number} location (in array)
+ */
+export const insert = (item, array, compareFunction) => {
+
+	const location = locationOf(item, array, compareFunction);
+	array.splice(location, 0, item);
+
+	return location;
 }
 
 /**
@@ -194,126 +206,154 @@ export function locationOf(item, array, compareFunction, _start, _end) {
  * @param {any} item
  * @param {array} array
  * @param {function} [compareFunction]
- * @param {function} [_start]
- * @param {function} [_end]
+ * @param {function} [start]
+ * @param {function} [end]
  * @returns {number} index (in array) or -1
  */
-export function indexOfSorted(item, array, compareFunction, _start, _end) {
-	var start = _start || 0;
-	var end = _end || array.length;
-	var pivot = parseInt(start + (end - start) / 2);
-	var compared;
+export const indexOfSorted = (item, array, compareFunction, start, end) => {
+
+	const _start = start || 0;
+	const _end = end || array.length;
+	const pivot = parseInt(_start + (_end - _start) / 2);
+
 	if (!compareFunction) {
-		compareFunction = function (a, b) {
+		compareFunction = (a, b) => {
 			if (a > b) return 1;
 			if (a < b) return -1;
 			if (a == b) return 0;
 		};
 	}
-	if (end - start <= 0) {
+	if (_end - _start <= 0) {
 		return -1; // Not found
 	}
 
-	compared = compareFunction(array[pivot], item);
-	if (end - start === 1) {
+	const compared = compareFunction(array[pivot], item);
+
+	if (_end - _start === 1) {
 		return compared === 0 ? pivot : -1;
 	}
 	if (compared === 0) {
 		return pivot; // Found
 	}
 	if (compared === -1) {
-		return indexOfSorted(item, array, compareFunction, pivot, end);
+		return indexOfSorted(item, array, compareFunction, pivot, _end);
 	} else {
-		return indexOfSorted(item, array, compareFunction, start, pivot);
+		return indexOfSorted(item, array, compareFunction, _start, pivot);
 	}
 }
+
 /**
  * Find the bounds of an element
  * taking padding and margin into account
- * @param {element} el
- * @returns {{ width: Number, height: Number}}
+ * @param {Element} el
+ * @returns {{ height: Number, width: Number }}
  */
-export function bounds(el) {
+export const bounds = (el) => {
 
-	var style = window.getComputedStyle(el);
-	var widthProps = ["width", "paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
-	var heightProps = ["height", "paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
-
-	var width = 0;
-	var height = 0;
-
-	widthProps.forEach(function (prop) {
-		width += parseFloat(style[prop]) || 0;
-	});
-
-	heightProps.forEach(function (prop) {
-		height += parseFloat(style[prop]) || 0;
-	});
-
-	return {
-		height: height,
-		width: width
+	const style = window.getComputedStyle(el);
+	const widthProps = [
+		"width",
+		"paddingRight",
+		"paddingLeft",
+		"marginRight",
+		"marginLeft",
+		"borderRightWidth",
+		"borderLeftWidth"
+	];
+	const heightProps = [
+		"height",
+		"paddingTop",
+		"paddingBottom",
+		"marginTop",
+		"marginBottom",
+		"borderTopWidth",
+		"borderBottomWidth"
+	];
+	const ret = {
+		height: 0,
+		width: 0
 	};
 
+	widthProps.forEach((prop) => {
+		ret.width += parseFloat(style[prop]) || 0;
+	});
+
+	heightProps.forEach((prop) => {
+		ret.height += parseFloat(style[prop]) || 0;
+	});
+
+	return ret;
 }
 
 /**
  * Find the bounds of an element
  * taking padding, margin and borders into account
- * @param {element} el
- * @returns {{ width: Number, height: Number}}
+ * @param {Element} el
+ * @returns {{ height: Number, width: Number }}
  */
-export function borders(el) {
+export const borders = (el) => {
 
-	var style = window.getComputedStyle(el);
-	var widthProps = ["paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
-	var heightProps = ["paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
-
-	var width = 0;
-	var height = 0;
-
-	widthProps.forEach(function (prop) {
-		width += parseFloat(style[prop]) || 0;
-	});
-
-	heightProps.forEach(function (prop) {
-		height += parseFloat(style[prop]) || 0;
-	});
-
-	return {
-		height: height,
-		width: width
+	const style = window.getComputedStyle(el);
+	const widthProps = [
+		"paddingRight",
+		"paddingLeft",
+		"marginRight",
+		"marginLeft",
+		"borderRightWidth",
+		"borderLeftWidth"
+	];
+	const heightProps = [
+		"paddingTop",
+		"paddingBottom",
+		"marginTop",
+		"marginBottom",
+		"borderTopWidth",
+		"borderBottomWidth"
+	];
+	const ret = {
+		height: 0,
+		width: 0
 	};
 
+	widthProps.forEach((prop) => {
+		ret.width += parseFloat(style[prop]) || 0;
+	});
+
+	heightProps.forEach((prop) => {
+		ret.height += parseFloat(style[prop]) || 0;
+	});
+
+	return ret;
 }
 
 /**
  * Find the bounds of any node
  * allows for getting bounds of text nodes by wrapping them in a range
- * @param {node} node
- * @returns {BoundingClientRect}
+ * @param {Node} node
+ * @returns {DOMRect}
  */
-export function nodeBounds(node) {
-	let elPos;
-	let doc = node.ownerDocument;
+export const nodeBounds = (node) => {
+
+	let rect;
+	const doc = node.ownerDocument;
 	if (node.nodeType == Node.TEXT_NODE) {
-		let elRange = doc.createRange();
-		elRange.selectNodeContents(node);
-		elPos = elRange.getBoundingClientRect();
+		const range = doc.createRange();
+		range.selectNodeContents(node);
+		rect = range.getBoundingClientRect();
 	} else {
-		elPos = node.getBoundingClientRect();
+		rect = node.getBoundingClientRect();
 	}
-	return elPos;
+	return rect;
 }
 
 /**
  * Find the equivalent of getBoundingClientRect of a browser window
  * @returns {{ width: Number, height: Number, top: Number, left: Number, right: Number, bottom: Number }}
  */
-export function windowBounds() {
+export const windowBounds = () => {
 
-	var width = window.innerWidth;
-	var height = window.innerHeight;
+	const width = window.innerWidth;
+	const height = window.innerHeight;
 
 	return {
 		top: 0,
@@ -323,7 +363,6 @@ export function windowBounds() {
 		width: width,
 		height: height
 	};
-
 }
 
 /**
@@ -332,13 +371,14 @@ export function windowBounds() {
  * @param {string} typeId
  * @return {number} index
  */
-export function indexOfNode(node, typeId) {
-	var parent = node.parentNode;
-	var children = parent.childNodes;
-	var sib;
-	var index = -1;
-	for (var i = 0; i < children.length; i++) {
-		sib = children[i];
+export const indexOfNode = (node, typeId) => {
+
+	const parent = node.parentNode;
+	const children = parent.childNodes;
+	let index = -1;
+
+	for (let i = 0; i < children.length; i++) {
+		const sib = children[i];
 		if (sib.nodeType === typeId) {
 			index++;
 		}
@@ -350,20 +390,22 @@ export function indexOfNode(node, typeId) {
 
 /**
  * Gets the index of a text node in its parent
- * @param {node} textNode
+ * @param {Node} textNode
  * @returns {number} index
  */
-export function indexOfTextNode(textNode) {
-	return indexOfNode(textNode, TEXT_NODE);
+export const indexOfTextNode = (textNode) => {
+
+	return indexOfNode(textNode, Node.TEXT_NODE);
 }
 
 /**
  * Gets the index of an element node in its parent
- * @param {element} elementNode
+ * @param {Element} elementNode
  * @returns {number} index
  */
-export function indexOfElementNode(elementNode) {
-	return indexOfNode(elementNode, ELEMENT_NODE);
+export const indexOfElementNode = (elementNode) => {
+
+	return indexOfNode(elementNode, Node.ELEMENT_NODE);
 }
 
 /**
@@ -371,7 +413,8 @@ export function indexOfElementNode(elementNode) {
  * @param {string} ext
  * @returns {boolean}
  */
-export function isXml(ext) {
+export const isXml = (ext) => {
+
 	return ["xml", "opf", "ncx"].indexOf(ext) > -1;
 }
 
@@ -381,7 +424,8 @@ export function isXml(ext) {
  * @param {string} mime
  * @returns {Blob}
  */
-export function createBlob(content, mime) {
+export const createBlob = (content, mime) => {
+
 	return new Blob([content], { type: mime });
 }
 
@@ -391,20 +435,18 @@ export function createBlob(content, mime) {
  * @param {string} mime
  * @returns {string} url
  */
-export function createBlobUrl(content, mime) {
-	var tempUrl;
-	var blob = createBlob(content, mime);
+export const createBlobUrl = (content, mime) => {
 
-	tempUrl = _URL.createObjectURL(blob);
-
-	return tempUrl;
+	const blob = createBlob(content, mime);
+	return _URL.createObjectURL(blob);
 }
 
 /**
  * Remove a blob url
  * @param {string} url
  */
-export function revokeBlobUrl(url) {
+export const revokeBlobUrl = (url) => {
+
 	return _URL.revokeObjectURL(url);
 }
 
@@ -414,18 +456,15 @@ export function revokeBlobUrl(url) {
  * @param {string} mime
  * @returns {string} url
  */
-export function createBase64Url(content, mime) {
-	var data;
-	var datauri;
+export const createBase64Url = (content, mime) => {
 
 	if (typeof (content) !== "string") {
 		// Only handles strings
 		return;
 	}
 
-	data = btoa(content);
-
-	datauri = "data:" + mime + ";base64," + data;
+	const data = btoa(content);
+	const datauri = "data:" + mime + ";base64," + data;
 
 	return datauri;
 }
@@ -435,7 +474,8 @@ export function createBase64Url(content, mime) {
  * @param {object} obj
  * @returns {string} type
  */
-export function type(obj) {
+export const type = (obj) => {
+
 	return Object.prototype.toString.call(obj).slice(8, -1);
 }
 
@@ -444,12 +484,11 @@ export function type(obj) {
  * @param {string} markup
  * @param {string} mime
  * @param {boolean} forceXMLDom force using xmlDom to parse instead of native parser
- * @returns {document} document
+ * @returns {Document} document
  */
-export function parse(markup, mime, forceXMLDom) {
-	var doc;
-	var Parser;
+export const parse = (markup, mime, forceXMLDom) => {
 
+	let Parser;
 	if (typeof DOMParser === "undefined" || forceXMLDom) {
 		Parser = XMLDOMParser;
 	} else {
@@ -462,27 +501,25 @@ export function parse(markup, mime, forceXMLDom) {
 		markup = markup.slice(1);
 	}
 
-	doc = new Parser().parseFromString(markup, mime);
-
-	return doc;
+	return new Parser().parseFromString(markup, mime);
 }
 
 /**
  * querySelector polyfill
- * @param {element} el
+ * @param {Element} el
  * @param {string} sel selector string
- * @returns {element} element
+ * @returns {Element} element
  */
-export function qs(el, sel) {
-	var elements;
+export const qs = (el, sel) => {
+
 	if (!el) {
 		throw new Error("No Element Provided");
 	}
 
-	if (typeof el.querySelector != "undefined") {
+	if (typeof el.querySelector !== "undefined") {
 		return el.querySelector(sel);
 	} else {
-		elements = el.getElementsByTagName(sel);
+		const elements = el.getElementsByTagName(sel);
 		if (elements.length) {
 			return elements[0];
 		}
@@ -491,13 +528,13 @@ export function qs(el, sel) {
 
 /**
  * querySelectorAll polyfill
- * @param {element} el
+ * @param {Element} el
  * @param {string} sel selector string
- * @returns {element[]} elements
+ * @returns {Element[]} elements
  */
-export function qsa(el, sel) {
+export const qsa = (el, sel) => {
 
-	if (typeof el.querySelector != "undefined") {
+	if (typeof el.querySelector !== "undefined") {
 		return el.querySelectorAll(sel);
 	} else {
 		return el.getElementsByTagName(sel);
@@ -506,24 +543,24 @@ export function qsa(el, sel) {
 
 /**
  * querySelector by property
- * @param {element} el
+ * @param {Element} el
  * @param {string} sel selector string
  * @param {object[]} props
- * @returns {element[]} elements
+ * @returns {Element[]} elements
  */
-export function qsp(el, sel, props) {
-	var q, filtered;
-	if (typeof el.querySelector != "undefined") {
+export const qsp = (el, sel, props) => {
+
+	if (typeof el.querySelector !== "undefined") {
 		sel += "[";
-		for (var prop in props) {
+		for (const prop in props) {
 			sel += prop + "~='" + props[prop] + "'";
 		}
 		sel += "]";
 		return el.querySelector(sel);
 	} else {
-		q = el.getElementsByTagName(sel);
-		filtered = Array.prototype.slice.call(q, 0).filter(function (el) {
-			for (var prop in props) {
+		const q = el.getElementsByTagName(sel);
+		const filtered = Array.prototype.slice.call(q, 0).filter((el) => {
+			for (const prop in props) {
 				if (el.getAttribute(prop) === props[prop]) {
 					return true;
 				}
@@ -539,17 +576,17 @@ export function qsp(el, sel, props) {
 
 /**
  * Sprint through all text nodes in a document
- * @memberof Core
- * @param  {element} root element to start with
- * @param  {function} func function to run on each element
+ * @param {Element} root element to start with
+ * @param {function} func function to run on each element
  */
-export function sprint(root, func) {
-	var doc = root.ownerDocument || root;
+export const sprint = (root, func) => {
+
+	const doc = root.ownerDocument || root;
 	if (typeof (doc.createTreeWalker) !== "undefined") {
 		treeWalker(root, func, NodeFilter.SHOW_TEXT);
 	} else {
-		walk(root, function (node) {
-			if (node && node.nodeType === 3) { // Node.TEXT_NODE
+		walk(root, (node) => {
+			if (node && node.nodeType === Node.TEXT_NODE) {
 				func(node);
 			}
 		}, true);
@@ -558,59 +595,61 @@ export function sprint(root, func) {
 
 /**
  * Create a treeWalker
- * @memberof Core
- * @param  {element} root element to start with
- * @param  {function} func function to run on each element
- * @param  {function | object} filter function or object to filter with
+ * @param {Element} root element to start with
+ * @param {function} func function to run on each element
+ * @param {function|object} filter function or object to filter with
  */
-export function treeWalker(root, func, filter) {
-	var treeWalker = document.createTreeWalker(root, filter, null, false);
+export const treeWalker = (root, func, filter) => {
+
+	const treeWalker = document.createTreeWalker(root, filter, null, false);
 	let node;
-	while ((node = treeWalker.nextNode())) {
+	while (node = treeWalker.nextNode()) {
 		func(node);
 	}
 }
 
 /**
- * @memberof Core
- * @param {node} node
- * @param {callback} return false for continue,true for break inside callback
+ * @param {Node} node
+ * @param {method} callback false for continue,true for break inside callback
+ * @returns {boolean}
  */
-export function walk(node, callback) {
+export const walk = (node, callback) => {
+
 	if (callback(node)) {
 		return true;
 	}
 	node = node.firstChild;
 	if (node) {
 		do {
-			let walked = walk(node, callback);
+			let walked = walk(node, callback); // recursive call
 			if (walked) {
 				return true;
 			}
 			node = node.nextSibling;
 		} while (node);
 	}
+	return false;
 }
 
 /**
  * Convert a blob to a base64 encoded string
  * @param {Blog} blob
- * @returns {string}
+ * @returns {Promise}
  */
-export function blob2base64(blob) {
-	return new Promise(function (resolve, reject) {
-		var reader = new FileReader();
+export const blob2base64 = (blob) => {
+
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
 		reader.readAsDataURL(blob);
-		reader.onloadend = function () {
+		reader.onloadend = () => {
 			resolve(reader.result);
 		};
 	});
 }
 
-
 /**
  * Creates a new pending promise and provides methods to resolve or reject it.
- * From: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred#backwards_forwards_compatible
+ * @link https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred#backwards_forwards_compatible
  * @returns {object}
  */
 export function defer() {
@@ -646,20 +685,21 @@ export function defer() {
 
 /**
  * querySelector with filter by epub type
- * @param {element} html
+ * @param {Element} html
  * @param {string} element element type to find
  * @param {string} type epub type to find
- * @returns {element[]} elements
+ * @returns {Element[]} elements
  */
-export function querySelectorByType(html, element, type) {
-	var query;
-	if (typeof html.querySelector != "undefined") {
+export const querySelectorByType = (html, element, type) => {
+
+	let query;
+	if (typeof html.querySelector !== "undefined") {
 		query = html.querySelector(`${element}[*|type="${type}"]`);
 	}
 	// Handle IE not supporting namespaced epub:type in querySelector
 	if (!query || query.length === 0) {
 		query = qsa(html, element);
-		for (var i = 0; i < query.length; i++) {
+		for (let i = 0; i < query.length; i++) {
 			if (query[i].getAttributeNS("http://www.idpf.org/2007/ops", "type") === type ||
 				query[i].getAttribute("epub:type") === type) {
 				return query[i];
@@ -672,15 +712,16 @@ export function querySelectorByType(html, element, type) {
 
 /**
  * Find direct descendents of an element
- * @param {element} el
- * @returns {element[]} children
+ * @param {Element} el
+ * @returns {Element[]} children
  */
-export function findChildren(el) {
-	var result = [];
-	var childNodes = el.childNodes;
-	for (var i = 0; i < childNodes.length; i++) {
-		let node = childNodes[i];
-		if (node.nodeType === 1) {
+export const findChildren = (el) => {
+
+	const result = [];
+	const childNodes = el.childNodes;
+	for (let i = 0; i < childNodes.length; i++) {
+		const node = childNodes[i];
+		if (node.nodeType === Node.ELEMENT_NODE) {
 			result.push(node);
 		}
 	}
@@ -689,11 +730,12 @@ export function findChildren(el) {
 
 /**
  * Find all parents (ancestors) of an element
- * @param {element} node
- * @returns {element[]} parents
+ * @param {Node} node
+ * @returns {Node[]} parents
  */
-export function parents(node) {
-	var nodes = [node];
+export const parents = (node) => {
+
+	const nodes = [node];
 	for (; node; node = node.parentNode) {
 		nodes.unshift(node);
 	}
@@ -702,17 +744,19 @@ export function parents(node) {
 
 /**
  * Find all direct descendents of a specific type
- * @param {element} el
+ * @param {Element} el
  * @param {string} nodeName
  * @param {boolean} [single]
- * @returns {element[]} children
+ * @returns {Element[]} children
  */
-export function filterChildren(el, nodeName, single) {
-	var result = [];
-	var childNodes = el.childNodes;
-	for (var i = 0; i < childNodes.length; i++) {
-		let node = childNodes[i];
-		if (node.nodeType === 1 && node.nodeName.toLowerCase() === nodeName) {
+export const filterChildren = (el, nodeName, single) => {
+
+	const result = [];
+	const childNodes = el.childNodes;
+	for (let i = 0; i < childNodes.length; i++) {
+		const node = childNodes[i];
+		if (node.nodeType === Node.ELEMENT_NODE &&
+			node.nodeName.toLowerCase() === nodeName) {
 			if (single) {
 				return node;
 			} else {
@@ -727,15 +771,15 @@ export function filterChildren(el, nodeName, single) {
 
 /**
  * Filter all parents (ancestors) with tag name
- * @param {element} node
+ * @param {Node} node
  * @param {string} tagname
- * @returns {element[]} parents
+ * @returns {Node[]} parents
  */
-export function getParentByTagName(node, tagname) {
-	let parent;
-	if (node === null || tagname === '') return;
-	parent = node.parentNode;
-	while (parent.nodeType === 1) {
+export const getParentByTagName = (node, tagname) => {
+
+	if (node === null || tagname === "") return;
+	let parent = node.parentNode;
+	while (parent.nodeType === Node.ELEMENT_NODE) {
 		if (parent.tagName.toLowerCase() === tagname) {
 			return parent;
 		}
