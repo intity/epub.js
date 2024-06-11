@@ -1,4 +1,5 @@
-import {isXml, parse} from "./utils/core";
+import { isXml, parse } from "./utils/core";
+import { EVENTS } from "./utils/constants";
 import Defer from "./utils/defer";
 import httpRequest from "./utils/request";
 import mime from "./utils/mime";
@@ -6,28 +7,33 @@ import Path from "./utils/path";
 import EventEmitter from "event-emitter";
 import localforage from "localforage";
 
+const _URL = window.URL || window.webkitURL || window.mozURL;
+
 /**
  * Handles saving and requesting files from local storage
- * @class
- * @param {string} name This should be the name of the application for modals
- * @param {function} [requester]
- * @param {function} [resolver]
  */
 class Store {
-
+	/**
+	 * Constructor
+	 * @param {string} name This should be the name of the application for modals
+	 * @param {method} [requester]
+	 * @param {method} [resolver]
+	 */
 	constructor(name, requester, resolver) {
-		this.urlCache = {};
-
-		this.storage = undefined;
 
 		this.name = name;
 		this.requester = requester || httpRequest;
 		this.resolver = resolver;
-
+		this.urlCache = {};
+		this.storage = undefined;
+		/**
+		 * @member {boolean} online Current status
+		 * @memberof Store
+		 * @readonly
+		 */
 		this.online = true;
 
 		this.checkRequirements();
-
 		this.addListeners();
 	}
 
@@ -36,14 +42,14 @@ class Store {
 	 * Requires localForage if it isn't there
 	 * @private
 	 */
-	checkRequirements(){
+	checkRequirements() {
 		try {
 			let store;
-			if (typeof localforage === "undefined") {
+			if (typeof localforage !== "undefined") {
 				store = localforage;
 			}
 			this.storage = store.createInstance({
-					name: this.name
+				name: this.name
 			});
 		} catch (e) {
 			throw new Error("localForage lib not loaded");
@@ -55,9 +61,9 @@ class Store {
 	 * @private
 	 */
 	addListeners() {
-		this._status = this.status.bind(this);
-		window.addEventListener('online',  this._status);
-	  window.addEventListener('offline', this._status);
+
+		window.addEventListener("online", this.status);
+		window.addEventListener("offline", this.status);
 	}
 
 	/**
@@ -65,19 +71,21 @@ class Store {
 	 * @private
 	 */
 	removeListeners() {
-		window.removeEventListener('online',  this._status);
-	  window.removeEventListener('offline', this._status);
-		this._status = undefined;
+
+		window.removeEventListener("online", this.status.bind(this));
+		window.removeEventListener("offline", this.status.bind(this));
 	}
 
 	/**
 	 * Update the online / offline status
+	 * @param {Event} event 
 	 * @private
 	 */
 	status(event) {
-		let online = navigator.onLine;
-		this.online = online;
-		if (online) {
+
+		this.online = navigator.onLine;
+
+		if (this.online) {
 			this.emit("online", this);
 		} else {
 			this.emit("offline", this);
@@ -86,40 +94,41 @@ class Store {
 
 	/**
 	 * Add all of a book resources to the store
-	 * @param  {Resources} resources  book resources
-	 * @param  {boolean} [force] force resaving resources
+	 * @param {Resources} resources  book resources
+	 * @param {boolean} [force] force resaving resources
 	 * @return {Promise<object>} store objects
 	 */
 	add(resources, force) {
-		let mapped = resources.resources.map((item) => {
-			let { href } = item;
-			let url = this.resolver(href);
-			let encodedUrl = window.encodeURIComponent(url);
+
+		const mapped = resources.resources.map(async (item) => {
+
+			const { href } = item;
+			const url = this.resolver(href);
+			const encodedUrl = window.encodeURIComponent(url);
 
 			return this.storage.getItem(encodedUrl).then((item) => {
 				if (!item || force) {
-					return this.requester(url, "binary")
-						.then((data) => {
-							return this.storage.setItem(encodedUrl, data);
-						});
+					return this.requester(url, "binary").then((data) => {
+						return this.storage.setItem(encodedUrl, data);
+					});
 				} else {
 					return item;
 				}
 			});
-
 		});
 		return Promise.all(mapped);
 	}
 
 	/**
 	 * Put binary data from a url to storage
-	 * @param  {string} url  a url to request from storage
-	 * @param  {boolean} [withCredentials]
-	 * @param  {object} [headers]
+	 * @param {string} url  a url to request from storage
+	 * @param {boolean} [withCredentials]
+	 * @param {object} [headers]
 	 * @return {Promise<Blob>}
 	 */
-	put(url, withCredentials, headers) {
-		let encodedUrl = window.encodeURIComponent(url);
+	async put(url, withCredentials, headers) {
+
+		const encodedUrl = window.encodeURIComponent(url);
 
 		return this.storage.getItem(encodedUrl).then((result) => {
 			if (!result) {
@@ -133,13 +142,14 @@ class Store {
 
 	/**
 	 * Request a url
-	 * @param  {string} url  a url to request from storage
-	 * @param  {string} [type] specify the type of the returned result
-	 * @param  {boolean} [withCredentials]
-	 * @param  {object} [headers]
-	 * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
+	 * @param {string} url  a url to request from storage
+	 * @param {string} [type] specify the type of the returned result
+	 * @param {boolean} [withCredentials]
+	 * @param {object} [headers]
+	 * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
 	 */
-	request(url, type, withCredentials, headers){
+	async request(url, type, withCredentials, headers) {
+
 		if (this.online) {
 			// From network
 			return this.requester(url, type, withCredentials, headers).then((data) => {
@@ -151,42 +161,39 @@ class Store {
 			// From store
 			return this.retrieve(url, type);
 		}
-
 	}
 
 	/**
 	 * Request a url from storage
-	 * @param  {string} url  a url to request from storage
-	 * @param  {string} [type] specify the type of the returned result
-	 * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
+	 * @param {string} url  a url to request from storage
+	 * @param {string} [type] specify the type of the returned result
+	 * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
 	 */
-	retrieve(url, type) {
-		var deferred = new Defer();
-		var response;
-		var path = new Path(url);
+	async retrieve(url, type) {
+
+		const path = new Path(url);
 
 		// If type isn't set, determine it from the file extension
-		if(!type) {
+		if (!type) {
 			type = path.extension;
 		}
 
-		if(type == "blob"){
+		let response;
+		if (type === "blob") {
 			response = this.getBlob(url);
 		} else {
 			response = this.getText(url);
 		}
 
-
 		return response.then((r) => {
-			var deferred = new Defer();
-			var result;
+			const deferred = new Defer();
 			if (r) {
-				result = this.handleResponse(r, type);
+				const result = this.handleResponse(r, type);
 				deferred.resolve(result);
 			} else {
 				deferred.reject({
-					message : "File not found in storage: " + url,
-					stack : new Error().stack
+					message: "File not found in storage: " + url,
+					stack: new Error().stack
 				});
 			}
 			return deferred.promise;
@@ -195,165 +202,138 @@ class Store {
 
 	/**
 	 * Handle the response from request
-	 * @private
-	 * @param  {any} response
-	 * @param  {string} [type]
+	 * @param {any} response
+	 * @param {string} [type]
 	 * @return {any} the parsed result
+	 * @private
 	 */
-	handleResponse(response, type){
-		var r;
+	handleResponse(response, type) {
 
-		if(type == "json") {
-			r = JSON.parse(response);
-		}
-		else
-		if(isXml(type)) {
+		let r;
+		if (isXml(type)) {
 			r = parse(response, "text/xml");
-		}
-		else
-		if(type == "xhtml") {
+		} else if (type == "xhtml") {
 			r = parse(response, "application/xhtml+xml");
-		}
-		else
-		if(type == "html" || type == "htm") {
+		} else if (type == "html" || type == "htm") {
 			r = parse(response, "text/html");
-		 } else {
-			 r = response;
-		 }
-
+		} else if (type === "json") {
+			r = JSON.parse(response);
+		} else {
+			r = response;
+		}
 		return r;
 	}
 
 	/**
 	 * Get a Blob from Storage by Url
-	 * @param  {string} url
-	 * @param  {string} [mimeType]
+	 * @param {string} url
+	 * @param {string} [mimeType]
 	 * @return {Blob}
 	 */
-	getBlob(url, mimeType){
-		let encodedUrl = window.encodeURIComponent(url);
+	getBlob(url, mimeType) {
 
-		return this.storage.getItem(encodedUrl).then(function(uint8array) {
-			if(!uint8array) return;
+		const encodedUrl = window.encodeURIComponent(url);
+		mimeType = mimeType || mime.lookup(url);
 
-			mimeType = mimeType || mime.lookup(url);
-
-			return new Blob([uint8array], {type : mimeType});
+		return this.storage.getItem(encodedUrl).then((uint8array) => {
+			if (!uint8array) return;
+			return new Blob([uint8array], { type: mimeType });
 		});
-
 	}
 
 	/**
 	 * Get Text from Storage by Url
-	 * @param  {string} url
-	 * @param  {string} [mimeType]
+	 * @param {string} url
+	 * @param {string} [mimeType]
 	 * @return {string}
 	 */
-	getText(url, mimeType){
-		let encodedUrl = window.encodeURIComponent(url);
+	getText(url, mimeType) {
 
+		const encodedUrl = window.encodeURIComponent(url);
 		mimeType = mimeType || mime.lookup(url);
 
-		return this.storage.getItem(encodedUrl).then(function(uint8array) {
-			var deferred = new Defer();
-			var reader = new FileReader();
-			var blob;
+		return this.storage.getItem(encodedUrl).then(function (uint8array) {
+			if (!uint8array) return;
+			const deferred = new Defer();
+			const reader = new FileReader();
+			const blob = new Blob([uint8array], { type: mimeType });
 
-			if(!uint8array) return;
-
-			blob = new Blob([uint8array], {type : mimeType});
-
-			reader.addEventListener("loadend", () => {
+			reader.onloadend = () => {
 				deferred.resolve(reader.result);
-			});
-
+			};
 			reader.readAsText(blob, mimeType);
-
 			return deferred.promise;
 		});
 	}
 
 	/**
 	 * Get a base64 encoded result from Storage by Url
-	 * @param  {string} url
-	 * @param  {string} [mimeType]
+	 * @param {string} url
+	 * @param {string} [mimeType]
 	 * @return {string} base64 encoded
 	 */
-	getBase64(url, mimeType){
-		let encodedUrl = window.encodeURIComponent(url);
+	getBase64(url, mimeType) {
 
+		let encodedUrl = window.encodeURIComponent(url);
 		mimeType = mimeType || mime.lookup(url);
 
 		return this.storage.getItem(encodedUrl).then((uint8array) => {
-			var deferred = new Defer();
-			var reader = new FileReader();
-			var blob;
+			if (!uint8array) return;
+			const deferred = new Defer();
+			const reader = new FileReader();
+			const blob = new Blob([uint8array], { type: mimeType });
 
-			if(!uint8array) return;
-
-			blob = new Blob([uint8array], {type : mimeType});
-
-			reader.addEventListener("loadend", () => {
+			reader.onloadend = () => {
 				deferred.resolve(reader.result);
-			});
+			};
 			reader.readAsDataURL(blob, mimeType);
-
 			return deferred.promise;
 		});
 	}
 
 	/**
 	 * Create a Url from a stored item
-	 * @param  {string} url
-	 * @param  {object} [options.base64] use base64 encoding or blob url
+	 * @param {string} url
+	 * @param {object} [options.base64] use base64 encoding or blob url
 	 * @return {Promise} url promise with Url string
 	 */
-	createUrl(url, options){
-		var deferred = new Defer();
-		var _URL = window.URL || window.webkitURL || window.mozURL;
-		var tempUrl;
-		var response;
-		var useBase64 = options && options.base64;
+	createUrl(url, options) {
 
-		if(url in this.urlCache) {
+		const deferred = new Defer();
+
+		if (url in this.urlCache) {
 			deferred.resolve(this.urlCache[url]);
 			return deferred.promise;
 		}
 
-		if (useBase64) {
+		let response;
+		if (options && options.base64) {
 			response = this.getBase64(url);
 
 			if (response) {
-				response.then(function(tempUrl) {
+				response.then((tempUrl) => {
 
 					this.urlCache[url] = tempUrl;
 					deferred.resolve(tempUrl);
-
-				}.bind(this));
-
+				});
 			}
-
 		} else {
-
 			response = this.getBlob(url);
 
 			if (response) {
-				response.then(function(blob) {
+				response.then((blob) => {
 
-					tempUrl = _URL.createObjectURL(blob);
+					const tempUrl = _URL.createObjectURL(blob);
 					this.urlCache[url] = tempUrl;
 					deferred.resolve(tempUrl);
-
-				}.bind(this));
-
+				});
 			}
 		}
 
-
 		if (!response) {
 			deferred.reject({
-				message : "File not found in storage: " + url,
-				stack : new Error().stack
+				message: "File not found in storage: " + url,
+				stack: new Error().stack
 			});
 		}
 
@@ -362,17 +342,22 @@ class Store {
 
 	/**
 	 * Revoke Temp Url for a archive item
-	 * @param  {string} url url of the item in the store
+	 * @param {string} url url of the item in the store
 	 */
-	revokeUrl(url){
-		var _URL = window.URL || window.webkitURL || window.mozURL;
-		var fromCache = this.urlCache[url];
-		if(fromCache) _URL.revokeObjectURL(fromCache);
+	revokeUrl(url) {
+
+		const fromCache = this.urlCache[url];
+		if (fromCache) {
+			_URL.revokeObjectURL(fromCache);
+		}
 	}
 
+	/**
+	 * destroy
+	 */
 	destroy() {
-		var _URL = window.URL || window.webkitURL || window.mozURL;
-		for (let fromCache in this.urlCache) {
+
+		for (const fromCache in this.urlCache) {
 			_URL.revokeObjectURL(fromCache);
 		}
 		this.urlCache = {};
