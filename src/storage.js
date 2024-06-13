@@ -1,6 +1,5 @@
 import { isXml, parse } from "./utils/core";
 import Defer from "./utils/defer";
-import httpRequest from "./utils/request";
 import mime from "./utils/mime";
 import Path from "./utils/path";
 import EventEmitter from "event-emitter";
@@ -15,16 +14,26 @@ class Storage {
 	/**
 	 * Constructor
 	 * @param {string} name This should be the name of the application for modals
-	 * @param {method} [requester]
-	 * @param {method} [resolver]
+	 * @param {method} request
+	 * @param {method} resolve
 	 */
-	constructor(name, requester, resolver) {
+	constructor(name, request, resolve) {
 
 		this.name = name;
-		this.requester = requester || httpRequest;
-		this.resolver = resolver;
+		this.request = request;
+		this.resolve = resolve;
+		/**
+		 * @member {LocalForage} instance
+		 * @memberof Storage
+		 * @readonly
+		 */
+		this.instance = undefined;
+		/**
+		 * @member {object} urlCache
+		 * @memberof Storage
+		 * @readonly
+		 */
 		this.urlCache = {};
-		this.storage = undefined;
 		/**
 		 * @member {boolean} online Current status
 		 * @memberof Storage
@@ -33,36 +42,32 @@ class Storage {
 		this.online = true;
 
 		this.checkRequirements();
-		this.addListeners();
+		this.appendListeners();
 	}
 
 	/**
-	 * Checks to see if localForage exists in global namspace,
-	 * Requires localForage if it isn't there
+	 * Checks to see if LocalForage exists in global namspace
 	 * @private
 	 */
 	checkRequirements() {
-		try {
-			let store;
-			if (typeof localforage !== "undefined") {
-				store = localforage;
-			}
-			this.storage = store.createInstance({
+
+		if (localforage) {
+			this.instance = localforage.createInstance({
 				name: this.name
 			});
-		} catch (e) {
-			throw new Error("localForage lib not loaded");
+		} else {
+			throw new TypeError("LocalForage lib not loaded");
 		}
 	}
 
 	/**
-	 * Add online and offline event listeners
+	 * Append online and offline event listeners
 	 * @private
 	 */
-	addListeners() {
+	appendListeners() {
 
-		window.addEventListener("online", this.status);
-		window.addEventListener("offline", this.status);
+		window.addEventListener("online", this.status.bind(this));
+		window.addEventListener("offline", this.status.bind(this));
 	}
 
 	/**
@@ -82,12 +87,12 @@ class Storage {
 	 */
 	status(event) {
 
-		this.online = navigator.onLine;
+		this.online = event.type === "online";
 
 		if (this.online) {
-			this.emit("online", this);
+			this.emit("online");
 		} else {
-			this.emit("offline", this);
+			this.emit("offline");
 		}
 	}
 
@@ -102,13 +107,13 @@ class Storage {
 		const mapped = resources.resources.map(async (item) => {
 
 			const { href } = item;
-			const url = this.resolver(href);
+			const url = this.resolve(href);
 			const encodedUrl = window.encodeURIComponent(url);
 
-			return this.storage.getItem(encodedUrl).then((item) => {
+			return this.instance.getItem(encodedUrl).then((item) => {
 				if (!item || force) {
-					return this.requester(url, "binary").then((data) => {
-						return this.storage.setItem(encodedUrl, data);
+					return this.request(url, "binary").then((data) => {
+						return this.instance.setItem(encodedUrl, data);
 					});
 				} else {
 					return item;
@@ -129,10 +134,10 @@ class Storage {
 
 		const encodedUrl = window.encodeURIComponent(url);
 
-		return this.storage.getItem(encodedUrl).then((result) => {
+		return this.instance.getItem(encodedUrl).then((result) => {
 			if (!result) {
-				return this.requester(url, "binary", withCredentials, headers).then((data) => {
-					return this.storage.setItem(encodedUrl, data);
+				return this.request(url, "binary", withCredentials, headers).then((data) => {
+					return this.instance.setItem(encodedUrl, data);
 				});
 			}
 			return result;
@@ -140,22 +145,22 @@ class Storage {
 	}
 
 	/**
-	 * Request a url
-	 * @param {string} url  a url to request from storage
+	 * Dispatch request by url
+	 * @param {string} url a url to request from storage
 	 * @param {string} [type] specify the type of the returned result
 	 * @param {boolean} [withCredentials]
-	 * @param {object} [headers]
+	 * @param {Array} [headers]
 	 * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
 	 */
-	async request(url, type, withCredentials, headers) {
+	async dispatch(url, type, withCredentials, headers) {
 
 		if (this.online) {
 			// From network
-			return this.requester(url, type, withCredentials, headers).then((data) => {
+			return this.request(url, type, withCredentials, headers).then((data) => {
 				// save to store if not present
 				this.put(url);
 				return data;
-			})
+			});
 		} else {
 			// From store
 			return this.retrieve(url, type);
@@ -234,7 +239,7 @@ class Storage {
 		const encodedUrl = window.encodeURIComponent(url);
 		mimeType = mimeType || mime.lookup(url);
 
-		return this.storage.getItem(encodedUrl).then((uint8array) => {
+		return this.instance.getItem(encodedUrl).then((uint8array) => {
 			if (!uint8array) return;
 			return new Blob([uint8array], { type: mimeType });
 		});
@@ -251,7 +256,7 @@ class Storage {
 		const encodedUrl = window.encodeURIComponent(url);
 		mimeType = mimeType || mime.lookup(url);
 
-		return this.storage.getItem(encodedUrl).then(function (uint8array) {
+		return this.instance.getItem(encodedUrl).then(function (uint8array) {
 			if (!uint8array) return;
 			const deferred = new Defer();
 			const reader = new FileReader();
@@ -276,7 +281,7 @@ class Storage {
 		let encodedUrl = window.encodeURIComponent(url);
 		mimeType = mimeType || mime.lookup(url);
 
-		return this.storage.getItem(encodedUrl).then((uint8array) => {
+		return this.instance.getItem(encodedUrl).then((uint8array) => {
 			if (!uint8array) return;
 			const deferred = new Defer();
 			const reader = new FileReader();

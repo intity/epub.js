@@ -592,28 +592,32 @@ class Book {
 	 * @private
 	 */
 	store(input) {
-		// Use "blobUrl" or "base64" for replacements
-		const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
+
 		// Create new Storage
 		this.storage = new Storage(input,
 			this.request.bind(this),
 			this.resolve.bind(this)
 		);
 		// Replace request method to go through store
-		this.request = this.storage.request.bind(this.storage);
+		this.request = this.storage.dispatch.bind(this.storage);
 
 		this.opened.then(() => {
-
+			
 			if (this.archived) {
-				this.storage.requester = this.archive.request.bind(this.archive);
+				this.storage.request = this.archive.request.bind(this.archive);
 			}
 			// Substitute hook
 			const substituteResources = (output, section) => {
 				section.output = this.resources.substitute(output, section.url);
 			};
 
-			// Set to use replacements
-			this.resources.settings.replacements = replacementsSetting || "blobUrl";
+			// Use "blobUrl" or "base64" for replacements
+			if (this.settings.replacements && this.settings.replacements !== "none") {
+				this.resources.settings.replacements = this.settings.replacements;
+			} else {
+				this.resources.settings.replacements = "blobUrl";
+			}
+
 			// Create replacement urls
 			this.resources.replacements().then(() => {
 				return this.resources.replaceCss();
@@ -621,18 +625,18 @@ class Book {
 
 			let originalUrl = this.url; // Save original url
 
-			this.storage.on("offline", () => {
-				// Remove url to use relative resolving for hrefs
-				this.url = new Url("/", "");
-				// Add hook to replace resources in contents
-				this.spine.hooks.serialize.register(substituteResources);
-			});
-
 			this.storage.on("online", () => {
 				// Restore original url
 				this.url = originalUrl;
 				// Remove hook
 				this.spine.hooks.serialize.deregister(substituteResources);
+			});
+
+			this.storage.on("offline", () => {
+				// Remove url to use relative resolving for hrefs
+				this.url = new Url("/", "");
+				// Add hook to replace resources in contents
+				this.spine.hooks.serialize.register(substituteResources);
 			});
 		});
 
