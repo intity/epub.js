@@ -106,14 +106,14 @@ class ContinuousViewManager extends DefaultViewManager {
 	moveTo(offset) {
 
 		let distX = 0, distY = 0;
-		let offsetX = 0, offsetY = 0; // unused
+		//let offsetX = 0, offsetY = 0; // unused
 
 		if (this.paginated) {
 			distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
-			offsetX = distX + this.settings.offsetDelta;
+			//offsetX = distX + this.settings.offsetDelta;
 		} else {
 			distY = offset.top;
-			offsetY = offset.top + this.settings.offsetDelta;
+			//offsetY = offset.top + this.settings.offsetDelta;
 		}
 
 		if (distX > 0 || distY > 0) {
