@@ -691,7 +691,7 @@ class Book {
 		const request = this.load.bind(this);
 		if (!item) {
 			return new Promise((resolve, reject) => {
-				reject("CFI could not be found");
+				reject(new Error("CFI could not be found"));
 			});
 		}
 		return item.load(request).then((contents) => {
