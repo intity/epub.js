@@ -554,6 +554,7 @@ class EpubCFI {
 
 		const cfi = new EpubCFI();
 		const start = range.startContainer;
+		const doc = start.ownerDocument;
 		const end = range.endContainer;
 		let startOffset = range.startOffset;
 		let endOffset = range.endOffset;
@@ -561,7 +562,7 @@ class EpubCFI {
 
 		if (ignoreClass) {
 			// Tell pathTo if / what to ignore
-			needsIgnoring = (start.ownerDocument.querySelector("." + ignoreClass) != null);
+			needsIgnoring = (doc.querySelector("." + ignoreClass) !== null);
 		}
 
 		if (typeof base === "string") {
@@ -984,7 +985,7 @@ class EpubCFI {
 		const _doc = doc || document;
 		let start, end, startContainer, endContainer;
 		let startSteps, endSteps, hasOffset;
-		const needsIgnoring = ignoreClass && (_doc.querySelector("." + ignoreClass) != null);
+		const needsIgnoring = ignoreClass && (_doc.querySelector("." + ignoreClass) !== null);
 		const reqClass = needsIgnoring ? ignoreClass : undefined;
 
 		let range, missed;
