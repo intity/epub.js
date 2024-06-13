@@ -26,9 +26,9 @@ class Hook {
 				this.hooks.push(arguments[i]);
 			} else if (arguments[i] instanceof Array) {
 				// unpack array
-				for (let j = 0; j < arguments[i].length; ++j) {
-					this.hooks.push(arguments[i][j]);
-				}
+				this.register(arguments[i]); // recursive call
+			} else {
+				throw new TypeError("Invalid argument type");
 			}
 		}
 	}
