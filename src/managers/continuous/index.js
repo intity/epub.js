@@ -233,7 +233,6 @@ class ContinuousViewManager extends DefaultViewManager {
 
 		const rect = this.bounds();
 		const views = this.views;
-		const visible = [];
 		const _offset = typeof offset !== "undefined" ? offset : (this.settings.offset || 0);
 		const updating = new Defer();
 		const promises = [];
@@ -256,7 +255,6 @@ class ContinuousViewManager extends DefaultViewManager {
 						});
 					promises.push(displayed);
 				}
-				visible.push(view);
 			} else {
 				this.q.enqueue(view.destroy.bind(view));
 				// console.log("hidden " + view.section.index, view.displayed);
