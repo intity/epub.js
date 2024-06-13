@@ -602,11 +602,11 @@ class Rendition {
 		const locationStart = this.book.locations.locationFromCfi(start.mapping.start);
 		const locationEnd = this.book.locations.locationFromCfi(end.mapping.end);
 
-		if (locationStart != null) {
+		if (locationStart !== null) {
 			located.start.location = locationStart;
 			located.start.percentage = this.book.locations.percentageFromLocation(locationStart);
 		}
-		if (locationEnd != null) {
+		if (locationEnd !== null) {
 			located.end.location = locationEnd;
 			located.end.percentage = this.book.locations.percentageFromLocation(locationEnd);
 		}
