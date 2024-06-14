@@ -24,9 +24,9 @@ class Archive {
 	 */
 	checkRequirements() {
 
-		try {
+		if (JSZip) {
 			this.zip = new JSZip();
-		} catch (e) {
+		} else {
 			throw new Error("JSZip lib not loaded");
 		}
 	}
