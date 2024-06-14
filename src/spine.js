@@ -94,7 +94,7 @@ class Spine {
 						}
 						prevIndex -= 1;
 					}
-					return;
+					return null;
 				};
 				item.next = () => {
 					let nextIndex = item.index;
@@ -105,14 +105,14 @@ class Spine {
 						}
 						nextIndex += 1;
 					}
-					return;
+					return null;
 				};
 			} else {
 				item.prev = () => {
-					return;
+					return null;
 				}
 				item.next = () => {
-					return;
+					return null;
 				}
 			}
 
