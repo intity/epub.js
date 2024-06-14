@@ -358,14 +358,13 @@ class Rendition {
 					/**
 					 * Emit that a section has been rendered
 					 * @event rendered
-					 * @param {Section} section
 					 * @param {View} view
 					 * @memberof Rendition
 					 */
-					this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
+					this.emit(EVENTS.RENDITION.RENDERED, view);
 				});
 			} else {
-				this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
+				this.emit(EVENTS.RENDITION.RENDERED, view);
 			}
 		});
 	}

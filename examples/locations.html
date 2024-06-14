@@ -122,7 +122,7 @@
 
 			console.log(current, changed)
 		})
-		rendition.on("rendered", (section, view) => {
+		rendition.on("displayed", (section) => {
 
 			document.onkeyup = keybinding
 			rendition.on("keyup", keybinding)

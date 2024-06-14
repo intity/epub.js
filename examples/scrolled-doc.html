@@ -50,10 +50,13 @@
                     break;
             }
         }
-        rendition.on("rendered", (section) => {
+        book.ready.then(() => {
 
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
+        })
+        rendition.on("displayed", (section) => {
+
             console.log(rendition)
         })
         rendition.on("relocated", (location) => {

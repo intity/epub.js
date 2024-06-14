@@ -140,10 +140,10 @@
             }
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
-            console.log(rendition)
         })
-        rendition.on("rendered", (section, view) => {
-            //console.log(view)
+        rendition.on("displayed", (section) => {
+
+            console.log(rendition)
         })
         rendition.on("layout", (props, changed) => {
             update()
