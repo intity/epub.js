@@ -47,10 +47,10 @@ class Spine {
 	/**
 	 * Unpack items from a opf into spine items
 	 * @param {Packaging} packaging
-	 * @param {method} resolver URL resolver
+	 * @param {method} resolve URL resolve
 	 * @param {method} canonical Resolve canonical url
 	 */
-	unpack(packaging, resolver, canonical) {
+	unpack(packaging, resolve, canonical) {
 
 		this.items = packaging.spine;
 		this.manifest = packaging.manifest;
@@ -63,16 +63,20 @@ class Spine {
 			const manifestItem = this.manifest[item.idref];
 
 			item.index = index;
-			item.cfiBase = this.epubcfi.generateChapterComponent(this.spineNodeIndex, item.index, item.id);
+			item.cfiBase = this.epubcfi.generateChapterComponent(
+				this.spineNodeIndex,
+				item.index,
+				item.id
+			);
 
 			if (item.href) {
-				item.url = resolver(item.href, true);
+				item.url = resolve(item.href, true);
 				item.canonical = canonical(item.href);
 			}
 
 			if (manifestItem) {
 				item.href = manifestItem.href;
-				item.url = resolver(item.href, true);
+				item.url = resolve(item.href, true);
 				item.canonical = canonical(item.href);
 
 				if (manifestItem.properties.length) {
@@ -81,7 +85,7 @@ class Spine {
 			}
 
 			if (item.linear === "yes") {
-				item.prev = function () {
+				item.prev = () => {
 					let prevIndex = item.index;
 					while (prevIndex > 0) {
 						let prev = this.get(prevIndex - 1);
@@ -91,8 +95,8 @@ class Spine {
 						prevIndex -= 1;
 					}
 					return;
-				}.bind(this);
-				item.next = function () {
+				};
+				item.next = () => {
 					let nextIndex = item.index;
 					while (nextIndex < this.spineItems.length - 1) {
 						let next = this.get(nextIndex + 1);
@@ -102,12 +106,12 @@ class Spine {
 						nextIndex += 1;
 					}
 					return;
-				}.bind(this);
+				};
 			} else {
-				item.prev = function () {
+				item.prev = () => {
 					return;
 				}
-				item.next = function () {
+				item.next = () => {
 					return;
 				}
 			}
