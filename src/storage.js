@@ -97,20 +97,21 @@ class Storage {
 	}
 
 	/**
-	 * Add all of a book resources to the store
-	 * @param {Resources} resources  book resources
-	 * @param {boolean} [force] force resaving resources
+	 * Add all of a book manifest to the storage
+	 * @param {Manifest} manifest  book manifest
+	 * @param {boolean} [force=false] force resaving manifest
 	 * @return {Promise<object>} store objects
 	 */
-	add(resources, force) {
+	add(manifest, force = false) {
 
-		const mapped = resources.resources.map(async (item) => {
+		const items = manifest.values().toArray();
+		const mapped = items.map(async (item) => {
 
 			const { href } = item;
 			const url = this.resolve(href);
 			const encodedUrl = window.encodeURIComponent(url);
 
-			return this.instance.getItem(encodedUrl).then((item) => {
+			return await this.instance.getItem(encodedUrl).then((item) => {
 				if (!item || force) {
 					return this.request(url, "binary").then((data) => {
 						return this.instance.setItem(encodedUrl, data);
@@ -134,7 +135,7 @@ class Storage {
 
 		const encodedUrl = window.encodeURIComponent(url);
 
-		return this.instance.getItem(encodedUrl).then((result) => {
+		return await this.instance.getItem(encodedUrl).then((result) => {
 			if (!result) {
 				return this.request(url, "binary", withCredentials, headers).then((data) => {
 					return this.instance.setItem(encodedUrl, data);
@@ -156,20 +157,20 @@ class Storage {
 
 		if (this.online) {
 			// From network
-			return this.request(url, type, withCredentials, headers).then((data) => {
+			return this.request(url, type, withCredentials, headers).then(async (data) => {
 				// save to store if not present
-				this.put(url);
+				await this.put(url);
 				return data;
 			});
 		} else {
-			// From store
+			// From storage
 			return this.retrieve(url, type);
 		}
 	}
 
 	/**
 	 * Request a url from storage
-	 * @param {string} url  a url to request from storage
+	 * @param {string} url a url to request from storage
 	 * @param {string} [type] specify the type of the returned result
 	 * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
 	 */

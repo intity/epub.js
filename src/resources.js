@@ -35,65 +35,23 @@ class Resources {
 	 */
 	process(manifest) {
 
-		this.manifest = manifest;
-		this.resources = Object.keys(manifest).map((key) => {
-			return manifest[key];
-		});
-		this.replacementUrls = [];
+		this.css = [];
 		this.html = [];
 		this.assets = [];
-		this.css = [];
 		this.urls = [];
-		this.cssUrls = [];
-
-		this.split();
-		this.splitUrls();
-	}
-
-	/**
-	 * Split resources by type
-	 * @private
-	 */
-	split() {
-
-		// HTML
-		this.html = this.resources.filter((item) => {
+		this.replacementUrls = [];
+		
+		manifest.forEach((item, key) => {
 			if (item.type === "application/xhtml+xml" ||
 				item.type === "text/html") {
-				return true;
+				this.html.push(item);
+			} else {
+				if (item.type === "text/css") {
+					this.css.push(item);
+				}
+				this.assets.push(item);
+				this.urls.push(item.href);
 			}
-		});
-
-		// Exclude HTML
-		this.assets = this.resources.filter((item) => {
-			if (item.type !== "application/xhtml+xml" &&
-				item.type !== "text/html") {
-				return true;
-			}
-		});
-
-		// Only CSS
-		this.css = this.resources.filter((item) => {
-			if (item.type === "text/css") {
-				return true;
-			}
-		});
-	}
-
-	/**
-	 * Convert split resources into Urls
-	 * @private
-	 */
-	splitUrls() {
-
-		// All Assets Urls
-		this.urls = this.assets.map((item) => {
-			return item.href;
-		});
-
-		// Css Urls
-		this.cssUrls = this.css.map((item) => {
-			return item.href;
 		});
 	}
 
@@ -169,21 +127,20 @@ class Resources {
 	 * @param {Archive} [archive]
 	 * @param {method} [resolve]
 	 * @return {Promise}
-	 * @private
 	 */
 	replaceCss(archive, resolve) {
 
 		const replaced = [];
 		archive = archive || this.archive;
 		resolve = resolve || this.resolve;
-		this.cssUrls.forEach((href) => {
+		this.css.forEach((item) => {
 			const replacement = this.createCssFile(
-				href,
+				item.href,
 				archive,
 				resolve
 			).then((url) => {
 				// switch the url in the replacementUrls
-				const index = this.urls.indexOf(href);
+				const index = this.urls.indexOf(item.href);
 				if (index > -1) {
 					this.replacementUrls[index] = url;
 				}
@@ -312,14 +269,11 @@ class Resources {
 	destroy() {
 
 		this.settings = undefined;
-		this.manifest = undefined;
-		this.resources = undefined;
 		this.replacementUrls = undefined;
 		this.html = undefined;
 		this.assets = undefined;
 		this.css = undefined;
 		this.urls = undefined;
-		this.cssUrls = undefined;
 	}
 }
 

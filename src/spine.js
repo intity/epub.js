@@ -77,7 +77,7 @@ class Spine {
 
 	/**
 	 * Unpack items from a opf into spine items
-	 * @param {object} manifest
+	 * @param {Manifest} manifest
 	 * @param {method} resolve URL resolve
 	 * @param {method} canonical Resolve canonical url
 	 */
@@ -86,7 +86,7 @@ class Spine {
 		this.length = this.items.length;
 		this.items.forEach((item, index) => {
 
-			const manifestItem = manifest[item.idref];
+			const manifestItem = manifest.get(item.idref);
 
 			item.index = index;
 			item.cfiBase = this.epubcfi.generateChapterComponent(

@@ -1,3 +1,4 @@
+import Manifest from "./manifest";
 import Spine from "./spine";
 import { qs, qsa, qsp } from "./utils/core";
 
@@ -11,11 +12,11 @@ class Packaging {
 	 */
 	constructor(packageXml) {
 		/**
-		 * @member {object} manifest
+		 * @member {Manifest} manifest
 		 * @memberof Packaging
 		 * @readonly
 		 */
-		this.manifest = {};
+		this.manifest = new Manifest();
 		/**
 		 * @member {object} metadata
 		 * @property {string} title
@@ -98,7 +99,7 @@ class Packaging {
 			throw new Error("No Spine Found");
 		}
 
-		this.manifest = this.parseManifest(manifestNode);
+		this.manifest.parse(manifestNode);
 		this.navPath = this.findNavPath(manifestNode);
 		this.ncxPath = this.findNcxPath(manifestNode, spineNode);
 		this.coverPath = this.findCoverPath(packageXml);
@@ -148,34 +149,6 @@ class Packaging {
 			//-- media:
 			media_active_class: this.getPropertyText(node, "media:active-class")
 		}
-	}
-
-	/**
-	 * Parse Manifest
-	 * @param {Node} manifestNode
-	 * @return {object} manifest
-	 * @private
-	 */
-	parseManifest(manifestNode) {
-
-		const manifest = {};
-		//-- Turn items into an array
-		const selected = qsa(manifestNode, "item");
-		const items = Array.prototype.slice.call(selected);
-		//-- Create an object with the id as key
-		items.forEach((item) => {
-			const id = item.getAttribute("id");
-			const props = item.getAttribute("properties") || "";
-
-			manifest[id] = {
-				href: item.getAttribute("href") || "",
-				type: item.getAttribute("media-type") || "",
-				overlay: item.getAttribute("media-overlay") || "",
-				properties: props.length ? props.split(" ") : []
-			};
-		});
-
-		return manifest;
 	}
 
 	/**
@@ -337,7 +310,7 @@ class Packaging {
 		});
 
 		json.resources.forEach((item, index) => {
-			this.manifest[index] = item;
+			this.manifest.set(index, item);
 			if (item.rel && item.rel[0] === "cover") {
 				this.coverPath = item.href;
 			}
@@ -364,11 +337,13 @@ class Packaging {
 	 */
 	destroy() {
 
+		this.manifest.destroy();
+		this.spine.destroy();
+
 		this.manifest = undefined;
 		this.navPath = undefined;
 		this.ncxPath = undefined;
 		this.coverPath = undefined;
-		this.spine.destroy();
 		this.spine = undefined;
 		this.metadata = undefined;
 		this.version = undefined;
