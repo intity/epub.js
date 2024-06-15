@@ -1,4 +1,5 @@
-import { qs, qsa, qsp, indexOfElementNode } from "./utils/core";
+import Spine from "./spine";
+import { qs, qsa, qsp } from "./utils/core";
 
 /**
  * Open Packaging Format Parser
@@ -6,7 +7,7 @@ import { qs, qsa, qsp, indexOfElementNode } from "./utils/core";
 class Packaging {
 	/**
 	 * Constructor
-	 * @param {Document} packageXml OPF XML
+	 * @param {Document} [packageXml] OPF XML
 	 */
 	constructor(packageXml) {
 		/**
@@ -54,17 +55,11 @@ class Packaging {
 		 */
 		this.coverPath = "";
 		/**
-		 * @member {object[]} spine
+		 * @member {Spine} spine
 		 * @memberof Packaging
 		 * @readonly
 		 */
-		this.spine = [];
-		/**
-		 * @member {number} spineNodeIndex
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.spineNodeIndex = 0;
+		this.spine = new Spine();
 		/**
 		 * @member {string} version Package version
 		 * @memberof Packaging
@@ -107,8 +102,7 @@ class Packaging {
 		this.navPath = this.findNavPath(manifestNode);
 		this.ncxPath = this.findNcxPath(manifestNode, spineNode);
 		this.coverPath = this.findCoverPath(packageXml);
-		this.spineNodeIndex = indexOfElementNode(spineNode);
-		this.spine = this.parseSpine(spineNode, this.manifest);
+		this.spine.parse(spineNode);
 		this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
 		this.metadata = this.parseMetadata(metadataNode, spineNode);
 		this.metadata.direction = spineNode.getAttribute("page-progression-direction");
@@ -121,7 +115,6 @@ class Packaging {
 			navPath: this.navPath,
 			ncxPath: this.ncxPath,
 			coverPath: this.coverPath,
-			spineNodeIndex: this.spineNodeIndex,
 			version: this.version
 		}
 	}
@@ -183,35 +176,6 @@ class Packaging {
 		});
 
 		return manifest;
-	}
-
-	/**
-	 * Parse Spine
-	 * @param {Node} spineNode
-	 * @param {Packaging.manifest} manifest
-	 * @return {object} spine
-	 * @private
-	 */
-	parseSpine(spineNode, manifest) {
-
-		const spine = [];
-		const selected = qsa(spineNode, "itemref");
-		const items = Array.prototype.slice.call(selected);
-		//-- Add to array to maintain ordering and cross reference with manifest
-		items.forEach((item, index) => {
-
-			const props = item.getAttribute("properties") || "";
-			const itemref = {
-				id: item.getAttribute("id"),
-				idref: item.getAttribute("idref"),
-				index: index,
-				linear: item.getAttribute("linear") || "yes",
-				properties: props.length ? props.split(" ") : []
-			};
-			spine.push(itemref);
-		});
-
-		return spine;
 	}
 
 	/**
@@ -366,7 +330,7 @@ class Packaging {
 		this.metadata = json.metadata;
 
 		const spine = json.readingOrder || json.spine;
-		this.spine = spine.map((item, index) => {
+		this.spine.items = spine.map((item, index) => {
 			item.index = index;
 			item.linear = item.linear || "yes";
 			return item;
@@ -379,7 +343,6 @@ class Packaging {
 			}
 		});
 
-		this.spineNodeIndex = 0;
 		this.toc = json.toc.map((item, index) => {
 			item.label = item.title;
 			return item;
@@ -392,7 +355,6 @@ class Packaging {
 			navPath: this.navPath,
 			ncxPath: this.ncxPath,
 			coverPath: this.coverPath,
-			spineNodeIndex: this.spineNodeIndex,
 			toc: this.toc
 		}
 	}
@@ -406,7 +368,7 @@ class Packaging {
 		this.navPath = undefined;
 		this.ncxPath = undefined;
 		this.coverPath = undefined;
-		this.spineNodeIndex = undefined;
+		this.spine.destroy();
 		this.spine = undefined;
 		this.metadata = undefined;
 		this.version = undefined;

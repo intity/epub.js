@@ -1,12 +1,14 @@
 import EpubCFI from "./epubcfi";
 import Hook from "./utils/hook";
 import Section from "./section";
+import { qsa, indexOfNode } from "./utils/core";
 import { replaceBase, replaceCanonical, replaceMeta } from "./utils/replacements";
 
 /**
  * A collection of Spine Items
  */
 class Spine {
+
 	constructor() {
 
 		this.spineItems = [];
@@ -37,34 +39,58 @@ class Spine {
 		 */
 		this.loaded = false;
 
-		this.items = undefined;
-		this.manifest = undefined;
-		this.spineNodeIndex = undefined;
-		this.baseUrl = undefined;
+		this.items = [];
+		/**
+		 * Node index from the package.opf
+		 * @member {number} nodeIndex
+		 * @memberof Spine
+		 * @readonly
+		 */
+		this.nodeIndex = undefined;
 		this.length = undefined;
 	}
 
 	/**
+	 * Parse element spine
+	 * @param {Node} node 
+	 */
+	parse(node) {
+
+		const items = qsa(node, "itemref");
+		items.forEach((item, index) => {
+
+			const props = item.getAttribute("properties") || "";
+			const itemref = {
+				id: item.getAttribute("id"),
+				idref: item.getAttribute("idref"),
+				index: index,
+				linear: item.getAttribute("linear") || "yes",
+				properties: props.length ? props.split(" ") : []
+			};
+			this.items.push(itemref);
+		});
+
+		this.nodeIndex = indexOfNode(node, Node.ELEMENT_NODE);
+		this.length = this.items.length;
+		return this.items;
+	}
+
+	/**
 	 * Unpack items from a opf into spine items
-	 * @param {Packaging} packaging
+	 * @param {object} manifest
 	 * @param {method} resolve URL resolve
 	 * @param {method} canonical Resolve canonical url
 	 */
-	unpack(packaging, resolve, canonical) {
+	unpack(manifest, resolve, canonical) {
 
-		this.items = packaging.spine;
-		this.manifest = packaging.manifest;
-		this.spineNodeIndex = packaging.spineNodeIndex;
-		this.baseUrl = packaging.baseUrl || packaging.basePath || "";
 		this.length = this.items.length;
-
 		this.items.forEach((item, index) => {
 
-			const manifestItem = this.manifest[item.idref];
+			const manifestItem = manifest[item.idref];
 
 			item.index = index;
 			item.cfiBase = this.epubcfi.generateChapterComponent(
-				this.spineNodeIndex,
+				this.nodeIndex,
 				item.index,
 				item.id
 			);
@@ -80,7 +106,10 @@ class Spine {
 				item.canonical = canonical(item.href);
 
 				if (manifestItem.properties.length) {
-					item.properties.push.apply(item.properties, manifestItem.properties);
+					item.properties.push.apply(
+						item.properties,
+						manifestItem.properties
+					);
 				}
 			}
 
@@ -280,9 +309,7 @@ class Spine {
 		this.loaded = false;
 
 		this.items = undefined;
-		this.manifest = undefined;
-		this.spineNodeIndex = undefined;
-		this.baseUrl = undefined;
+		this.nodeIndex = undefined;
 		this.length = undefined;
 	}
 }

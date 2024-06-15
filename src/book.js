@@ -130,18 +130,6 @@ class Book {
 		 */
 		this.request = this.settings.request.method || request;
 		/**
-		 * @member {Spine} spine
-		 * @memberof Book
-		 * @readonly
-		 */
-		this.spine = new Spine();
-		/**
-		 * @member {Locations} locations
-		 * @memberof Book
-		 * @readonly
-		 */
-		this.locations = new Locations(this.spine, this.load.bind(this));
-		/**
 		 * @member {Navigation} navigation
 		 * @memberof Book
 		 * @readonly
@@ -206,7 +194,16 @@ class Book {
 		 * @memberof Book
 		 * @readonly
 		 */
-		this.packaging = undefined;
+		this.packaging = new Packaging();
+		/**
+		 * @member {Locations} locations
+		 * @memberof Book
+		 * @readonly
+		 */
+		this.locations = new Locations(
+			this.packaging.spine,
+			this.load.bind(this)
+		);
 
 		// this.toc = undefined;
 		if (this.settings.store) {
@@ -314,7 +311,7 @@ class Book {
 
 		this.path = new Path(url);
 		return this.load(url).then((xml) => {
-			this.packaging = new Packaging(xml);
+			this.packaging.parse(xml);
 			return this.unpack();
 		});
 	}
@@ -329,7 +326,6 @@ class Book {
 
 		this.path = new Path(url);
 		return this.load(url).then((json) => {
-			this.packaging = new Packaging();
 			this.packaging.load(json);
 			return this.unpack();
 		});
@@ -445,7 +441,8 @@ class Book {
 	 */
 	async unpack() {
 
-		this.spine.unpack(this.packaging,
+		this.packaging.spine.unpack(
+			this.packaging.manifest,
 			this.resolve.bind(this),
 			this.canonical.bind(this)
 		);
@@ -468,7 +465,7 @@ class Book {
 		// Resolve promises
 		this.loading.manifest.resolve(this.packaging.manifest);
 		this.loading.metadata.resolve(this.packaging.metadata);
-		this.loading.spine.resolve(this.spine);
+		this.loading.spine.resolve(this.packaging.spine);
 		this.loading.cover.resolve(this.cover);
 		this.loading.resources.resolve(this.resources);
 		this.loading.pageList.resolve(this.pageList);
@@ -528,13 +525,17 @@ class Book {
 
 	/**
 	 * Gets a Section of the Book from the Spine
-	 * Alias for `book.spine.get`
-	 * @param {string} target
+	 * Alias for `book.packaging.spine.get`
+	 * @param {string|number} [target]
 	 * @returns {Section|null}
+	 * @example book.section()
+	 * @example book.section(1)
+	 * @example book.section("chapter.html")
+	 * @example book.section("#id1234")
 	 */
 	section(target) {
 
-		return this.spine.get(target);
+		return this.packaging.spine.get(target);
 	}
 
 	/**
@@ -626,14 +627,14 @@ class Book {
 				// Restore original url
 				this.url = originalUrl;
 				// Remove hook
-				this.spine.hooks.serialize.deregister(substituteResources);
+				this.packaging.spine.hooks.serialize.deregister(substituteResources);
 			});
 
 			this.storage.on("offline", () => {
 				// Remove url to use relative resolving for hrefs
 				this.url = new Url("/", "");
 				// Add hook to replace resources in contents
-				this.spine.hooks.serialize.register(substituteResources);
+				this.packaging.spine.hooks.serialize.register(substituteResources);
 			});
 		});
 
@@ -667,7 +668,7 @@ class Book {
 	 */
 	async replacements() {
 
-		this.spine.hooks.serialize.register((output, section) => {
+		this.packaging.spine.hooks.serialize.register((output, section) => {
 			section.output = this.resources.substitute(output, section.url);
 		});
 
@@ -684,7 +685,7 @@ class Book {
 	async getRange(cfiRange) {
 
 		const cfi = new EpubCFI(cfiRange);
-		const item = this.spine.get(cfi.spinePos);
+		const item = this.packaging.spine.get(cfi.spinePos);
 		const request = this.load.bind(this);
 		if (!item) {
 			return new Promise((resolve, reject) => {
@@ -721,7 +722,6 @@ class Book {
 		this.isOpen = false;
 		this.isRendered = false;
 
-		this.spine && this.spine.destroy();
 		this.locations && this.locations.destroy();
 		this.pageList && this.pageList.destroy();
 		this.archive && this.archive.destroy();
@@ -730,7 +730,6 @@ class Book {
 		this.packaging && this.packaging.destroy();
 		this.rendition && this.rendition.destroy();
 
-		this.spine = undefined;
 		this.locations = undefined;
 		this.pageList = undefined;
 		this.archive = undefined;
