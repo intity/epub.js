@@ -86,15 +86,13 @@
             append("rendition.rendered")
             const len = test[test.length - 1].len
             const gen = () => {
-                const table = []
+                const table = {}
                 test.forEach((t) => {
                     if (t.dim > 0) {
-                        const per = (t.dim / len) * 100
-                        table.push({
-                            "key": t.key,
+                        table[t.key] = {
                             "time (ms)": t.dim,
-                            "percentage": per
-                        })
+                            "percentage": (t.dim / len) * 100
+                        }
                     }
                 })
                 return table
