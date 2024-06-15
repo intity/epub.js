@@ -315,7 +315,7 @@ class Book {
 		this.path = new Path(url);
 		return this.load(url).then((xml) => {
 			this.packaging = new Packaging(xml);
-			return this.unpack(this.packaging);
+			return this.unpack();
 		});
 	}
 
@@ -331,7 +331,7 @@ class Book {
 		return this.load(url).then((json) => {
 			this.packaging = new Packaging();
 			this.packaging.load(json);
-			return this.unpack(this.packaging);
+			return this.unpack();
 		});
 	}
 
@@ -441,12 +441,9 @@ class Book {
 
 	/**
 	 * Unpack the contents of the book packaging
-	 * @param {Packaging} packaging object
 	 * @private
 	 */
-	async unpack(packaging) {
-
-		this.package = packaging; //TODO: deprecated this
+	async unpack() {
 
 		this.spine.unpack(this.packaging,
 			this.resolve.bind(this),
