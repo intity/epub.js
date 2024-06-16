@@ -705,7 +705,9 @@ class Book {
 	 */
 	key(identifier) {
 
-		const ident = identifier || this.packaging.metadata.identifier || this.url.filename;
+		const ident = identifier ||
+			this.packaging.metadata.get("identifier") ||
+			this.url.filename;
 		return `epubjs:${EPUBJS_VERSION}:${ident}`;
 	}
 

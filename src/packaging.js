@@ -1,6 +1,7 @@
 import Manifest from "./manifest";
+import Metadata from "./metadata";
 import Spine from "./spine";
-import { qs, qsa, qsp } from "./utils/core";
+import { qs, qsp } from "./utils/core";
 
 /**
  * Open Packaging Format Parser
@@ -12,31 +13,17 @@ class Packaging {
 	 */
 	constructor(packageXml) {
 		/**
+		 * @member {Metadata} metadata
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.metadata = new Metadata();
+		/**
 		 * @member {Manifest} manifest
 		 * @memberof Packaging
 		 * @readonly
 		 */
 		this.manifest = new Manifest();
-		/**
-		 * @member {object} metadata
-		 * @property {string} title
-		 * @property {string} creator
-		 * @property {string} description
-		 * @property {string} publisher
-		 * @property {string} language
-		 * @property {string} rights
-		 * @property {string} date
-		 * @property {string} modified
-		 * @property {string} flow
-		 * @property {string} layout
-		 * @property {string} spread
-		 * @property {string} viewport
-		 * @property {string} orientation
-		 * @property {string} media_active_class
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.metadata = {};
 		/**
 		 * @member {string} navPath
 		 * @memberof Packaging
@@ -67,6 +54,12 @@ class Packaging {
 		 * @readonly
 		 */
 		this.version = "";
+		/**
+		 * @member {string} direction
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.direction = "";
 
 		if (packageXml) {
 			this.parse(packageXml);
@@ -99,56 +92,43 @@ class Packaging {
 			throw new Error("No Spine Found");
 		}
 
+		this.metadata.parse(metadataNode);
 		this.manifest.parse(manifestNode);
+		this.spine.parse(spineNode);
 		this.navPath = this.findNavPath(manifestNode);
 		this.ncxPath = this.findNcxPath(manifestNode, spineNode);
 		this.coverPath = this.findCoverPath(packageXml);
-		this.spine.parse(spineNode);
 		this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
-		this.metadata = this.parseMetadata(metadataNode, spineNode);
-		this.metadata.direction = spineNode.getAttribute("page-progression-direction");
+		this.direction = this.parseDirection(packageXml, spineNode);
 		this.version = this.parseVersion(packageXml);
 
 		return {
 			metadata: this.metadata,
-			spine: this.spine,
 			manifest: this.manifest,
+			spine: this.spine,
 			navPath: this.navPath,
 			ncxPath: this.ncxPath,
 			coverPath: this.coverPath,
+			direction: this.direction,
 			version: this.version
 		}
 	}
 
 	/**
-	 * Parse Metadata
-	 * @param {Node} node
-	 * @return {object} metadata
+	 * Parse direction flow
+	 * @param {Document} packageXml
+	 * @param {Node} node spine node 
+	 * @returns {string}
 	 * @private
 	 */
-	parseMetadata(node) {
+	parseDirection(packageXml, node) {
 
-		return {
-			//-- dc:
-			title: this.getElementText(node, "title"),
-			creator: this.getElementText(node, "creator"),
-			description: this.getElementText(node, "description"),
-			publisher: this.getElementText(node, "publisher"),
-			identifier: this.getElementText(node, "identifier"),
-			language: this.getElementText(node, "language"),
-			rights: this.getElementText(node, "rights"),
-			date: this.getElementText(node, "date"),
-			//-- dcterms:
-			modified: this.getPropertyText(node, "dcterms:modified"),
-			//-- rendition:
-			flow: this.getPropertyText(node, "rendition:flow"),
-			layout: this.getPropertyText(node, "rendition:layout"),
-			spread: this.getPropertyText(node, "rendition:spread"),
-			viewport: this.getPropertyText(node, "rendition:viewport"),
-			orientation: this.getPropertyText(node, "rendition:orientation"),
-			//-- media:
-			media_active_class: this.getPropertyText(node, "media:active-class")
+		const el = packageXml.documentElement;
+		let dir = el.getAttribute("dir");
+		if (dir === null) {
+			dir = node.getAttribute("page-progression-direction");
 		}
+		return dir || "";
 	}
 
 	/**
@@ -259,48 +239,16 @@ class Packaging {
 	}
 
 	/**
-	 * Get text of a namespaced element
-	 * @param {Node} xml
-	 * @param {string} tag
-	 * @return {string} text
-	 * @private
-	 */
-	getElementText(xml, tag) {
-
-		const ns = "http://purl.org/dc/elements/1.1/";
-		const found = xml.getElementsByTagNameNS(ns, tag);
-		if (!found || found.length === 0) return "";
-
-		const el = found[0];
-		return el.childNodes.length ? el.childNodes[0].nodeValue : "";
-	}
-
-	/**
-	 * Get text by property
-	 * @param {Node} xml
-	 * @param {string} property
-	 * @return {string} text
-	 * @private
-	 */
-	getPropertyText(xml, property) {
-
-		const el = qsp(xml, "meta", {
-			property: property
-		});
-		if (el && el.childNodes.length) {
-			return el.childNodes[0].nodeValue;
-		}
-		return "";
-	}
-
-	/**
 	 * Load JSON Manifest
 	 * @param {json} json 
 	 * @return {object} parsed package parts
 	 */
 	load(json) {
 
-		this.metadata = json.metadata;
+		const metadata = json.metadata;
+		Object.keys(metadata).forEach((prop) => {
+			this.metadata.set(prop, metadata[prop]);
+		});
 
 		const spine = json.readingOrder || json.spine;
 		this.spine.items = spine.map((item, index) => {
@@ -323,8 +271,8 @@ class Packaging {
 
 		return {
 			metadata: this.metadata,
-			spine: this.spine,
 			manifest: this.manifest,
+			spine: this.spine,
 			navPath: this.navPath,
 			ncxPath: this.ncxPath,
 			coverPath: this.coverPath,
@@ -337,15 +285,17 @@ class Packaging {
 	 */
 	destroy() {
 
+		this.metadata.destroy();
 		this.manifest.destroy();
 		this.spine.destroy();
 
+		this.metadata = undefined;
 		this.manifest = undefined;
+		this.spine = undefined;
 		this.navPath = undefined;
 		this.ncxPath = undefined;
 		this.coverPath = undefined;
-		this.spine = undefined;
-		this.metadata = undefined;
+		this.direction = undefined;
 		this.version = undefined;
 	}
 }

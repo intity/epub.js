@@ -197,17 +197,11 @@ class Rendition {
 	 */
 	start() {
 
-		const metadata = this.book.packaging.metadata;
-		const prePaginated = metadata.layout === "pre-paginated";
-
-		if (!this.settings.layout && prePaginated) {
-			this.settings.layout = "pre-paginated";
-		}
-
 		// Parse metadata to get layout props
-		const layoutProps = this.determineLayoutProperties(metadata);
+		const props = this.determineLayoutProperties();
+		this.settings.layout = props.name;
 
-		this.layout = new Layout(layoutProps);
+		this.layout = new Layout(props);
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
 		});
@@ -483,23 +477,24 @@ class Rendition {
 			.then(this.reportLocation.bind(this));
 	}
 
-	//-- http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
 	/**
 	 * Determine the Layout properties from metadata and settings
-	 * @private
-	 * @param {object} metadata
+	 * @link http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
 	 * @return {object} Layout properties
+	 * @private
 	 */
-	determineLayoutProperties(metadata) {
+	determineLayoutProperties() {
 
+		const metadata = this.book.packaging.metadata;
+		const direction = this.book.packaging.direction;
 		return {
-			name: this.settings.layout || metadata.layout || "reflowable",
-			flow: this.settings.flow || metadata.flow || "paginated",
-			spread: this.settings.spread || metadata.spread || "auto",
-			viewport: metadata.viewport || "",
-			direction: this.settings.direction || metadata.direction || "ltr",
-			orientation: this.settings.orientation || metadata.orientation || "auto",
-			minSpreadWidth: this.settings.minSpreadWidth || metadata.minSpreadWidth || 800
+			name: this.settings.layout || metadata.get("layout") || "reflowable",
+			flow: this.settings.flow || metadata.get("flow") || "paginated",
+			spread: this.settings.spread || metadata.get("spread") || "auto",
+			viewport: metadata.get("viewport") || "",
+			direction: this.settings.direction || direction || "ltr",
+			orientation: this.settings.orientation || metadata.get("orientation") || "auto",
+			minSpreadWidth: this.settings.minSpreadWidth || 800
 		}
 	}
 
@@ -858,12 +853,11 @@ class Rendition {
 	 * Hook to handle the document identifier before
 	 * a Section is serialized
 	 * @param {document} doc
-	 * @param {Section} section
 	 * @private
 	 */
-	injectIdentifier(doc, section) {
+	injectIdentifier(doc) {
 
-		const ident = this.book.packaging.metadata.identifier;
+		const ident = this.book.packaging.metadata.get("identifier");
 		const meta = doc.createElement("meta");
 		meta.setAttribute("name", "dc.relation.ispartof");
 		if (ident) meta.setAttribute("content", ident);
