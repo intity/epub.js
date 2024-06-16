@@ -42,10 +42,10 @@ class Sections {
      * Get an item from the spine
      * @param {string|number} [target]
      * @return {Section|null} section
-     * @example spine.get();
-     * @example spine.get(1);
-     * @example spine.get("chap1.html");
-     * @example spine.get("#id1234");
+     * @example sections.get();
+     * @example sections.get(1);
+     * @example sections.get("chap1.html");
+     * @example sections.get("#id1234");
      */
     get(target) {
 
