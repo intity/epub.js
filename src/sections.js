@@ -177,21 +177,15 @@ class Sections {
 
         const manifest = packaging.manifest;
         const spine = packaging.spine;
-        spine.items.forEach((item, index) => {
+        spine.forEach((item, key) => {
 
-            const manifestItem = manifest.get(item.idref);
+            const manifestItem = manifest.get(key);
 
-            item.index = index;
             item.cfiBase = this.epubcfi.generateChapterComponent(
                 spine.nodeIndex,
                 item.index,
                 item.id
             );
-
-            if (item.href) {
-                item.url = resolve(item.href, true);
-                item.canonical = canonical(item.href);
-            }
 
             if (manifestItem) {
                 item.href = manifestItem.href;
@@ -238,8 +232,8 @@ class Sections {
                 }
             }
 
-            const spineItem = new Section(item, this.hooks);
-            this.append(spineItem);
+            const section = new Section(item, this.hooks);
+            this.append(section);
         });
 
         this.loaded = true;
