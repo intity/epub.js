@@ -92,14 +92,14 @@ class Rendition {
 		this.hooks.content.register(this.passEvents.bind(this));
 		this.hooks.content.register(this.adjustImages.bind(this));
 
-		this.book.packaging.spine.hooks.content.register(this.injectIdentifier.bind(this));
+		this.book.sections.hooks.content.register(this.injectIdentifier.bind(this));
 
 		if (this.settings.stylesheet) {
-			this.book.packaging.spine.hooks.content.register(this.injectStylesheet.bind(this));
+			this.book.sections.hooks.content.register(this.injectStylesheet.bind(this));
 		}
 
 		if (this.settings.script) {
-			this.book.packaging.spine.hooks.content.register(this.injectScript.bind(this));
+			this.book.sections.hooks.content.register(this.injectScript.bind(this));
 		}
 		/**
 		 * @member {Annotations} annotations
@@ -303,7 +303,7 @@ class Rendition {
 			target = this.book.locations.cfiFromPercentage(parseFloat(target));
 		}
 
-		const section = this.book.packaging.spine.get(target);
+		const section = this.book.sections.get(target);
 
 		if (!section) {
 			displaying.reject(new Error("No Section Found"));
@@ -615,12 +615,12 @@ class Rendition {
 			located.end.page = pageEnd;
 		}
 
-		if (end.index === this.book.packaging.spine.last().index &&
+		if (end.index === this.book.sections.last().index &&
 			located.end.displayed.page >= located.end.displayed.total) {
 			located.atEnd = true;
 		}
 
-		if (start.index === this.book.packaging.spine.first().index &&
+		if (start.index === this.book.sections.first().index &&
 			located.start.displayed.page === 1) {
 			located.atStart = true;
 		}

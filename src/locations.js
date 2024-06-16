@@ -11,14 +11,14 @@ import { qs, sprint, locationOf } from "./utils/core";
 class Locations extends Array {
 	/**
 	 * Constructor
-	 * @param {Spine} [spine]
+	 * @param {Sections} [sections]
 	 * @param {method} [request]
 	 * @param {number} [pause=100]
 	 */
-	constructor(spine, request, pause) {
+	constructor(sections, request, pause) {
 
 		super();
-		this.spine = spine;
+		this.sections = sections;
 		this.pause = pause || 100;
 		this.break = 150;
 		this.request = request;
@@ -54,7 +54,7 @@ class Locations extends Array {
 		}
 
 		this.q.pause();
-		this.spine.each(section => {
+		this.sections.each(section => {
 
 			if (section.linear) {
 				this.q.enqueue(this.process.bind(this), section);
@@ -376,7 +376,7 @@ class Locations extends Array {
 	 */
 	destroy() {
 
-		this.spine = undefined;
+		this.sections = undefined;
 		this.pause = undefined;
 		this.break = undefined;
 		this.request = undefined;

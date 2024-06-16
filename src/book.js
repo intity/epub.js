@@ -15,6 +15,7 @@ import request from "./utils/request";
 import EpubCFI from "./epubcfi";
 import Storage from "./storage";
 import { EPUBJS_VERSION, EVENTS } from "./utils/constants";
+import Sections from "./sections";
 
 const CONTAINER_PATH = "META-INF/container.xml";
 const INPUT_TYPE = {
@@ -195,12 +196,18 @@ class Book {
 		 */
 		this.packaging = new Packaging();
 		/**
+		 * @member {Sections} sections
+		 * @memberof Book
+		 * @readonly
+		 */
+		this.sections = new Sections();
+		/**
 		 * @member {Locations} locations
 		 * @memberof Book
 		 * @readonly
 		 */
 		this.locations = new Locations(
-			this.packaging.spine,
+			this.sections,
 			this.load.bind(this)
 		);
 
@@ -440,8 +447,8 @@ class Book {
 	 */
 	async unpack() {
 
-		this.packaging.spine.unpack(
-			this.packaging.manifest,
+		this.sections.unpack(
+			this.packaging,
 			this.resolve.bind(this),
 			this.canonical.bind(this)
 		);
@@ -524,7 +531,7 @@ class Book {
 
 	/**
 	 * Gets a Section of the Book from the Spine
-	 * Alias for `book.packaging.spine.get`
+	 * Alias for `book.sections.get`
 	 * @param {string|number} [target]
 	 * @returns {Section|null}
 	 * @example book.section()
@@ -534,7 +541,7 @@ class Book {
 	 */
 	section(target) {
 
-		return this.packaging.spine.get(target);
+		return this.sections.get(target);
 	}
 
 	/**
@@ -626,14 +633,14 @@ class Book {
 				// Restore original url
 				this.url = originalUrl;
 				// Remove hook
-				this.packaging.spine.hooks.serialize.deregister(substituteResources);
+				this.sections.hooks.serialize.deregister(substituteResources);
 			});
 
 			this.storage.on("offline", () => {
 				// Remove url to use relative resolving for hrefs
 				this.url = new Url("/", "");
 				// Add hook to replace resources in contents
-				this.packaging.spine.hooks.serialize.register(substituteResources);
+				this.sections.hooks.serialize.register(substituteResources);
 			});
 		});
 
@@ -667,7 +674,7 @@ class Book {
 	 */
 	async replacements() {
 
-		this.packaging.spine.hooks.serialize.register((output, section) => {
+		this.sections.hooks.serialize.register((output, section) => {
 			section.output = this.resources.substitute(output, section.url);
 		});
 
@@ -684,7 +691,7 @@ class Book {
 	async getRange(cfiRange) {
 
 		const cfi = new EpubCFI(cfiRange);
-		const item = this.packaging.spine.get(cfi.spinePos);
+		const item = this.sections.get(cfi.spinePos);
 		const request = this.load.bind(this);
 		if (!item) {
 			return new Promise((resolve, reject) => {
