@@ -2,6 +2,7 @@ import { qsa } from "./utils/core";
 
 /**
  * Manifest class
+ * @extends {Map}
  */
 class Manifest extends Map {
 
