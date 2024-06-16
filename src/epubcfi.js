@@ -1,9 +1,5 @@
-import { findChildren, RangeObject, isNumber } from "./utils/core";
-
-const ELEMENT_NODE = 1;
-const TEXT_NODE = 3;
-const COMMENT_NODE = 8;
-const DOCUMENT_NODE = 9;
+import RangeObject from "./utils/rangeobject";
+import { findChildren, isNumber } from "./utils/core";
 
 /**
  * Parsing and creation of EpubCFIs: https://idpf.org/epub/linking/cfi/epub-cfi.html
@@ -316,7 +312,9 @@ class EpubCFI {
 		}
 
 		let step, curNode = node;
-		while (curNode && curNode.parentNode && curNode.parentNode.nodeType != DOCUMENT_NODE) {
+		while (curNode && 
+			curNode.parentNode && 
+			curNode.parentNode.nodeType !== Node.DOCUMENT_NODE) {
 
 			if (ignoreClass) {
 				step = this.filteredStep(curNode, ignoreClass);
@@ -370,10 +368,10 @@ class EpubCFI {
 	filter(node, ignoreClass) {
 
 		let parent;
-		let isText = false;
+		let isText;
 		let needsIgnoring;
 
-		if (node.nodeType === TEXT_NODE) {
+		if (node.nodeType === Node.TEXT_NODE) {
 			isText = true;
 			parent = node.parentNode;
 			needsIgnoring = node.parentNode.classList.contains(ignoreClass);
@@ -388,9 +386,9 @@ class EpubCFI {
 			let sibling; // to join with
 
 			// If the sibling is a text node, join the nodes
-			if (prevSibling && prevSibling.nodeType === TEXT_NODE) {
+			if (prevSibling && prevSibling.nodeType === Node.TEXT_NODE) {
 				sibling = prevSibling;
-			} else if (nextSibling && nextSibling.nodeType === TEXT_NODE) {
+			} else if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
 				sibling = nextSibling;
 			}
 
@@ -416,9 +414,9 @@ class EpubCFI {
 
 		let children, map;
 
-		if (node.nodeType === ELEMENT_NODE) {
+		if (node.nodeType === Node.ELEMENT_NODE) {
 			children = node.parentNode.children;
-			map = this.normalizedMap(children, ELEMENT_NODE, ignoreClass);
+			map = this.normalizedMap(children, Node.ELEMENT_NODE, ignoreClass);
 		} else {
 			children = node.parentNode.childNodes;
 			// Inside an ignored node
@@ -426,7 +424,7 @@ class EpubCFI {
 				node = node.parentNode;
 				children = node.parentNode.childNodes;
 			}
-			map = this.normalizedMap(children, TEXT_NODE, ignoreClass);
+			map = this.normalizedMap(children, Node.TEXT_NODE, ignoreClass);
 		}
 
 		const index = Array.prototype.indexOf.call(children, node);
@@ -451,7 +449,7 @@ class EpubCFI {
 			id: _node.id,
 			index: this.filteredPosition(_node, ignoreClass),
 			tagName: _node.tagName,
-			type: (_node.nodeType === TEXT_NODE) ? "text" : "element"
+			type: (_node.nodeType === Node.TEXT_NODE) ? "text" : "element"
 		}
 	}
 
@@ -495,7 +493,7 @@ class EpubCFI {
 		let container = this.findNode(steps.slice(0, -1), doc, ignoreClass);
 		const children = container.childNodes;
 		const lastStepIndex = steps[steps.length - 1].index;
-		const map = this.normalizedMap(children, TEXT_NODE, ignoreClass);
+		const map = this.normalizedMap(children, Node.TEXT_NODE, ignoreClass);
 
 		for (const childIndex in map) {
 
@@ -507,7 +505,7 @@ class EpubCFI {
 				if (offset > len) {
 					offset = offset - len;
 				} else {
-					if (child.nodeType === ELEMENT_NODE) {
+					if (child.nodeType === Node.ELEMENT_NODE) {
 						container = child.childNodes[0];
 					} else {
 						container = child;
@@ -556,6 +554,7 @@ class EpubCFI {
 
 		const cfi = new EpubCFI();
 		const start = range.startContainer;
+		const doc = start.ownerDocument;
 		const end = range.endContainer;
 		let startOffset = range.startOffset;
 		let endOffset = range.endOffset;
@@ -563,7 +562,7 @@ class EpubCFI {
 
 		if (ignoreClass) {
 			// Tell pathTo if / what to ignore
-			needsIgnoring = (start.ownerDocument.querySelector("." + ignoreClass) != null);
+			needsIgnoring = (doc.querySelector("." + ignoreClass) !== null);
 		}
 
 		if (typeof base === "string") {
@@ -661,14 +660,14 @@ class EpubCFI {
 			currNodeType = children[i].nodeType;
 
 			// Check if needs ignoring
-			if (currNodeType === ELEMENT_NODE &&
+			if (currNodeType === Node.ELEMENT_NODE &&
 				children[i].classList.contains(ignoreClass)) {
-				currNodeType = TEXT_NODE;
+				currNodeType = Node.TEXT_NODE;
 			}
 
 			if (i > 0 &&
-				currNodeType === TEXT_NODE &&
-				prevNodeType === TEXT_NODE) {
+				currNodeType === Node.TEXT_NODE &&
+				prevNodeType === Node.TEXT_NODE) {
 				// join text nodes
 				output[i] = prevIndex;
 			} else if (nodeType === currNodeType) {
@@ -812,7 +811,7 @@ class EpubCFI {
 	 */
 	patchOffset(node, offset, ignoreClass) {
 
-		if (node.nodeType !== TEXT_NODE) {
+		if (node.nodeType !== Node.TEXT_NODE) {
 			throw new Error("Anchor must be a text node");
 		}
 
@@ -826,7 +825,7 @@ class EpubCFI {
 
 		while (curr.previousSibling) {
 
-			if (curr.previousSibling.nodeType === ELEMENT_NODE) {
+			if (curr.previousSibling.nodeType === Node.ELEMENT_NODE) {
 				// Originally a text node, so join
 				if (curr.previousSibling.classList.contains(ignoreClass)) {
 					totalOffset += curr.previousSibling.textContent.length;
@@ -853,7 +852,7 @@ class EpubCFI {
 
 		let children, index;
 
-		if (node.nodeType === ELEMENT_NODE) {
+		if (node.nodeType === Node.ELEMENT_NODE) {
 			children = node.parentNode.children;
 			if (!children) {
 				children = findChildren(node.parentNode);
@@ -900,7 +899,7 @@ class EpubCFI {
 			id: node.id,
 			index: this.position(node),
 			tagName: node.tagName,
-			type: (node.nodeType === TEXT_NODE) ? "text" : "element"
+			type: (node.nodeType === Node.TEXT_NODE) ? "text" : "element"
 		}
 	}
 
@@ -966,7 +965,7 @@ class EpubCFI {
 	textNodes(container, ignoreClass) {
 
 		return Array.prototype.slice.call(container.childNodes).filter(node => {
-			if (node.nodeType === TEXT_NODE) {
+			if (node.nodeType === Node.TEXT_NODE) {
 				return true;
 			} else if (node.classList.contains(ignoreClass)) {
 				return true;
@@ -985,8 +984,8 @@ class EpubCFI {
 
 		const _doc = doc || document;
 		let start, end, startContainer, endContainer;
-		let startSteps, endSteps, hasOffset = false;
-		const needsIgnoring = ignoreClass && (_doc.querySelector("." + ignoreClass) != null);
+		let startSteps, endSteps, hasOffset;
+		const needsIgnoring = ignoreClass && (_doc.querySelector("." + ignoreClass) !== null);
 		const reqClass = needsIgnoring ? ignoreClass : undefined;
 
 		let range, missed;

@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB.JS: Hooks Example</title>
+    <title>EPUB.JS: Hooks - Example</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="../dist/epub.js"></script>
 </head>
@@ -46,7 +47,7 @@
             next.style.display = loc.atEnd ? "none" : "block"
             content.dir = dir
         }
-        rendition.on("rendered", (section, view) => {
+        rendition.on("rendered", (view) => {
 
             console.log(view.iframe.contentDocument)
         })

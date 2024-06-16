@@ -158,7 +158,7 @@ onLoad
 | Param | Type |
 | --- | --- |
 | event | <code>Event</code> | 
-| promise | <code>defer</code> | 
+| promise | <code>Defer</code> | 
 
 <a name="IframeView+setAxis"></a>
 
@@ -227,7 +227,7 @@ locationOf
 
 | Param | Type |
 | --- | --- |
-| target | <code>\*</code> | 
+| target | <code>string</code> \| <code>EpubCFI</code> | 
 
 <a name="IframeView+bounds"></a>
 

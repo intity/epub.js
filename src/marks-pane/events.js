@@ -82,7 +82,7 @@ const dispatch = (e, target, marks) => {
  */
 const proxyMouse = (target, marks) => {
 
-    let node = target;
+    let node;
     if (target.nodeName === "iframe" ||
         target.nodeName === "IFRAME") {
         node = target.contentDocument;

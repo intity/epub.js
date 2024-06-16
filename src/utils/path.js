@@ -100,7 +100,7 @@ class Path {
 	 */
 	isAbsolute(path) {
 
-		return path.charAt(0) === '/';
+		return path.charAt(0) === "/";
 	}
 
 	/**
@@ -110,7 +110,7 @@ class Path {
 	 */
 	isDirectory(path) {
 
-		return path.charAt(path.length - 1) === '/';
+		return path.charAt(path.length - 1) === "/";
 	}
 
 	/**
@@ -141,9 +141,9 @@ class Path {
 		}
 
 		resolvedPath = this.normalizeArray(
-			resolvedPath.split('/'),
+			resolvedPath.split("/"),
 			!resolvedAbsolute
-		).join('/');
+		).join("/");
 		return ((resolvedAbsolute ? "/" : "") + resolvedPath) || ".";
 	}
 
@@ -163,8 +163,8 @@ class Path {
 
 		if (from === to) return "";
 
-		const fromParts = this.trimArray(from.split('/'));
-		const toParts = this.trimArray(to.split('/'));
+		const fromParts = this.trimArray(from.split("/"));
+		const toParts = this.trimArray(to.split("/"));
 
 		const length = Math.min(fromParts.length, toParts.length);
 		let samePartsLength = length;
@@ -181,7 +181,7 @@ class Path {
 		}
 
 		outputParts = outputParts.concat(toParts.slice(samePartsLength));
-		return outputParts.join('/');
+		return outputParts.join("/");
 	}
 
 	/**
@@ -193,9 +193,9 @@ class Path {
 	normalize(path) {
 
 		const isAbsolute = this.isAbsolute(path);
-		const trailingSlash = path && path[path.length - 1] === '/';
+		const trailingSlash = path && path[path.length - 1] === "/";
 
-		path = this.normalizeArray(path.split('/'), !isAbsolute).join('/');
+		path = this.normalizeArray(path.split("/"), !isAbsolute).join("/");
 
 		if (!path && !isAbsolute) {
 			path = ".";

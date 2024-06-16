@@ -1,8 +1,8 @@
 import EventEmitter from "event-emitter";
-import { extend, defer } from "./utils/core";
+import { extend } from "./utils/core";
+import Defer from "./utils/defer";
 import Url from "./utils/url";
 import Path from "./utils/path";
-import Spine from "./spine";
 import Locations from "./locations";
 import Container from "./container";
 import Packaging from "./packaging";
@@ -13,8 +13,9 @@ import Rendition from "./rendition";
 import Archive from "./archive";
 import request from "./utils/request";
 import EpubCFI from "./epubcfi";
-import Store from "./store";
+import Storage from "./storage";
 import { EPUBJS_VERSION, EVENTS } from "./utils/constants";
+import Sections from "./sections";
 
 const CONTAINER_PATH = "META-INF/container.xml";
 const INPUT_TYPE = {
@@ -69,7 +70,7 @@ class Book {
 			store: undefined
 		}, options || {});
 
-		this.opening = new defer(); // Promises
+		this.opening = new Defer(); // Promises
 		/**
 		 * @member {promise} opened returns after the book is loaded
 		 * @memberof Book
@@ -84,13 +85,13 @@ class Book {
 		this.isOpen = false;
 
 		this.loading = {
-			cover: new defer(),
-			spine: new defer(),
-			manifest: new defer(),
-			metadata: new defer(),
-			pageList: new defer(),
-			resources: new defer(),
-			navigation: new defer()
+			cover: new Defer(),
+			spine: new Defer(),
+			manifest: new Defer(),
+			metadata: new Defer(),
+			pageList: new Defer(),
+			resources: new Defer(),
+			navigation: new Defer()
 		};
 
 		this.loaded = {
@@ -129,18 +130,6 @@ class Book {
 		 */
 		this.request = this.settings.request.method || request;
 		/**
-		 * @member {Spine} spine
-		 * @memberof Book
-		 * @readonly
-		 */
-		this.spine = new Spine();
-		/**
-		 * @member {Locations} locations
-		 * @memberof Book
-		 * @readonly
-		 */
-		this.locations = new Locations(this.spine, this.load.bind(this));
-		/**
 		 * @member {Navigation} navigation
 		 * @memberof Book
 		 * @readonly
@@ -177,7 +166,7 @@ class Book {
 		 */
 		this.archive = undefined;
 		/**
-		 * @member {Store} storage
+		 * @member {Storage} storage
 		 * @memberof Book
 		 * @readonly
 		 */
@@ -205,7 +194,22 @@ class Book {
 		 * @memberof Book
 		 * @readonly
 		 */
-		this.packaging = undefined;
+		this.packaging = new Packaging();
+		/**
+		 * @member {Sections} sections
+		 * @memberof Book
+		 * @readonly
+		 */
+		this.sections = new Sections();
+		/**
+		 * @member {Locations} locations
+		 * @memberof Book
+		 * @readonly
+		 */
+		this.locations = new Locations(
+			this.sections,
+			this.load.bind(this)
+		);
 
 		// this.toc = undefined;
 		if (this.settings.store) {
@@ -313,8 +317,8 @@ class Book {
 
 		this.path = new Path(url);
 		return this.load(url).then((xml) => {
-			this.packaging = new Packaging(xml);
-			return this.unpack(this.packaging);
+			this.packaging.parse(xml);
+			return this.unpack();
 		});
 	}
 
@@ -328,9 +332,8 @@ class Book {
 
 		this.path = new Path(url);
 		return this.load(url).then((json) => {
-			this.packaging = new Packaging();
 			this.packaging.load(json);
-			return this.unpack(this.packaging);
+			return this.unpack();
 		});
 	}
 
@@ -387,7 +390,7 @@ class Book {
 
 		if (!path) return "";
 
-		let url = path;
+		let url;
 		if (this.settings.canonical) {
 			url = this.settings.canonical(path);
 		} else {
@@ -440,14 +443,12 @@ class Book {
 
 	/**
 	 * Unpack the contents of the book packaging
-	 * @param {Packaging} packaging object
 	 * @private
 	 */
-	async unpack(packaging) {
+	async unpack() {
 
-		this.package = packaging; //TODO: deprecated this
-
-		this.spine.unpack(this.packaging,
+		this.sections.unpack(
+			this.packaging,
 			this.resolve.bind(this),
 			this.canonical.bind(this)
 		);
@@ -470,7 +471,7 @@ class Book {
 		// Resolve promises
 		this.loading.manifest.resolve(this.packaging.manifest);
 		this.loading.metadata.resolve(this.packaging.metadata);
-		this.loading.spine.resolve(this.spine);
+		this.loading.spine.resolve(this.packaging.spine);
 		this.loading.cover.resolve(this.cover);
 		this.loading.resources.resolve(this.resources);
 		this.loading.pageList.resolve(this.pageList);
@@ -530,13 +531,17 @@ class Book {
 
 	/**
 	 * Gets a Section of the Book from the Spine
-	 * Alias for `book.spine.get`
-	 * @param {string} target
+	 * Alias for `book.sections.get`
+	 * @param {string|number} [target]
 	 * @returns {Section|null}
+	 * @example book.section()
+	 * @example book.section(1)
+	 * @example book.section("chapter.html")
+	 * @example book.section("#id1234")
 	 */
 	section(target) {
 
-		return this.spine.get(target);
+		return this.sections.get(target);
 	}
 
 	/**
@@ -585,33 +590,38 @@ class Book {
 	}
 
 	/**
-	 * Store the epubs contents
+	 * Storage the epubs contents
 	 * @param {binary} input epub data
-	 * @returns {Store}
+	 * @returns {Storage}
 	 * @private
 	 */
 	store(input) {
-		// Use "blobUrl" or "base64" for replacements
-		const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
-		// Save original request method
-		const requester = this.settings.request.method || request.bind(this);
-		// Create new Store
-		this.storage = new Store(input, requester, this.resolve.bind(this));
+
+		// Create new Storage
+		this.storage = new Storage(input,
+			this.request.bind(this),
+			this.resolve.bind(this)
+		);
 		// Replace request method to go through store
-		this.request = this.storage.request.bind(this.storage);
+		this.request = this.storage.dispatch.bind(this.storage);
 
 		this.opened.then(() => {
-
+			
 			if (this.archived) {
-				this.storage.requester = this.archive.request.bind(this.archive);
+				this.storage.request = this.archive.request.bind(this.archive);
 			}
 			// Substitute hook
 			const substituteResources = (output, section) => {
 				section.output = this.resources.substitute(output, section.url);
 			};
 
-			// Set to use replacements
-			this.resources.settings.replacements = replacementsSetting || "blobUrl";
+			// Use "blobUrl" or "base64" for replacements
+			if (this.settings.replacements && this.settings.replacements !== "none") {
+				this.resources.settings.replacements = this.settings.replacements;
+			} else {
+				this.resources.settings.replacements = "blobUrl";
+			}
+
 			// Create replacement urls
 			this.resources.replacements().then(() => {
 				return this.resources.replaceCss();
@@ -619,18 +629,18 @@ class Book {
 
 			let originalUrl = this.url; // Save original url
 
-			this.storage.on("offline", () => {
-				// Remove url to use relative resolving for hrefs
-				this.url = new Url("/", "");
-				// Add hook to replace resources in contents
-				this.spine.hooks.serialize.register(substituteResources);
-			});
-
 			this.storage.on("online", () => {
 				// Restore original url
 				this.url = originalUrl;
 				// Remove hook
-				this.spine.hooks.serialize.deregister(substituteResources);
+				this.sections.hooks.serialize.deregister(substituteResources);
+			});
+
+			this.storage.on("offline", () => {
+				// Remove url to use relative resolving for hrefs
+				this.url = new Url("/", "");
+				// Add hook to replace resources in contents
+				this.sections.hooks.serialize.register(substituteResources);
 			});
 		});
 
@@ -664,7 +674,7 @@ class Book {
 	 */
 	async replacements() {
 
-		this.spine.hooks.serialize.register((output, section) => {
+		this.sections.hooks.serialize.register((output, section) => {
 			section.output = this.resources.substitute(output, section.url);
 		});
 
@@ -681,11 +691,11 @@ class Book {
 	async getRange(cfiRange) {
 
 		const cfi = new EpubCFI(cfiRange);
-		const item = this.spine.get(cfi.spinePos);
+		const item = this.sections.get(cfi.spinePos);
 		const request = this.load.bind(this);
 		if (!item) {
 			return new Promise((resolve, reject) => {
-				reject("CFI could not be found");
+				reject(new Error("CFI could not be found"));
 			});
 		}
 		return item.load(request).then((contents) => {
@@ -701,7 +711,9 @@ class Book {
 	 */
 	key(identifier) {
 
-		const ident = identifier || this.packaging.metadata.identifier || this.url.filename;
+		const ident = identifier ||
+			this.packaging.metadata.get("identifier") ||
+			this.url.filename;
 		return `epubjs:${EPUBJS_VERSION}:${ident}`;
 	}
 
@@ -718,7 +730,6 @@ class Book {
 		this.isOpen = false;
 		this.isRendered = false;
 
-		this.spine && this.spine.destroy();
 		this.locations && this.locations.destroy();
 		this.pageList && this.pageList.destroy();
 		this.archive && this.archive.destroy();
@@ -727,7 +738,6 @@ class Book {
 		this.packaging && this.packaging.destroy();
 		this.rendition && this.rendition.destroy();
 
-		this.spine = undefined;
 		this.locations = undefined;
 		this.pageList = undefined;
 		this.archive = undefined;

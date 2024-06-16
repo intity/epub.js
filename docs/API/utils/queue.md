@@ -9,6 +9,7 @@ Queue for handling tasks one at a time
     * [new Queue(context)](#new_Queue_new)
     * [.enqueue()](#Queue+enqueue) ⇒ <code>Promise</code>
     * [.dequeue()](#Queue+dequeue) ⇒ <code>Promise</code>
+    * [.dump()](#Queue+dump)
     * [.run()](#Queue+run) ⇒ <code>Promise</code>
     * [.flush()](#Queue+flush) ⇒ <code>Promise</code>
     * [.clear()](#Queue+clear)
@@ -19,10 +20,12 @@ Queue for handling tasks one at a time
 <a name="new_Queue_new"></a>
 
 ## new Queue(context)
+Constructor
+
 
 | Param | Type | Description |
 | --- | --- | --- |
-| context | <code>scope</code> | what this will resolve to in the tasks |
+| context | <code>object</code> | what this will resolve to in the tasks |
 
 <a name="Queue+enqueue"></a>
 
@@ -34,6 +37,12 @@ Add an item to the queue
 
 ## queue.dequeue() ⇒ <code>Promise</code>
 Run one item
+
+**Kind**: instance method of [<code>Queue</code>](#Queue)  
+<a name="Queue+dump"></a>
+
+## queue.dump()
+Run All Immediately
 
 **Kind**: instance method of [<code>Queue</code>](#Queue)  
 <a name="Queue+run"></a>

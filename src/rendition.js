@@ -1,13 +1,13 @@
 import EventEmitter from "event-emitter";
-import { extend, defer, isFloat } from "./utils/core";
-import Hook from "./utils/hook";
+import Annotations from "./annotations";
 import EpubCFI from "./epubcfi";
-import Queue from "./utils/queue";
 import Layout from "./layout";
 import Themes from "./themes";
-import Contents from "./contents";
-import Annotations from "./annotations";
+import Defer from "./utils/defer";
+import Hook from "./utils/hook";
 import Path from "./utils/path";
+import Queue from "./utils/queue";
+import { extend, isFloat } from "./utils/core";
 import { EVENTS, DOM_EVENTS } from "./utils/constants";
 
 // Default View Managers
@@ -92,14 +92,14 @@ class Rendition {
 		this.hooks.content.register(this.passEvents.bind(this));
 		this.hooks.content.register(this.adjustImages.bind(this));
 
-		this.book.spine.hooks.content.register(this.injectIdentifier.bind(this));
+		this.book.sections.hooks.content.register(this.injectIdentifier.bind(this));
 
 		if (this.settings.stylesheet) {
-			this.book.spine.hooks.content.register(this.injectStylesheet.bind(this));
+			this.book.sections.hooks.content.register(this.injectStylesheet.bind(this));
 		}
 
 		if (this.settings.script) {
-			this.book.spine.hooks.content.register(this.injectScript.bind(this));
+			this.book.sections.hooks.content.register(this.injectScript.bind(this));
 		}
 		/**
 		 * @member {Annotations} annotations
@@ -149,7 +149,7 @@ class Rendition {
 		// Hold queue until book is opened
 		this.q.enqueue(this.book.opened);
 
-		this.starting = new defer();
+		this.starting = new Defer();
 		/**
 		 * returns after the rendition has started
 		 * @member {Promise} started
@@ -197,17 +197,11 @@ class Rendition {
 	 */
 	start() {
 
-		const metadata = this.book.package.metadata;
-		const prePaginated = metadata.layout === "pre-paginated";
-
-		if (!this.settings.layout && prePaginated) {
-			this.settings.layout = "pre-paginated";
-		}
-
 		// Parse metadata to get layout props
-		const layoutProps = this.determineLayoutProperties(metadata);
+		const props = this.determineLayoutProperties();
+		this.settings.layout = props.name;
 
-		this.layout = new Layout(layoutProps);
+		this.layout = new Layout(props);
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
 			this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
 		});
@@ -300,7 +294,7 @@ class Rendition {
 	_display(target) {
 
 		if (!this.book) return;
-		const displaying = new defer();
+		const displaying = new Defer();
 		const displayed = displaying.promise;
 		this.displaying = displaying;
 
@@ -309,7 +303,7 @@ class Rendition {
 			target = this.book.locations.cfiFromPercentage(parseFloat(target));
 		}
 
-		const section = this.book.spine.get(target);
+		const section = this.book.sections.get(target);
 
 		if (!section) {
 			displaying.reject(new Error("No Section Found"));
@@ -358,14 +352,13 @@ class Rendition {
 					/**
 					 * Emit that a section has been rendered
 					 * @event rendered
-					 * @param {Section} section
 					 * @param {View} view
 					 * @memberof Rendition
 					 */
-					this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
+					this.emit(EVENTS.RENDITION.RENDERED, view);
 				});
 			} else {
-				this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
+				this.emit(EVENTS.RENDITION.RENDERED, view);
 			}
 		});
 	}
@@ -484,23 +477,24 @@ class Rendition {
 			.then(this.reportLocation.bind(this));
 	}
 
-	//-- http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
 	/**
 	 * Determine the Layout properties from metadata and settings
-	 * @private
-	 * @param {object} metadata
+	 * @link http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
 	 * @return {object} Layout properties
+	 * @private
 	 */
-	determineLayoutProperties(metadata) {
+	determineLayoutProperties() {
 
+		const metadata = this.book.packaging.metadata;
+		const direction = this.book.packaging.direction;
 		return {
-			name: this.settings.layout || metadata.layout || "reflowable",
-			flow: this.settings.flow || metadata.flow || "paginated",
-			spread: this.settings.spread || metadata.spread || "auto",
-			viewport: metadata.viewport || "",
-			direction: this.settings.direction || metadata.direction || "ltr",
-			orientation: this.settings.orientation || metadata.orientation || "auto",
-			minSpreadWidth: this.settings.minSpreadWidth || metadata.minSpreadWidth || 800
+			name: this.settings.layout || metadata.get("layout") || "reflowable",
+			flow: this.settings.flow || metadata.get("flow") || "paginated",
+			spread: this.settings.spread || metadata.get("spread") || "auto",
+			viewport: metadata.get("viewport") || "",
+			direction: this.settings.direction || direction || "ltr",
+			orientation: this.settings.orientation || metadata.get("orientation") || "auto",
+			minSpreadWidth: this.settings.minSpreadWidth || 800
 		}
 	}
 
@@ -602,11 +596,11 @@ class Rendition {
 		const locationStart = this.book.locations.locationFromCfi(start.mapping.start);
 		const locationEnd = this.book.locations.locationFromCfi(end.mapping.end);
 
-		if (locationStart != null) {
+		if (locationStart !== null) {
 			located.start.location = locationStart;
 			located.start.percentage = this.book.locations.percentageFromLocation(locationStart);
 		}
-		if (locationEnd != null) {
+		if (locationEnd !== null) {
 			located.end.location = locationEnd;
 			located.end.percentage = this.book.locations.percentageFromLocation(locationEnd);
 		}
@@ -621,12 +615,12 @@ class Rendition {
 			located.end.page = pageEnd;
 		}
 
-		if (end.index === this.book.spine.last().index &&
+		if (end.index === this.book.sections.last().index &&
 			located.end.displayed.page >= located.end.displayed.total) {
 			located.atEnd = true;
 		}
 
-		if (start.index === this.book.spine.first().index &&
+		if (start.index === this.book.sections.first().index &&
 			located.start.displayed.page === 1) {
 			located.atStart = true;
 		}
@@ -859,12 +853,11 @@ class Rendition {
 	 * Hook to handle the document identifier before
 	 * a Section is serialized
 	 * @param {document} doc
-	 * @param {Section} section
 	 * @private
 	 */
-	injectIdentifier(doc, section) {
+	injectIdentifier(doc) {
 
-		const ident = this.book.packaging.metadata.identifier;
+		const ident = this.book.packaging.metadata.get("identifier");
 		const meta = doc.createElement("meta");
 		meta.setAttribute("name", "dc.relation.ispartof");
 		if (ident) meta.setAttribute("content", ident);

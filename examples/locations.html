@@ -4,7 +4,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>EPUB.JS: Locations Example</title>
+	<title>EPUB.JS: Locations - Example</title>
+	<link rel="icon" type="image/png" href="../assets/favicon.png">
 	<link rel="stylesheet" type="text/css" href="examples.css">
 	<script src="../dist/epub.js"></script>
 </head>
@@ -121,7 +122,7 @@
 
 			console.log(current, changed)
 		})
-		rendition.on("rendered", (section, view) => {
+		rendition.on("displayed", (section) => {
 
 			document.onkeyup = keybinding
 			rendition.on("keyup", keybinding)

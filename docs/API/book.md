@@ -13,7 +13,7 @@ of its contents.
         * [.load(path)](#Book+load) ⇒ <code>Promise</code>
         * [.resolve(path, [absolute])](#Book+resolve) ⇒ <code>string</code>
         * [.canonical(path)](#Book+canonical) ⇒ <code>string</code>
-        * [.section(target)](#Book+section) ⇒ <code>Section</code> \| <code>null</code>
+        * [.section([target])](#Book+section) ⇒ <code>Section</code> \| <code>null</code>
         * [.renderTo(element, [options])](#Book+renderTo) ⇒ <code>Rendition</code>
         * [.setRequestCredentials(credentials)](#Book+setRequestCredentials)
         * [.setRequestHeaders(headers)](#Book+setRequestHeaders)
@@ -27,18 +27,18 @@ of its contents.
         * [.ready](#Book.ready) : <code>promise</code>
         * [.isRendered](#Book.isRendered) : <code>boolean</code>
         * [.request](#Book.request) : <code>method</code>
-        * [.spine](#Book.spine) : <code>Spine</code>
-        * [.locations](#Book.locations) : <code>Locations</code>
         * [.navigation](#Book.navigation) : <code>Navigation</code>
         * [.pagelist](#Book.pagelist) : <code>PageList</code>
         * [.url](#Book.url) : <code>Url</code>
         * [.path](#Book.path) : <code>Path</code>
         * [.archived](#Book.archived) : <code>boolean</code>
-        * [.storage](#Book.storage) : <code>Store</code>
+        * [.storage](#Book.storage) : <code>Storage</code>
         * [.resources](#Book.resources) : <code>Resources</code>
         * [.rendition](#Book.rendition) : <code>Rendition</code>
         * [.container](#Book.container) : <code>Container</code>
         * [.packaging](#Book.packaging) : <code>Packaging</code>
+        * [.sections](#Book.sections) : <code>Sections</code>
+        * [.locations](#Book.locations) : <code>Locations</code>
         * ["openFailed" (error)](#Book.event_openFailed)
 
 <a name="new_Book_new"></a>
@@ -143,16 +143,32 @@ Get a canonical link to a path
 
 <a name="Book+section"></a>
 
-## book.section(target) ⇒ <code>Section</code> \| <code>null</code>
+## book.section([target]) ⇒ <code>Section</code> \| <code>null</code>
 Gets a Section of the Book from the Spine
-Alias for `book.spine.get`
+Alias for `book.sections.get`
 
 **Kind**: instance method of [<code>Book</code>](#Book)  
 
 | Param | Type |
 | --- | --- |
-| target | <code>string</code> | 
+| [target] | <code>string</code> \| <code>number</code> | 
 
+**Example**  
+```js
+book.section()
+```
+**Example**  
+```js
+book.section(1)
+```
+**Example**  
+```js
+book.section("chapter.html")
+```
+**Example**  
+```js
+book.section("#id1234")
+```
 <a name="Book+renderTo"></a>
 
 ## book.renderTo(element, [options]) ⇒ <code>Rendition</code>
@@ -254,16 +270,6 @@ Queue for methods used before opening
 ## Book.request : <code>method</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 **Read only**: true  
-<a name="Book.spine"></a>
-
-## Book.spine : <code>Spine</code>
-**Kind**: static property of [<code>Book</code>](#Book)  
-**Read only**: true  
-<a name="Book.locations"></a>
-
-## Book.locations : <code>Locations</code>
-**Kind**: static property of [<code>Book</code>](#Book)  
-**Read only**: true  
 <a name="Book.navigation"></a>
 
 ## Book.navigation : <code>Navigation</code>
@@ -291,7 +297,7 @@ Queue for methods used before opening
 **Read only**: true  
 <a name="Book.storage"></a>
 
-## Book.storage : <code>Store</code>
+## Book.storage : <code>Storage</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 **Read only**: true  
 <a name="Book.resources"></a>
@@ -312,6 +318,16 @@ Queue for methods used before opening
 <a name="Book.packaging"></a>
 
 ## Book.packaging : <code>Packaging</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.sections"></a>
+
+## Book.sections : <code>Sections</code>
+**Kind**: static property of [<code>Book</code>](#Book)  
+**Read only**: true  
+<a name="Book.locations"></a>
+
+## Book.locations : <code>Locations</code>
 **Kind**: static property of [<code>Book</code>](#Book)  
 **Read only**: true  
 <a name="Book.event_openFailed"></a>

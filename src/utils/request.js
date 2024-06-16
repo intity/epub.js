@@ -1,5 +1,6 @@
-import { defer, isXml, parse } from "./core";
 import Path from "./path";
+import Defer from "./defer";
+import { isXml, parse } from "./core";
 
 // TODO: fallback for url if window isn't defined
 const SUPPORTS_URL = window && window.URL ? true : false;
@@ -67,7 +68,7 @@ const load = (e, type, def) => {
  */
 const request = (url, type, withCredentials = false, headers = []) => {
 
-	const def = new defer();
+	const def = new Defer();
 	const xhr = new XMLHttpRequest();
 
 	type = type || new Path(url).extension;

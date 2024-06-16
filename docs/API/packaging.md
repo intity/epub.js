@@ -6,33 +6,34 @@ Open Packaging Format Parser
 **Kind**: global class  
 
 * [Packaging](#Packaging)
-    * [new Packaging(packageDocument)](#new_Packaging_new)
+    * [new Packaging([packageXml])](#new_Packaging_new)
     * _instance_
-        * [.parse(packageDocument)](#Packaging+parse) ⇒ <code>object</code>
-        * [.load(packageDocument)](#Packaging+load) ⇒ <code>object</code>
+        * [.parse(packageXml)](#Packaging+parse) ⇒ <code>object</code>
+        * [.load(json)](#Packaging+load) ⇒ <code>object</code>
         * [.destroy()](#Packaging+destroy)
     * _static_
-        * [.manifest](#Packaging.manifest) : <code>object</code>
-        * [.metadata](#Packaging.metadata) : <code>object</code>
+        * [.metadata](#Packaging.metadata) : <code>Metadata</code>
+        * [.manifest](#Packaging.manifest) : <code>Manifest</code>
         * [.navPath](#Packaging.navPath) : <code>string</code>
         * [.ncxPath](#Packaging.ncxPath) : <code>string</code>
         * [.coverPath](#Packaging.coverPath) : <code>string</code>
-        * [.spine](#Packaging.spine) : <code>Array.&lt;object&gt;</code>
-        * [.spineNodeIndex](#Packaging.spineNodeIndex) : <code>number</code>
+        * [.spine](#Packaging.spine) : <code>Spine</code>
+        * [.version](#Packaging.version) : <code>string</code>
+        * [.direction](#Packaging.direction) : <code>string</code>
 
 <a name="new_Packaging_new"></a>
 
-## new Packaging(packageDocument)
+## new Packaging([packageXml])
 Constructor
 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| packageDocument | <code>\*</code> | OPF XML |
+| [packageXml] | <code>Document</code> | OPF XML |
 
 <a name="Packaging+parse"></a>
 
-## packaging.parse(packageDocument) ⇒ <code>object</code>
+## packaging.parse(packageXml) ⇒ <code>object</code>
 Parse OPF XML
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
@@ -40,19 +41,19 @@ Parse OPF XML
 
 | Param | Type | Description |
 | --- | --- | --- |
-| packageDocument | <code>document</code> | OPF XML |
+| packageXml | <code>Document</code> | OPF XML |
 
 <a name="Packaging+load"></a>
 
-## packaging.load(packageDocument) ⇒ <code>object</code>
+## packaging.load(json) ⇒ <code>object</code>
 Load JSON Manifest
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
 **Returns**: <code>object</code> - parsed package parts  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| packageDocument | <code>document</code> | OPF XML |
+| Param | Type |
+| --- | --- |
+| json | <code>json</code> | 
 
 <a name="Packaging+destroy"></a>
 
@@ -60,35 +61,16 @@ Load JSON Manifest
 destroy
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
-<a name="Packaging.manifest"></a>
-
-## Packaging.manifest : <code>object</code>
-**Kind**: static property of [<code>Packaging</code>](#Packaging)  
-**Read only**: true  
 <a name="Packaging.metadata"></a>
 
-## Packaging.metadata : <code>object</code>
+## Packaging.metadata : <code>Metadata</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
-**Properties**
+<a name="Packaging.manifest"></a>
 
-| Name | Type |
-| --- | --- |
-| title | <code>string</code> | 
-| creator | <code>string</code> | 
-| description | <code>string</code> | 
-| publisher | <code>string</code> | 
-| language | <code>string</code> | 
-| rights | <code>string</code> | 
-| date | <code>string</code> | 
-| modified | <code>string</code> | 
-| flow | <code>string</code> | 
-| layout | <code>string</code> | 
-| spread | <code>string</code> | 
-| viewport | <code>string</code> | 
-| orientation | <code>string</code> | 
-| media_active_class | <code>string</code> | 
-
+## Packaging.manifest : <code>Manifest</code>
+**Kind**: static property of [<code>Packaging</code>](#Packaging)  
+**Read only**: true  
 <a name="Packaging.navPath"></a>
 
 ## Packaging.navPath : <code>string</code>
@@ -106,11 +88,18 @@ destroy
 **Read only**: true  
 <a name="Packaging.spine"></a>
 
-## Packaging.spine : <code>Array.&lt;object&gt;</code>
+## Packaging.spine : <code>Spine</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
-<a name="Packaging.spineNodeIndex"></a>
+<a name="Packaging.version"></a>
 
-## Packaging.spineNodeIndex : <code>number</code>
+## Packaging.version : <code>string</code>
+Package version
+
+**Kind**: static property of [<code>Packaging</code>](#Packaging)  
+**Read only**: true  
+<a name="Packaging.direction"></a>
+
+## Packaging.direction : <code>string</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  

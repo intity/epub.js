@@ -11,11 +11,15 @@ Functions may return a promise if they are async.
     * [new Hook(context)](#new_Hook_new)
     * [.register()](#Hook+register)
     * [.deregister()](#Hook+deregister)
-    * [.trigger()](#Hook+trigger)
+    * [.trigger()](#Hook+trigger) ⇒ <code>Array.&lt;Promise&gt;</code>
+    * [.list()](#Hook+list) ⇒ <code>Array</code>
+    * [.clear()](#Hook+clear)
 
 <a name="new_Hook_new"></a>
 
 ## new Hook(context)
+Constructor
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -23,7 +27,7 @@ Functions may return a promise if they are async.
 
 **Example**  
 ```js
-this.content = new EPUBJS.Hook(this);
+this.content = new Hook(this);
 ```
 <a name="Hook+register"></a>
 
@@ -33,7 +37,7 @@ Adds a function to be run before a hook completes
 **Kind**: instance method of [<code>Hook</code>](#Hook)  
 **Example**  
 ```js
-this.content.register(function(){...});
+this.content.register(() => {...});
 ```
 <a name="Hook+deregister"></a>
 
@@ -43,15 +47,27 @@ Removes a function
 **Kind**: instance method of [<code>Hook</code>](#Hook)  
 **Example**  
 ```js
-this.content.deregister(function(){...});
+this.content.deregister(() => {...});
 ```
 <a name="Hook+trigger"></a>
 
-## hook.trigger()
+## hook.trigger() ⇒ <code>Array.&lt;Promise&gt;</code>
 Triggers a hook to run all functions
 
 **Kind**: instance method of [<code>Hook</code>](#Hook)  
 **Example**  
 ```js
-this.content.trigger(args).then(function(){...});
+this.content.trigger(args).then(() => {...});
 ```
+<a name="Hook+list"></a>
+
+## hook.list() ⇒ <code>Array</code>
+list
+
+**Kind**: instance method of [<code>Hook</code>](#Hook)  
+<a name="Hook+clear"></a>
+
+## hook.clear()
+clear
+
+**Kind**: instance method of [<code>Hook</code>](#Hook)  

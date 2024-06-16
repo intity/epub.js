@@ -13,7 +13,7 @@
     "test:chromium": "cypress run --port 9876 --browser chromium",
     "test": "karma start --single-run --browsers ChromeHeadlessNoSandbox",
     "docs": "node docsgen.js",
-    "lint": "eslint -c .eslintrc.js src; exit 0",
+    "lint": "eslint src",
     "start": "NODE_ENV=development webpack serve",
     "build": "NODE_ENV=production webpack --progress",
     "minify": "NODE_ENV=production MINIMIZE=true webpack --progress",
