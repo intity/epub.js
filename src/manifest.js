@@ -7,7 +7,14 @@ import { qsa } from "./utils/core";
 class Manifest extends Map {
 
     constructor() {
+
         super();
+        /**
+         * @member {string} navPath
+         * @memberof Manifest
+         * @readonly
+         */
+        this.navPath = null;
     }
 
     /**
@@ -21,13 +28,22 @@ class Manifest extends Map {
 		//-- Create an object with the id as key
 		items.forEach((item) => {
 			const id = item.getAttribute("id");
+            const href = item.getAttribute("href") || "";
+            const type = item.getAttribute("media-type") || "";
 			const props = item.getAttribute("properties") || "";
             this.set(id, {
-                href: item.getAttribute("href") || "",
-                type: item.getAttribute("media-type") || "",
+                href: href,
+                type: type,
                 overlay: item.getAttribute("media-overlay") || "",
                 properties: props.length ? props.split(" ") : []
             });
+            if (this.navPath) {
+                return;
+            } else if (props === "nav") {
+                this.navPath = href;
+            } else if (type === "application/x-dtbncx+xml") {
+                this.navPath = href;
+            }
 		});
     }
 
@@ -37,6 +53,7 @@ class Manifest extends Map {
     destroy() {
 
         this.clear();
+        this.navPath = undefined;
     }
 }
 

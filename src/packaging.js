@@ -25,18 +25,6 @@ class Packaging {
 		 */
 		this.manifest = new Manifest();
 		/**
-		 * @member {string} navPath
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.navPath = "";
-		/**
-		 * @member {string} ncxPath
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.ncxPath = "";
-		/**
 		 * @member {string} coverPath
 		 * @memberof Packaging
 		 * @readonly
@@ -95,8 +83,6 @@ class Packaging {
 		this.metadata.parse(metadataNode);
 		this.manifest.parse(manifestNode);
 		this.spine.parse(spineNode);
-		this.navPath = this.findNavPath(manifestNode);
-		this.ncxPath = this.findNcxPath(manifestNode, spineNode);
 		this.coverPath = this.findCoverPath(packageXml);
 		this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
 		this.direction = this.parseDirection(packageXml, spineNode);
@@ -106,8 +92,6 @@ class Packaging {
 			metadata: this.metadata,
 			manifest: this.manifest,
 			spine: this.spine,
-			navPath: this.navPath,
-			ncxPath: this.ncxPath,
 			coverPath: this.coverPath,
 			direction: this.direction,
 			version: this.version
@@ -156,47 +140,6 @@ class Packaging {
 		}
 
 		return "";
-	}
-
-	/**
-	 * Find TOC NAV
-	 * @param {Node} manifestNode
-	 * @return {string}
-	 * @private
-	 */
-	findNavPath(manifestNode) {
-		// Find item with property "nav"
-		// Should catch nav regardless of order
-		const node = qsp(manifestNode, "item", {
-			properties: "nav"
-		});
-		return node ? node.getAttribute("href") : false;
-	}
-
-	/**
-	 * Find TOC NCX
-	 * - `media-type="application/x-dtbncx+xml" href="toc.ncx"`
-	 * @param {Node} manifestNode
-	 * @param {Node} spineNode
-	 * @return {string}
-	 * @private
-	 */
-	findNcxPath(manifestNode, spineNode) {
-
-		let node = qsp(manifestNode, "item", {
-			"media-type": "application/x-dtbncx+xml"
-		});
-		// If we can't find the toc by media-type then try to look for id of the item in the spine attributes as
-		// according to http://www.idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#Section2.4.1.2,
-		// "The item that describes the NCX must be referenced by the spine toc attribute."
-		if (!node) {
-			const tocId = spineNode.getAttribute("toc");
-			if (tocId) {
-				node = manifestNode.querySelector(`#${tocId}`);
-			}
-		}
-
-		return node ? node.getAttribute("href") : false;
 	}
 
 	/**
@@ -273,8 +216,6 @@ class Packaging {
 			metadata: this.metadata,
 			manifest: this.manifest,
 			spine: this.spine,
-			navPath: this.navPath,
-			ncxPath: this.ncxPath,
 			coverPath: this.coverPath,
 			toc: this.toc
 		}
@@ -292,8 +233,6 @@ class Packaging {
 		this.metadata = undefined;
 		this.manifest = undefined;
 		this.spine = undefined;
-		this.navPath = undefined;
-		this.ncxPath = undefined;
 		this.coverPath = undefined;
 		this.direction = undefined;
 		this.version = undefined;

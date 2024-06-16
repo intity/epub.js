@@ -497,7 +497,7 @@ class Book {
 	 */
 	async loadNavigation(packaging) {
 
-		const navPath = packaging.navPath || packaging.ncxPath;
+		const navPath = packaging.manifest.navPath;
 		const toc = packaging.toc;
 
 		// From json manifest
