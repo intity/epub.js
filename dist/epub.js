@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("JSZip"));
+		module.exports = factory(require("JSZip"), require("localforage"));
 	else if(typeof define === 'function' && define.amd)
-		define(["JSZip"], factory);
+		define(["JSZip", "localforage"], factory);
 	else if(typeof exports === 'object')
-		exports["ePub"] = factory(require("JSZip"));
+		exports["ePub"] = factory(require("JSZip"), require("localforage"));
 	else
-		root["ePub"] = factory(root["JSZip"]);
-})(self, (__WEBPACK_EXTERNAL_MODULE__6838__) => {
+		root["ePub"] = factory(root["JSZip"], root["localforage"]);
+})(self, (__WEBPACK_EXTERNAL_MODULE__6838__, __WEBPACK_EXTERNAL_MODULE__6361__) => {
 return /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -5692,2829 +5692,6 @@ exports.methods = methods;
 
 /***/ }),
 
-/***/ 3790:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-/*!
-    localForage -- Offline Storage, Improved
-    Version 1.10.0
-    https://localforage.github.io/localForage
-    (c) 2013-2017 Mozilla, Apache License 2.0
-*/
-(function(f){if(true){module.exports=f()}else { var g; }})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=undefined;if(!u&&a)return require(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw (f.code="MODULE_NOT_FOUND", f)}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=undefined;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function (global){
-'use strict';
-var Mutation = global.MutationObserver || global.WebKitMutationObserver;
-
-var scheduleDrain;
-
-{
-  if (Mutation) {
-    var called = 0;
-    var observer = new Mutation(nextTick);
-    var element = global.document.createTextNode('');
-    observer.observe(element, {
-      characterData: true
-    });
-    scheduleDrain = function () {
-      element.data = (called = ++called % 2);
-    };
-  } else if (!global.setImmediate && typeof global.MessageChannel !== 'undefined') {
-    var channel = new global.MessageChannel();
-    channel.port1.onmessage = nextTick;
-    scheduleDrain = function () {
-      channel.port2.postMessage(0);
-    };
-  } else if ('document' in global && 'onreadystatechange' in global.document.createElement('script')) {
-    scheduleDrain = function () {
-
-      // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
-      // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
-      var scriptEl = global.document.createElement('script');
-      scriptEl.onreadystatechange = function () {
-        nextTick();
-
-        scriptEl.onreadystatechange = null;
-        scriptEl.parentNode.removeChild(scriptEl);
-        scriptEl = null;
-      };
-      global.document.documentElement.appendChild(scriptEl);
-    };
-  } else {
-    scheduleDrain = function () {
-      setTimeout(nextTick, 0);
-    };
-  }
-}
-
-var draining;
-var queue = [];
-//named nextTick for less confusing stack traces
-function nextTick() {
-  draining = true;
-  var i, oldQueue;
-  var len = queue.length;
-  while (len) {
-    oldQueue = queue;
-    queue = [];
-    i = -1;
-    while (++i < len) {
-      oldQueue[i]();
-    }
-    len = queue.length;
-  }
-  draining = false;
-}
-
-module.exports = immediate;
-function immediate(task) {
-  if (queue.push(task) === 1 && !draining) {
-    scheduleDrain();
-  }
-}
-
-}).call(this,typeof __webpack_require__.g !== "undefined" ? __webpack_require__.g : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(_dereq_,module,exports){
-'use strict';
-var immediate = _dereq_(1);
-
-/* istanbul ignore next */
-function INTERNAL() {}
-
-var handlers = {};
-
-var REJECTED = ['REJECTED'];
-var FULFILLED = ['FULFILLED'];
-var PENDING = ['PENDING'];
-
-module.exports = Promise;
-
-function Promise(resolver) {
-  if (typeof resolver !== 'function') {
-    throw new TypeError('resolver must be a function');
-  }
-  this.state = PENDING;
-  this.queue = [];
-  this.outcome = void 0;
-  if (resolver !== INTERNAL) {
-    safelyResolveThenable(this, resolver);
-  }
-}
-
-Promise.prototype["catch"] = function (onRejected) {
-  return this.then(null, onRejected);
-};
-Promise.prototype.then = function (onFulfilled, onRejected) {
-  if (typeof onFulfilled !== 'function' && this.state === FULFILLED ||
-    typeof onRejected !== 'function' && this.state === REJECTED) {
-    return this;
-  }
-  var promise = new this.constructor(INTERNAL);
-  if (this.state !== PENDING) {
-    var resolver = this.state === FULFILLED ? onFulfilled : onRejected;
-    unwrap(promise, resolver, this.outcome);
-  } else {
-    this.queue.push(new QueueItem(promise, onFulfilled, onRejected));
-  }
-
-  return promise;
-};
-function QueueItem(promise, onFulfilled, onRejected) {
-  this.promise = promise;
-  if (typeof onFulfilled === 'function') {
-    this.onFulfilled = onFulfilled;
-    this.callFulfilled = this.otherCallFulfilled;
-  }
-  if (typeof onRejected === 'function') {
-    this.onRejected = onRejected;
-    this.callRejected = this.otherCallRejected;
-  }
-}
-QueueItem.prototype.callFulfilled = function (value) {
-  handlers.resolve(this.promise, value);
-};
-QueueItem.prototype.otherCallFulfilled = function (value) {
-  unwrap(this.promise, this.onFulfilled, value);
-};
-QueueItem.prototype.callRejected = function (value) {
-  handlers.reject(this.promise, value);
-};
-QueueItem.prototype.otherCallRejected = function (value) {
-  unwrap(this.promise, this.onRejected, value);
-};
-
-function unwrap(promise, func, value) {
-  immediate(function () {
-    var returnValue;
-    try {
-      returnValue = func(value);
-    } catch (e) {
-      return handlers.reject(promise, e);
-    }
-    if (returnValue === promise) {
-      handlers.reject(promise, new TypeError('Cannot resolve promise with itself'));
-    } else {
-      handlers.resolve(promise, returnValue);
-    }
-  });
-}
-
-handlers.resolve = function (self, value) {
-  var result = tryCatch(getThen, value);
-  if (result.status === 'error') {
-    return handlers.reject(self, result.value);
-  }
-  var thenable = result.value;
-
-  if (thenable) {
-    safelyResolveThenable(self, thenable);
-  } else {
-    self.state = FULFILLED;
-    self.outcome = value;
-    var i = -1;
-    var len = self.queue.length;
-    while (++i < len) {
-      self.queue[i].callFulfilled(value);
-    }
-  }
-  return self;
-};
-handlers.reject = function (self, error) {
-  self.state = REJECTED;
-  self.outcome = error;
-  var i = -1;
-  var len = self.queue.length;
-  while (++i < len) {
-    self.queue[i].callRejected(error);
-  }
-  return self;
-};
-
-function getThen(obj) {
-  // Make sure we only access the accessor once as required by the spec
-  var then = obj && obj.then;
-  if (obj && (typeof obj === 'object' || typeof obj === 'function') && typeof then === 'function') {
-    return function appyThen() {
-      then.apply(obj, arguments);
-    };
-  }
-}
-
-function safelyResolveThenable(self, thenable) {
-  // Either fulfill, reject or reject with error
-  var called = false;
-  function onError(value) {
-    if (called) {
-      return;
-    }
-    called = true;
-    handlers.reject(self, value);
-  }
-
-  function onSuccess(value) {
-    if (called) {
-      return;
-    }
-    called = true;
-    handlers.resolve(self, value);
-  }
-
-  function tryToUnwrap() {
-    thenable(onSuccess, onError);
-  }
-
-  var result = tryCatch(tryToUnwrap);
-  if (result.status === 'error') {
-    onError(result.value);
-  }
-}
-
-function tryCatch(func, value) {
-  var out = {};
-  try {
-    out.value = func(value);
-    out.status = 'success';
-  } catch (e) {
-    out.status = 'error';
-    out.value = e;
-  }
-  return out;
-}
-
-Promise.resolve = resolve;
-function resolve(value) {
-  if (value instanceof this) {
-    return value;
-  }
-  return handlers.resolve(new this(INTERNAL), value);
-}
-
-Promise.reject = reject;
-function reject(reason) {
-  var promise = new this(INTERNAL);
-  return handlers.reject(promise, reason);
-}
-
-Promise.all = all;
-function all(iterable) {
-  var self = this;
-  if (Object.prototype.toString.call(iterable) !== '[object Array]') {
-    return this.reject(new TypeError('must be an array'));
-  }
-
-  var len = iterable.length;
-  var called = false;
-  if (!len) {
-    return this.resolve([]);
-  }
-
-  var values = new Array(len);
-  var resolved = 0;
-  var i = -1;
-  var promise = new this(INTERNAL);
-
-  while (++i < len) {
-    allResolver(iterable[i], i);
-  }
-  return promise;
-  function allResolver(value, i) {
-    self.resolve(value).then(resolveFromAll, function (error) {
-      if (!called) {
-        called = true;
-        handlers.reject(promise, error);
-      }
-    });
-    function resolveFromAll(outValue) {
-      values[i] = outValue;
-      if (++resolved === len && !called) {
-        called = true;
-        handlers.resolve(promise, values);
-      }
-    }
-  }
-}
-
-Promise.race = race;
-function race(iterable) {
-  var self = this;
-  if (Object.prototype.toString.call(iterable) !== '[object Array]') {
-    return this.reject(new TypeError('must be an array'));
-  }
-
-  var len = iterable.length;
-  var called = false;
-  if (!len) {
-    return this.resolve([]);
-  }
-
-  var i = -1;
-  var promise = new this(INTERNAL);
-
-  while (++i < len) {
-    resolver(iterable[i]);
-  }
-  return promise;
-  function resolver(value) {
-    self.resolve(value).then(function (response) {
-      if (!called) {
-        called = true;
-        handlers.resolve(promise, response);
-      }
-    }, function (error) {
-      if (!called) {
-        called = true;
-        handlers.reject(promise, error);
-      }
-    });
-  }
-}
-
-},{"1":1}],3:[function(_dereq_,module,exports){
-(function (global){
-'use strict';
-if (typeof global.Promise !== 'function') {
-  global.Promise = _dereq_(2);
-}
-
-}).call(this,typeof __webpack_require__.g !== "undefined" ? __webpack_require__.g : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"2":2}],4:[function(_dereq_,module,exports){
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function getIDB() {
-    /* global indexedDB,webkitIndexedDB,mozIndexedDB,OIndexedDB,msIndexedDB */
-    try {
-        if (typeof indexedDB !== 'undefined') {
-            return indexedDB;
-        }
-        if (typeof webkitIndexedDB !== 'undefined') {
-            return webkitIndexedDB;
-        }
-        if (typeof mozIndexedDB !== 'undefined') {
-            return mozIndexedDB;
-        }
-        if (typeof OIndexedDB !== 'undefined') {
-            return OIndexedDB;
-        }
-        if (typeof msIndexedDB !== 'undefined') {
-            return msIndexedDB;
-        }
-    } catch (e) {
-        return;
-    }
-}
-
-var idb = getIDB();
-
-function isIndexedDBValid() {
-    try {
-        // Initialize IndexedDB; fall back to vendor-prefixed versions
-        // if needed.
-        if (!idb || !idb.open) {
-            return false;
-        }
-        // We mimic PouchDB here;
-        //
-        // We test for openDatabase because IE Mobile identifies itself
-        // as Safari. Oh the lulz...
-        var isSafari = typeof openDatabase !== 'undefined' && /(Safari|iPhone|iPad|iPod)/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent) && !/BlackBerry/.test(navigator.platform);
-
-        var hasFetch = typeof fetch === 'function' && fetch.toString().indexOf('[native code') !== -1;
-
-        // Safari <10.1 does not meet our requirements for IDB support
-        // (see: https://github.com/pouchdb/pouchdb/issues/5572).
-        // Safari 10.1 shipped with fetch, we can use that to detect it.
-        // Note: this creates issues with `window.fetch` polyfills and
-        // overrides; see:
-        // https://github.com/localForage/localForage/issues/856
-        return (!isSafari || hasFetch) && typeof indexedDB !== 'undefined' &&
-        // some outdated implementations of IDB that appear on Samsung
-        // and HTC Android devices <4.4 are missing IDBKeyRange
-        // See: https://github.com/mozilla/localForage/issues/128
-        // See: https://github.com/mozilla/localForage/issues/272
-        typeof IDBKeyRange !== 'undefined';
-    } catch (e) {
-        return false;
-    }
-}
-
-// Abstracts constructing a Blob object, so it also works in older
-// browsers that don't support the native Blob constructor. (i.e.
-// old QtWebKit versions, at least).
-// Abstracts constructing a Blob object, so it also works in older
-// browsers that don't support the native Blob constructor. (i.e.
-// old QtWebKit versions, at least).
-function createBlob(parts, properties) {
-    /* global BlobBuilder,MSBlobBuilder,MozBlobBuilder,WebKitBlobBuilder */
-    parts = parts || [];
-    properties = properties || {};
-    try {
-        return new Blob(parts, properties);
-    } catch (e) {
-        if (e.name !== 'TypeError') {
-            throw e;
-        }
-        var Builder = typeof BlobBuilder !== 'undefined' ? BlobBuilder : typeof MSBlobBuilder !== 'undefined' ? MSBlobBuilder : typeof MozBlobBuilder !== 'undefined' ? MozBlobBuilder : WebKitBlobBuilder;
-        var builder = new Builder();
-        for (var i = 0; i < parts.length; i += 1) {
-            builder.append(parts[i]);
-        }
-        return builder.getBlob(properties.type);
-    }
-}
-
-// This is CommonJS because lie is an external dependency, so Rollup
-// can just ignore it.
-if (typeof Promise === 'undefined') {
-    // In the "nopromises" build this will just throw if you don't have
-    // a global promise object, but it would throw anyway later.
-    _dereq_(3);
-}
-var Promise$1 = Promise;
-
-function executeCallback(promise, callback) {
-    if (callback) {
-        promise.then(function (result) {
-            callback(null, result);
-        }, function (error) {
-            callback(error);
-        });
-    }
-}
-
-function executeTwoCallbacks(promise, callback, errorCallback) {
-    if (typeof callback === 'function') {
-        promise.then(callback);
-    }
-
-    if (typeof errorCallback === 'function') {
-        promise["catch"](errorCallback);
-    }
-}
-
-function normalizeKey(key) {
-    // Cast the key to a string, as that's all we can set as a key.
-    if (typeof key !== 'string') {
-        console.warn(key + ' used as a key, but it is not a string.');
-        key = String(key);
-    }
-
-    return key;
-}
-
-function getCallback() {
-    if (arguments.length && typeof arguments[arguments.length - 1] === 'function') {
-        return arguments[arguments.length - 1];
-    }
-}
-
-// Some code originally from async_storage.js in
-// [Gaia](https://github.com/mozilla-b2g/gaia).
-
-var DETECT_BLOB_SUPPORT_STORE = 'local-forage-detect-blob-support';
-var supportsBlobs = void 0;
-var dbContexts = {};
-var toString = Object.prototype.toString;
-
-// Transaction Modes
-var READ_ONLY = 'readonly';
-var READ_WRITE = 'readwrite';
-
-// Transform a binary string to an array buffer, because otherwise
-// weird stuff happens when you try to work with the binary string directly.
-// It is known.
-// From http://stackoverflow.com/questions/14967647/ (continues on next line)
-// encode-decode-image-with-base64-breaks-image (2013-04-21)
-function _binStringToArrayBuffer(bin) {
-    var length = bin.length;
-    var buf = new ArrayBuffer(length);
-    var arr = new Uint8Array(buf);
-    for (var i = 0; i < length; i++) {
-        arr[i] = bin.charCodeAt(i);
-    }
-    return buf;
-}
-
-//
-// Blobs are not supported in all versions of IndexedDB, notably
-// Chrome <37 and Android <5. In those versions, storing a blob will throw.
-//
-// Various other blob bugs exist in Chrome v37-42 (inclusive).
-// Detecting them is expensive and confusing to users, and Chrome 37-42
-// is at very low usage worldwide, so we do a hacky userAgent check instead.
-//
-// content-type bug: https://code.google.com/p/chromium/issues/detail?id=408120
-// 404 bug: https://code.google.com/p/chromium/issues/detail?id=447916
-// FileReader bug: https://code.google.com/p/chromium/issues/detail?id=447836
-//
-// Code borrowed from PouchDB. See:
-// https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-adapter-idb/src/blobSupport.js
-//
-function _checkBlobSupportWithoutCaching(idb) {
-    return new Promise$1(function (resolve) {
-        var txn = idb.transaction(DETECT_BLOB_SUPPORT_STORE, READ_WRITE);
-        var blob = createBlob(['']);
-        txn.objectStore(DETECT_BLOB_SUPPORT_STORE).put(blob, 'key');
-
-        txn.onabort = function (e) {
-            // If the transaction aborts now its due to not being able to
-            // write to the database, likely due to the disk being full
-            e.preventDefault();
-            e.stopPropagation();
-            resolve(false);
-        };
-
-        txn.oncomplete = function () {
-            var matchedChrome = navigator.userAgent.match(/Chrome\/(\d+)/);
-            var matchedEdge = navigator.userAgent.match(/Edge\//);
-            // MS Edge pretends to be Chrome 42:
-            // https://msdn.microsoft.com/en-us/library/hh869301%28v=vs.85%29.aspx
-            resolve(matchedEdge || !matchedChrome || parseInt(matchedChrome[1], 10) >= 43);
-        };
-    })["catch"](function () {
-        return false; // error, so assume unsupported
-    });
-}
-
-function _checkBlobSupport(idb) {
-    if (typeof supportsBlobs === 'boolean') {
-        return Promise$1.resolve(supportsBlobs);
-    }
-    return _checkBlobSupportWithoutCaching(idb).then(function (value) {
-        supportsBlobs = value;
-        return supportsBlobs;
-    });
-}
-
-function _deferReadiness(dbInfo) {
-    var dbContext = dbContexts[dbInfo.name];
-
-    // Create a deferred object representing the current database operation.
-    var deferredOperation = {};
-
-    deferredOperation.promise = new Promise$1(function (resolve, reject) {
-        deferredOperation.resolve = resolve;
-        deferredOperation.reject = reject;
-    });
-
-    // Enqueue the deferred operation.
-    dbContext.deferredOperations.push(deferredOperation);
-
-    // Chain its promise to the database readiness.
-    if (!dbContext.dbReady) {
-        dbContext.dbReady = deferredOperation.promise;
-    } else {
-        dbContext.dbReady = dbContext.dbReady.then(function () {
-            return deferredOperation.promise;
-        });
-    }
-}
-
-function _advanceReadiness(dbInfo) {
-    var dbContext = dbContexts[dbInfo.name];
-
-    // Dequeue a deferred operation.
-    var deferredOperation = dbContext.deferredOperations.pop();
-
-    // Resolve its promise (which is part of the database readiness
-    // chain of promises).
-    if (deferredOperation) {
-        deferredOperation.resolve();
-        return deferredOperation.promise;
-    }
-}
-
-function _rejectReadiness(dbInfo, err) {
-    var dbContext = dbContexts[dbInfo.name];
-
-    // Dequeue a deferred operation.
-    var deferredOperation = dbContext.deferredOperations.pop();
-
-    // Reject its promise (which is part of the database readiness
-    // chain of promises).
-    if (deferredOperation) {
-        deferredOperation.reject(err);
-        return deferredOperation.promise;
-    }
-}
-
-function _getConnection(dbInfo, upgradeNeeded) {
-    return new Promise$1(function (resolve, reject) {
-        dbContexts[dbInfo.name] = dbContexts[dbInfo.name] || createDbContext();
-
-        if (dbInfo.db) {
-            if (upgradeNeeded) {
-                _deferReadiness(dbInfo);
-                dbInfo.db.close();
-            } else {
-                return resolve(dbInfo.db);
-            }
-        }
-
-        var dbArgs = [dbInfo.name];
-
-        if (upgradeNeeded) {
-            dbArgs.push(dbInfo.version);
-        }
-
-        var openreq = idb.open.apply(idb, dbArgs);
-
-        if (upgradeNeeded) {
-            openreq.onupgradeneeded = function (e) {
-                var db = openreq.result;
-                try {
-                    db.createObjectStore(dbInfo.storeName);
-                    if (e.oldVersion <= 1) {
-                        // Added when support for blob shims was added
-                        db.createObjectStore(DETECT_BLOB_SUPPORT_STORE);
-                    }
-                } catch (ex) {
-                    if (ex.name === 'ConstraintError') {
-                        console.warn('The database "' + dbInfo.name + '"' + ' has been upgraded from version ' + e.oldVersion + ' to version ' + e.newVersion + ', but the storage "' + dbInfo.storeName + '" already exists.');
-                    } else {
-                        throw ex;
-                    }
-                }
-            };
-        }
-
-        openreq.onerror = function (e) {
-            e.preventDefault();
-            reject(openreq.error);
-        };
-
-        openreq.onsuccess = function () {
-            var db = openreq.result;
-            db.onversionchange = function (e) {
-                // Triggered when the database is modified (e.g. adding an objectStore) or
-                // deleted (even when initiated by other sessions in different tabs).
-                // Closing the connection here prevents those operations from being blocked.
-                // If the database is accessed again later by this instance, the connection
-                // will be reopened or the database recreated as needed.
-                e.target.close();
-            };
-            resolve(db);
-            _advanceReadiness(dbInfo);
-        };
-    });
-}
-
-function _getOriginalConnection(dbInfo) {
-    return _getConnection(dbInfo, false);
-}
-
-function _getUpgradedConnection(dbInfo) {
-    return _getConnection(dbInfo, true);
-}
-
-function _isUpgradeNeeded(dbInfo, defaultVersion) {
-    if (!dbInfo.db) {
-        return true;
-    }
-
-    var isNewStore = !dbInfo.db.objectStoreNames.contains(dbInfo.storeName);
-    var isDowngrade = dbInfo.version < dbInfo.db.version;
-    var isUpgrade = dbInfo.version > dbInfo.db.version;
-
-    if (isDowngrade) {
-        // If the version is not the default one
-        // then warn for impossible downgrade.
-        if (dbInfo.version !== defaultVersion) {
-            console.warn('The database "' + dbInfo.name + '"' + " can't be downgraded from version " + dbInfo.db.version + ' to version ' + dbInfo.version + '.');
-        }
-        // Align the versions to prevent errors.
-        dbInfo.version = dbInfo.db.version;
-    }
-
-    if (isUpgrade || isNewStore) {
-        // If the store is new then increment the version (if needed).
-        // This will trigger an "upgradeneeded" event which is required
-        // for creating a store.
-        if (isNewStore) {
-            var incVersion = dbInfo.db.version + 1;
-            if (incVersion > dbInfo.version) {
-                dbInfo.version = incVersion;
-            }
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-// encode a blob for indexeddb engines that don't support blobs
-function _encodeBlob(blob) {
-    return new Promise$1(function (resolve, reject) {
-        var reader = new FileReader();
-        reader.onerror = reject;
-        reader.onloadend = function (e) {
-            var base64 = btoa(e.target.result || '');
-            resolve({
-                __local_forage_encoded_blob: true,
-                data: base64,
-                type: blob.type
-            });
-        };
-        reader.readAsBinaryString(blob);
-    });
-}
-
-// decode an encoded blob
-function _decodeBlob(encodedBlob) {
-    var arrayBuff = _binStringToArrayBuffer(atob(encodedBlob.data));
-    return createBlob([arrayBuff], { type: encodedBlob.type });
-}
-
-// is this one of our fancy encoded blobs?
-function _isEncodedBlob(value) {
-    return value && value.__local_forage_encoded_blob;
-}
-
-// Specialize the default `ready()` function by making it dependent
-// on the current database operations. Thus, the driver will be actually
-// ready when it's been initialized (default) *and* there are no pending
-// operations on the database (initiated by some other instances).
-function _fullyReady(callback) {
-    var self = this;
-
-    var promise = self._initReady().then(function () {
-        var dbContext = dbContexts[self._dbInfo.name];
-
-        if (dbContext && dbContext.dbReady) {
-            return dbContext.dbReady;
-        }
-    });
-
-    executeTwoCallbacks(promise, callback, callback);
-    return promise;
-}
-
-// Try to establish a new db connection to replace the
-// current one which is broken (i.e. experiencing
-// InvalidStateError while creating a transaction).
-function _tryReconnect(dbInfo) {
-    _deferReadiness(dbInfo);
-
-    var dbContext = dbContexts[dbInfo.name];
-    var forages = dbContext.forages;
-
-    for (var i = 0; i < forages.length; i++) {
-        var forage = forages[i];
-        if (forage._dbInfo.db) {
-            forage._dbInfo.db.close();
-            forage._dbInfo.db = null;
-        }
-    }
-    dbInfo.db = null;
-
-    return _getOriginalConnection(dbInfo).then(function (db) {
-        dbInfo.db = db;
-        if (_isUpgradeNeeded(dbInfo)) {
-            // Reopen the database for upgrading.
-            return _getUpgradedConnection(dbInfo);
-        }
-        return db;
-    }).then(function (db) {
-        // store the latest db reference
-        // in case the db was upgraded
-        dbInfo.db = dbContext.db = db;
-        for (var i = 0; i < forages.length; i++) {
-            forages[i]._dbInfo.db = db;
-        }
-    })["catch"](function (err) {
-        _rejectReadiness(dbInfo, err);
-        throw err;
-    });
-}
-
-// FF doesn't like Promises (micro-tasks) and IDDB store operations,
-// so we have to do it with callbacks
-function createTransaction(dbInfo, mode, callback, retries) {
-    if (retries === undefined) {
-        retries = 1;
-    }
-
-    try {
-        var tx = dbInfo.db.transaction(dbInfo.storeName, mode);
-        callback(null, tx);
-    } catch (err) {
-        if (retries > 0 && (!dbInfo.db || err.name === 'InvalidStateError' || err.name === 'NotFoundError')) {
-            return Promise$1.resolve().then(function () {
-                if (!dbInfo.db || err.name === 'NotFoundError' && !dbInfo.db.objectStoreNames.contains(dbInfo.storeName) && dbInfo.version <= dbInfo.db.version) {
-                    // increase the db version, to create the new ObjectStore
-                    if (dbInfo.db) {
-                        dbInfo.version = dbInfo.db.version + 1;
-                    }
-                    // Reopen the database for upgrading.
-                    return _getUpgradedConnection(dbInfo);
-                }
-            }).then(function () {
-                return _tryReconnect(dbInfo).then(function () {
-                    createTransaction(dbInfo, mode, callback, retries - 1);
-                });
-            })["catch"](callback);
-        }
-
-        callback(err);
-    }
-}
-
-function createDbContext() {
-    return {
-        // Running localForages sharing a database.
-        forages: [],
-        // Shared database.
-        db: null,
-        // Database readiness (promise).
-        dbReady: null,
-        // Deferred operations on the database.
-        deferredOperations: []
-    };
-}
-
-// Open the IndexedDB database (automatically creates one if one didn't
-// previously exist), using any options set in the config.
-function _initStorage(options) {
-    var self = this;
-    var dbInfo = {
-        db: null
-    };
-
-    if (options) {
-        for (var i in options) {
-            dbInfo[i] = options[i];
-        }
-    }
-
-    // Get the current context of the database;
-    var dbContext = dbContexts[dbInfo.name];
-
-    // ...or create a new context.
-    if (!dbContext) {
-        dbContext = createDbContext();
-        // Register the new context in the global container.
-        dbContexts[dbInfo.name] = dbContext;
-    }
-
-    // Register itself as a running localForage in the current context.
-    dbContext.forages.push(self);
-
-    // Replace the default `ready()` function with the specialized one.
-    if (!self._initReady) {
-        self._initReady = self.ready;
-        self.ready = _fullyReady;
-    }
-
-    // Create an array of initialization states of the related localForages.
-    var initPromises = [];
-
-    function ignoreErrors() {
-        // Don't handle errors here,
-        // just makes sure related localForages aren't pending.
-        return Promise$1.resolve();
-    }
-
-    for (var j = 0; j < dbContext.forages.length; j++) {
-        var forage = dbContext.forages[j];
-        if (forage !== self) {
-            // Don't wait for itself...
-            initPromises.push(forage._initReady()["catch"](ignoreErrors));
-        }
-    }
-
-    // Take a snapshot of the related localForages.
-    var forages = dbContext.forages.slice(0);
-
-    // Initialize the connection process only when
-    // all the related localForages aren't pending.
-    return Promise$1.all(initPromises).then(function () {
-        dbInfo.db = dbContext.db;
-        // Get the connection or open a new one without upgrade.
-        return _getOriginalConnection(dbInfo);
-    }).then(function (db) {
-        dbInfo.db = db;
-        if (_isUpgradeNeeded(dbInfo, self._defaultConfig.version)) {
-            // Reopen the database for upgrading.
-            return _getUpgradedConnection(dbInfo);
-        }
-        return db;
-    }).then(function (db) {
-        dbInfo.db = dbContext.db = db;
-        self._dbInfo = dbInfo;
-        // Share the final connection amongst related localForages.
-        for (var k = 0; k < forages.length; k++) {
-            var forage = forages[k];
-            if (forage !== self) {
-                // Self is already up-to-date.
-                forage._dbInfo.db = dbInfo.db;
-                forage._dbInfo.version = dbInfo.version;
-            }
-        }
-    });
-}
-
-function getItem(key, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_ONLY, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    var req = store.get(key);
-
-                    req.onsuccess = function () {
-                        var value = req.result;
-                        if (value === undefined) {
-                            value = null;
-                        }
-                        if (_isEncodedBlob(value)) {
-                            value = _decodeBlob(value);
-                        }
-                        resolve(value);
-                    };
-
-                    req.onerror = function () {
-                        reject(req.error);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Iterate over all items stored in database.
-function iterate(iterator, callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_ONLY, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    var req = store.openCursor();
-                    var iterationNumber = 1;
-
-                    req.onsuccess = function () {
-                        var cursor = req.result;
-
-                        if (cursor) {
-                            var value = cursor.value;
-                            if (_isEncodedBlob(value)) {
-                                value = _decodeBlob(value);
-                            }
-                            var result = iterator(value, cursor.key, iterationNumber++);
-
-                            // when the iterator callback returns any
-                            // (non-`undefined`) value, then we stop
-                            // the iteration immediately
-                            if (result !== void 0) {
-                                resolve(result);
-                            } else {
-                                cursor["continue"]();
-                            }
-                        } else {
-                            resolve();
-                        }
-                    };
-
-                    req.onerror = function () {
-                        reject(req.error);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-
-    return promise;
-}
-
-function setItem(key, value, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = new Promise$1(function (resolve, reject) {
-        var dbInfo;
-        self.ready().then(function () {
-            dbInfo = self._dbInfo;
-            if (toString.call(value) === '[object Blob]') {
-                return _checkBlobSupport(dbInfo.db).then(function (blobSupport) {
-                    if (blobSupport) {
-                        return value;
-                    }
-                    return _encodeBlob(value);
-                });
-            }
-            return value;
-        }).then(function (value) {
-            createTransaction(self._dbInfo, READ_WRITE, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-
-                    // The reason we don't _save_ null is because IE 10 does
-                    // not support saving the `null` type in IndexedDB. How
-                    // ironic, given the bug below!
-                    // See: https://github.com/mozilla/localForage/issues/161
-                    if (value === null) {
-                        value = undefined;
-                    }
-
-                    var req = store.put(value, key);
-
-                    transaction.oncomplete = function () {
-                        // Cast to undefined so the value passed to
-                        // callback/promise is the same as what one would get out
-                        // of `getItem()` later. This leads to some weirdness
-                        // (setItem('foo', undefined) will return `null`), but
-                        // it's not my fault localStorage is our baseline and that
-                        // it's weird.
-                        if (value === undefined) {
-                            value = null;
-                        }
-
-                        resolve(value);
-                    };
-                    transaction.onabort = transaction.onerror = function () {
-                        var err = req.error ? req.error : req.transaction.error;
-                        reject(err);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function removeItem(key, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_WRITE, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    // We use a Grunt task to make this safe for IE and some
-                    // versions of Android (including those used by Cordova).
-                    // Normally IE won't like `.delete()` and will insist on
-                    // using `['delete']()`, but we have a build step that
-                    // fixes this for us now.
-                    var req = store["delete"](key);
-                    transaction.oncomplete = function () {
-                        resolve();
-                    };
-
-                    transaction.onerror = function () {
-                        reject(req.error);
-                    };
-
-                    // The request will be also be aborted if we've exceeded our storage
-                    // space.
-                    transaction.onabort = function () {
-                        var err = req.error ? req.error : req.transaction.error;
-                        reject(err);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function clear(callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_WRITE, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    var req = store.clear();
-
-                    transaction.oncomplete = function () {
-                        resolve();
-                    };
-
-                    transaction.onabort = transaction.onerror = function () {
-                        var err = req.error ? req.error : req.transaction.error;
-                        reject(err);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function length(callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_ONLY, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    var req = store.count();
-
-                    req.onsuccess = function () {
-                        resolve(req.result);
-                    };
-
-                    req.onerror = function () {
-                        reject(req.error);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function key(n, callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        if (n < 0) {
-            resolve(null);
-
-            return;
-        }
-
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_ONLY, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    var advanced = false;
-                    var req = store.openKeyCursor();
-
-                    req.onsuccess = function () {
-                        var cursor = req.result;
-                        if (!cursor) {
-                            // this means there weren't enough keys
-                            resolve(null);
-
-                            return;
-                        }
-
-                        if (n === 0) {
-                            // We have the first key, return it if that's what they
-                            // wanted.
-                            resolve(cursor.key);
-                        } else {
-                            if (!advanced) {
-                                // Otherwise, ask the cursor to skip ahead n
-                                // records.
-                                advanced = true;
-                                cursor.advance(n);
-                            } else {
-                                // When we get here, we've got the nth key.
-                                resolve(cursor.key);
-                            }
-                        }
-                    };
-
-                    req.onerror = function () {
-                        reject(req.error);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function keys(callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            createTransaction(self._dbInfo, READ_ONLY, function (err, transaction) {
-                if (err) {
-                    return reject(err);
-                }
-
-                try {
-                    var store = transaction.objectStore(self._dbInfo.storeName);
-                    var req = store.openKeyCursor();
-                    var keys = [];
-
-                    req.onsuccess = function () {
-                        var cursor = req.result;
-
-                        if (!cursor) {
-                            resolve(keys);
-                            return;
-                        }
-
-                        keys.push(cursor.key);
-                        cursor["continue"]();
-                    };
-
-                    req.onerror = function () {
-                        reject(req.error);
-                    };
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function dropInstance(options, callback) {
-    callback = getCallback.apply(this, arguments);
-
-    var currentConfig = this.config();
-    options = typeof options !== 'function' && options || {};
-    if (!options.name) {
-        options.name = options.name || currentConfig.name;
-        options.storeName = options.storeName || currentConfig.storeName;
-    }
-
-    var self = this;
-    var promise;
-    if (!options.name) {
-        promise = Promise$1.reject('Invalid arguments');
-    } else {
-        var isCurrentDb = options.name === currentConfig.name && self._dbInfo.db;
-
-        var dbPromise = isCurrentDb ? Promise$1.resolve(self._dbInfo.db) : _getOriginalConnection(options).then(function (db) {
-            var dbContext = dbContexts[options.name];
-            var forages = dbContext.forages;
-            dbContext.db = db;
-            for (var i = 0; i < forages.length; i++) {
-                forages[i]._dbInfo.db = db;
-            }
-            return db;
-        });
-
-        if (!options.storeName) {
-            promise = dbPromise.then(function (db) {
-                _deferReadiness(options);
-
-                var dbContext = dbContexts[options.name];
-                var forages = dbContext.forages;
-
-                db.close();
-                for (var i = 0; i < forages.length; i++) {
-                    var forage = forages[i];
-                    forage._dbInfo.db = null;
-                }
-
-                var dropDBPromise = new Promise$1(function (resolve, reject) {
-                    var req = idb.deleteDatabase(options.name);
-
-                    req.onerror = function () {
-                        var db = req.result;
-                        if (db) {
-                            db.close();
-                        }
-                        reject(req.error);
-                    };
-
-                    req.onblocked = function () {
-                        // Closing all open connections in onversionchange handler should prevent this situation, but if
-                        // we do get here, it just means the request remains pending - eventually it will succeed or error
-                        console.warn('dropInstance blocked for database "' + options.name + '" until all open connections are closed');
-                    };
-
-                    req.onsuccess = function () {
-                        var db = req.result;
-                        if (db) {
-                            db.close();
-                        }
-                        resolve(db);
-                    };
-                });
-
-                return dropDBPromise.then(function (db) {
-                    dbContext.db = db;
-                    for (var i = 0; i < forages.length; i++) {
-                        var _forage = forages[i];
-                        _advanceReadiness(_forage._dbInfo);
-                    }
-                })["catch"](function (err) {
-                    (_rejectReadiness(options, err) || Promise$1.resolve())["catch"](function () {});
-                    throw err;
-                });
-            });
-        } else {
-            promise = dbPromise.then(function (db) {
-                if (!db.objectStoreNames.contains(options.storeName)) {
-                    return;
-                }
-
-                var newVersion = db.version + 1;
-
-                _deferReadiness(options);
-
-                var dbContext = dbContexts[options.name];
-                var forages = dbContext.forages;
-
-                db.close();
-                for (var i = 0; i < forages.length; i++) {
-                    var forage = forages[i];
-                    forage._dbInfo.db = null;
-                    forage._dbInfo.version = newVersion;
-                }
-
-                var dropObjectPromise = new Promise$1(function (resolve, reject) {
-                    var req = idb.open(options.name, newVersion);
-
-                    req.onerror = function (err) {
-                        var db = req.result;
-                        db.close();
-                        reject(err);
-                    };
-
-                    req.onupgradeneeded = function () {
-                        var db = req.result;
-                        db.deleteObjectStore(options.storeName);
-                    };
-
-                    req.onsuccess = function () {
-                        var db = req.result;
-                        db.close();
-                        resolve(db);
-                    };
-                });
-
-                return dropObjectPromise.then(function (db) {
-                    dbContext.db = db;
-                    for (var j = 0; j < forages.length; j++) {
-                        var _forage2 = forages[j];
-                        _forage2._dbInfo.db = db;
-                        _advanceReadiness(_forage2._dbInfo);
-                    }
-                })["catch"](function (err) {
-                    (_rejectReadiness(options, err) || Promise$1.resolve())["catch"](function () {});
-                    throw err;
-                });
-            });
-        }
-    }
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-var asyncStorage = {
-    _driver: 'asyncStorage',
-    _initStorage: _initStorage,
-    _support: isIndexedDBValid(),
-    iterate: iterate,
-    getItem: getItem,
-    setItem: setItem,
-    removeItem: removeItem,
-    clear: clear,
-    length: length,
-    key: key,
-    keys: keys,
-    dropInstance: dropInstance
-};
-
-function isWebSQLValid() {
-    return typeof openDatabase === 'function';
-}
-
-// Sadly, the best way to save binary data in WebSQL/localStorage is serializing
-// it to Base64, so this is how we store it to prevent very strange errors with less
-// verbose ways of binary <-> string data storage.
-var BASE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-var BLOB_TYPE_PREFIX = '~~local_forage_type~';
-var BLOB_TYPE_PREFIX_REGEX = /^~~local_forage_type~([^~]+)~/;
-
-var SERIALIZED_MARKER = '__lfsc__:';
-var SERIALIZED_MARKER_LENGTH = SERIALIZED_MARKER.length;
-
-// OMG the serializations!
-var TYPE_ARRAYBUFFER = 'arbf';
-var TYPE_BLOB = 'blob';
-var TYPE_INT8ARRAY = 'si08';
-var TYPE_UINT8ARRAY = 'ui08';
-var TYPE_UINT8CLAMPEDARRAY = 'uic8';
-var TYPE_INT16ARRAY = 'si16';
-var TYPE_INT32ARRAY = 'si32';
-var TYPE_UINT16ARRAY = 'ur16';
-var TYPE_UINT32ARRAY = 'ui32';
-var TYPE_FLOAT32ARRAY = 'fl32';
-var TYPE_FLOAT64ARRAY = 'fl64';
-var TYPE_SERIALIZED_MARKER_LENGTH = SERIALIZED_MARKER_LENGTH + TYPE_ARRAYBUFFER.length;
-
-var toString$1 = Object.prototype.toString;
-
-function stringToBuffer(serializedString) {
-    // Fill the string into a ArrayBuffer.
-    var bufferLength = serializedString.length * 0.75;
-    var len = serializedString.length;
-    var i;
-    var p = 0;
-    var encoded1, encoded2, encoded3, encoded4;
-
-    if (serializedString[serializedString.length - 1] === '=') {
-        bufferLength--;
-        if (serializedString[serializedString.length - 2] === '=') {
-            bufferLength--;
-        }
-    }
-
-    var buffer = new ArrayBuffer(bufferLength);
-    var bytes = new Uint8Array(buffer);
-
-    for (i = 0; i < len; i += 4) {
-        encoded1 = BASE_CHARS.indexOf(serializedString[i]);
-        encoded2 = BASE_CHARS.indexOf(serializedString[i + 1]);
-        encoded3 = BASE_CHARS.indexOf(serializedString[i + 2]);
-        encoded4 = BASE_CHARS.indexOf(serializedString[i + 3]);
-
-        /*jslint bitwise: true */
-        bytes[p++] = encoded1 << 2 | encoded2 >> 4;
-        bytes[p++] = (encoded2 & 15) << 4 | encoded3 >> 2;
-        bytes[p++] = (encoded3 & 3) << 6 | encoded4 & 63;
-    }
-    return buffer;
-}
-
-// Converts a buffer to a string to store, serialized, in the backend
-// storage library.
-function bufferToString(buffer) {
-    // base64-arraybuffer
-    var bytes = new Uint8Array(buffer);
-    var base64String = '';
-    var i;
-
-    for (i = 0; i < bytes.length; i += 3) {
-        /*jslint bitwise: true */
-        base64String += BASE_CHARS[bytes[i] >> 2];
-        base64String += BASE_CHARS[(bytes[i] & 3) << 4 | bytes[i + 1] >> 4];
-        base64String += BASE_CHARS[(bytes[i + 1] & 15) << 2 | bytes[i + 2] >> 6];
-        base64String += BASE_CHARS[bytes[i + 2] & 63];
-    }
-
-    if (bytes.length % 3 === 2) {
-        base64String = base64String.substring(0, base64String.length - 1) + '=';
-    } else if (bytes.length % 3 === 1) {
-        base64String = base64String.substring(0, base64String.length - 2) + '==';
-    }
-
-    return base64String;
-}
-
-// Serialize a value, afterwards executing a callback (which usually
-// instructs the `setItem()` callback/promise to be executed). This is how
-// we store binary data with localStorage.
-function serialize(value, callback) {
-    var valueType = '';
-    if (value) {
-        valueType = toString$1.call(value);
-    }
-
-    // Cannot use `value instanceof ArrayBuffer` or such here, as these
-    // checks fail when running the tests using casper.js...
-    //
-    // TODO: See why those tests fail and use a better solution.
-    if (value && (valueType === '[object ArrayBuffer]' || value.buffer && toString$1.call(value.buffer) === '[object ArrayBuffer]')) {
-        // Convert binary arrays to a string and prefix the string with
-        // a special marker.
-        var buffer;
-        var marker = SERIALIZED_MARKER;
-
-        if (value instanceof ArrayBuffer) {
-            buffer = value;
-            marker += TYPE_ARRAYBUFFER;
-        } else {
-            buffer = value.buffer;
-
-            if (valueType === '[object Int8Array]') {
-                marker += TYPE_INT8ARRAY;
-            } else if (valueType === '[object Uint8Array]') {
-                marker += TYPE_UINT8ARRAY;
-            } else if (valueType === '[object Uint8ClampedArray]') {
-                marker += TYPE_UINT8CLAMPEDARRAY;
-            } else if (valueType === '[object Int16Array]') {
-                marker += TYPE_INT16ARRAY;
-            } else if (valueType === '[object Uint16Array]') {
-                marker += TYPE_UINT16ARRAY;
-            } else if (valueType === '[object Int32Array]') {
-                marker += TYPE_INT32ARRAY;
-            } else if (valueType === '[object Uint32Array]') {
-                marker += TYPE_UINT32ARRAY;
-            } else if (valueType === '[object Float32Array]') {
-                marker += TYPE_FLOAT32ARRAY;
-            } else if (valueType === '[object Float64Array]') {
-                marker += TYPE_FLOAT64ARRAY;
-            } else {
-                callback(new Error('Failed to get type for BinaryArray'));
-            }
-        }
-
-        callback(marker + bufferToString(buffer));
-    } else if (valueType === '[object Blob]') {
-        // Conver the blob to a binaryArray and then to a string.
-        var fileReader = new FileReader();
-
-        fileReader.onload = function () {
-            // Backwards-compatible prefix for the blob type.
-            var str = BLOB_TYPE_PREFIX + value.type + '~' + bufferToString(this.result);
-
-            callback(SERIALIZED_MARKER + TYPE_BLOB + str);
-        };
-
-        fileReader.readAsArrayBuffer(value);
-    } else {
-        try {
-            callback(JSON.stringify(value));
-        } catch (e) {
-            console.error("Couldn't convert value into a JSON string: ", value);
-
-            callback(null, e);
-        }
-    }
-}
-
-// Deserialize data we've inserted into a value column/field. We place
-// special markers into our strings to mark them as encoded; this isn't
-// as nice as a meta field, but it's the only sane thing we can do whilst
-// keeping localStorage support intact.
-//
-// Oftentimes this will just deserialize JSON content, but if we have a
-// special marker (SERIALIZED_MARKER, defined above), we will extract
-// some kind of arraybuffer/binary data/typed array out of the string.
-function deserialize(value) {
-    // If we haven't marked this string as being specially serialized (i.e.
-    // something other than serialized JSON), we can just return it and be
-    // done with it.
-    if (value.substring(0, SERIALIZED_MARKER_LENGTH) !== SERIALIZED_MARKER) {
-        return JSON.parse(value);
-    }
-
-    // The following code deals with deserializing some kind of Blob or
-    // TypedArray. First we separate out the type of data we're dealing
-    // with from the data itself.
-    var serializedString = value.substring(TYPE_SERIALIZED_MARKER_LENGTH);
-    var type = value.substring(SERIALIZED_MARKER_LENGTH, TYPE_SERIALIZED_MARKER_LENGTH);
-
-    var blobType;
-    // Backwards-compatible blob type serialization strategy.
-    // DBs created with older versions of localForage will simply not have the blob type.
-    if (type === TYPE_BLOB && BLOB_TYPE_PREFIX_REGEX.test(serializedString)) {
-        var matcher = serializedString.match(BLOB_TYPE_PREFIX_REGEX);
-        blobType = matcher[1];
-        serializedString = serializedString.substring(matcher[0].length);
-    }
-    var buffer = stringToBuffer(serializedString);
-
-    // Return the right type based on the code/type set during
-    // serialization.
-    switch (type) {
-        case TYPE_ARRAYBUFFER:
-            return buffer;
-        case TYPE_BLOB:
-            return createBlob([buffer], { type: blobType });
-        case TYPE_INT8ARRAY:
-            return new Int8Array(buffer);
-        case TYPE_UINT8ARRAY:
-            return new Uint8Array(buffer);
-        case TYPE_UINT8CLAMPEDARRAY:
-            return new Uint8ClampedArray(buffer);
-        case TYPE_INT16ARRAY:
-            return new Int16Array(buffer);
-        case TYPE_UINT16ARRAY:
-            return new Uint16Array(buffer);
-        case TYPE_INT32ARRAY:
-            return new Int32Array(buffer);
-        case TYPE_UINT32ARRAY:
-            return new Uint32Array(buffer);
-        case TYPE_FLOAT32ARRAY:
-            return new Float32Array(buffer);
-        case TYPE_FLOAT64ARRAY:
-            return new Float64Array(buffer);
-        default:
-            throw new Error('Unkown type: ' + type);
-    }
-}
-
-var localforageSerializer = {
-    serialize: serialize,
-    deserialize: deserialize,
-    stringToBuffer: stringToBuffer,
-    bufferToString: bufferToString
-};
-
-/*
- * Includes code from:
- *
- * base64-arraybuffer
- * https://github.com/niklasvh/base64-arraybuffer
- *
- * Copyright (c) 2012 Niklas von Hertzen
- * Licensed under the MIT license.
- */
-
-function createDbTable(t, dbInfo, callback, errorCallback) {
-    t.executeSql('CREATE TABLE IF NOT EXISTS ' + dbInfo.storeName + ' ' + '(id INTEGER PRIMARY KEY, key unique, value)', [], callback, errorCallback);
-}
-
-// Open the WebSQL database (automatically creates one if one didn't
-// previously exist), using any options set in the config.
-function _initStorage$1(options) {
-    var self = this;
-    var dbInfo = {
-        db: null
-    };
-
-    if (options) {
-        for (var i in options) {
-            dbInfo[i] = typeof options[i] !== 'string' ? options[i].toString() : options[i];
-        }
-    }
-
-    var dbInfoPromise = new Promise$1(function (resolve, reject) {
-        // Open the database; the openDatabase API will automatically
-        // create it for us if it doesn't exist.
-        try {
-            dbInfo.db = openDatabase(dbInfo.name, String(dbInfo.version), dbInfo.description, dbInfo.size);
-        } catch (e) {
-            return reject(e);
-        }
-
-        // Create our key/value table if it doesn't exist.
-        dbInfo.db.transaction(function (t) {
-            createDbTable(t, dbInfo, function () {
-                self._dbInfo = dbInfo;
-                resolve();
-            }, function (t, error) {
-                reject(error);
-            });
-        }, reject);
-    });
-
-    dbInfo.serializer = localforageSerializer;
-    return dbInfoPromise;
-}
-
-function tryExecuteSql(t, dbInfo, sqlStatement, args, callback, errorCallback) {
-    t.executeSql(sqlStatement, args, callback, function (t, error) {
-        if (error.code === error.SYNTAX_ERR) {
-            t.executeSql('SELECT name FROM sqlite_master ' + "WHERE type='table' AND name = ?", [dbInfo.storeName], function (t, results) {
-                if (!results.rows.length) {
-                    // if the table is missing (was deleted)
-                    // re-create it table and retry
-                    createDbTable(t, dbInfo, function () {
-                        t.executeSql(sqlStatement, args, callback, errorCallback);
-                    }, errorCallback);
-                } else {
-                    errorCallback(t, error);
-                }
-            }, errorCallback);
-        } else {
-            errorCallback(t, error);
-        }
-    }, errorCallback);
-}
-
-function getItem$1(key, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-            dbInfo.db.transaction(function (t) {
-                tryExecuteSql(t, dbInfo, 'SELECT * FROM ' + dbInfo.storeName + ' WHERE key = ? LIMIT 1', [key], function (t, results) {
-                    var result = results.rows.length ? results.rows.item(0).value : null;
-
-                    // Check to see if this is serialized content we need to
-                    // unpack.
-                    if (result) {
-                        result = dbInfo.serializer.deserialize(result);
-                    }
-
-                    resolve(result);
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function iterate$1(iterator, callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-
-            dbInfo.db.transaction(function (t) {
-                tryExecuteSql(t, dbInfo, 'SELECT * FROM ' + dbInfo.storeName, [], function (t, results) {
-                    var rows = results.rows;
-                    var length = rows.length;
-
-                    for (var i = 0; i < length; i++) {
-                        var item = rows.item(i);
-                        var result = item.value;
-
-                        // Check to see if this is serialized content
-                        // we need to unpack.
-                        if (result) {
-                            result = dbInfo.serializer.deserialize(result);
-                        }
-
-                        result = iterator(result, item.key, i + 1);
-
-                        // void(0) prevents problems with redefinition
-                        // of `undefined`.
-                        if (result !== void 0) {
-                            resolve(result);
-                            return;
-                        }
-                    }
-
-                    resolve();
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function _setItem(key, value, callback, retriesLeft) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            // The localStorage API doesn't return undefined values in an
-            // "expected" way, so undefined is always cast to null in all
-            // drivers. See: https://github.com/mozilla/localForage/pull/42
-            if (value === undefined) {
-                value = null;
-            }
-
-            // Save the original value to pass to the callback.
-            var originalValue = value;
-
-            var dbInfo = self._dbInfo;
-            dbInfo.serializer.serialize(value, function (value, error) {
-                if (error) {
-                    reject(error);
-                } else {
-                    dbInfo.db.transaction(function (t) {
-                        tryExecuteSql(t, dbInfo, 'INSERT OR REPLACE INTO ' + dbInfo.storeName + ' ' + '(key, value) VALUES (?, ?)', [key, value], function () {
-                            resolve(originalValue);
-                        }, function (t, error) {
-                            reject(error);
-                        });
-                    }, function (sqlError) {
-                        // The transaction failed; check
-                        // to see if it's a quota error.
-                        if (sqlError.code === sqlError.QUOTA_ERR) {
-                            // We reject the callback outright for now, but
-                            // it's worth trying to re-run the transaction.
-                            // Even if the user accepts the prompt to use
-                            // more storage on Safari, this error will
-                            // be called.
-                            //
-                            // Try to re-run the transaction.
-                            if (retriesLeft > 0) {
-                                resolve(_setItem.apply(self, [key, originalValue, callback, retriesLeft - 1]));
-                                return;
-                            }
-                            reject(sqlError);
-                        }
-                    });
-                }
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function setItem$1(key, value, callback) {
-    return _setItem.apply(this, [key, value, callback, 1]);
-}
-
-function removeItem$1(key, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-            dbInfo.db.transaction(function (t) {
-                tryExecuteSql(t, dbInfo, 'DELETE FROM ' + dbInfo.storeName + ' WHERE key = ?', [key], function () {
-                    resolve();
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Deletes every item in the table.
-// TODO: Find out if this resets the AUTO_INCREMENT number.
-function clear$1(callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-            dbInfo.db.transaction(function (t) {
-                tryExecuteSql(t, dbInfo, 'DELETE FROM ' + dbInfo.storeName, [], function () {
-                    resolve();
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Does a simple `COUNT(key)` to get the number of items stored in
-// localForage.
-function length$1(callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-            dbInfo.db.transaction(function (t) {
-                // Ahhh, SQL makes this one soooooo easy.
-                tryExecuteSql(t, dbInfo, 'SELECT COUNT(key) as c FROM ' + dbInfo.storeName, [], function (t, results) {
-                    var result = results.rows.item(0).c;
-                    resolve(result);
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Return the key located at key index X; essentially gets the key from a
-// `WHERE id = ?`. This is the most efficient way I can think to implement
-// this rarely-used (in my experience) part of the API, but it can seem
-// inconsistent, because we do `INSERT OR REPLACE INTO` on `setItem()`, so
-// the ID of each key will change every time it's updated. Perhaps a stored
-// procedure for the `setItem()` SQL would solve this problem?
-// TODO: Don't change ID on `setItem()`.
-function key$1(n, callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-            dbInfo.db.transaction(function (t) {
-                tryExecuteSql(t, dbInfo, 'SELECT key FROM ' + dbInfo.storeName + ' WHERE id = ? LIMIT 1', [n + 1], function (t, results) {
-                    var result = results.rows.length ? results.rows.item(0).key : null;
-                    resolve(result);
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function keys$1(callback) {
-    var self = this;
-
-    var promise = new Promise$1(function (resolve, reject) {
-        self.ready().then(function () {
-            var dbInfo = self._dbInfo;
-            dbInfo.db.transaction(function (t) {
-                tryExecuteSql(t, dbInfo, 'SELECT key FROM ' + dbInfo.storeName, [], function (t, results) {
-                    var keys = [];
-
-                    for (var i = 0; i < results.rows.length; i++) {
-                        keys.push(results.rows.item(i).key);
-                    }
-
-                    resolve(keys);
-                }, function (t, error) {
-                    reject(error);
-                });
-            });
-        })["catch"](reject);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// https://www.w3.org/TR/webdatabase/#databases
-// > There is no way to enumerate or delete the databases available for an origin from this API.
-function getAllStoreNames(db) {
-    return new Promise$1(function (resolve, reject) {
-        db.transaction(function (t) {
-            t.executeSql('SELECT name FROM sqlite_master ' + "WHERE type='table' AND name <> '__WebKitDatabaseInfoTable__'", [], function (t, results) {
-                var storeNames = [];
-
-                for (var i = 0; i < results.rows.length; i++) {
-                    storeNames.push(results.rows.item(i).name);
-                }
-
-                resolve({
-                    db: db,
-                    storeNames: storeNames
-                });
-            }, function (t, error) {
-                reject(error);
-            });
-        }, function (sqlError) {
-            reject(sqlError);
-        });
-    });
-}
-
-function dropInstance$1(options, callback) {
-    callback = getCallback.apply(this, arguments);
-
-    var currentConfig = this.config();
-    options = typeof options !== 'function' && options || {};
-    if (!options.name) {
-        options.name = options.name || currentConfig.name;
-        options.storeName = options.storeName || currentConfig.storeName;
-    }
-
-    var self = this;
-    var promise;
-    if (!options.name) {
-        promise = Promise$1.reject('Invalid arguments');
-    } else {
-        promise = new Promise$1(function (resolve) {
-            var db;
-            if (options.name === currentConfig.name) {
-                // use the db reference of the current instance
-                db = self._dbInfo.db;
-            } else {
-                db = openDatabase(options.name, '', '', 0);
-            }
-
-            if (!options.storeName) {
-                // drop all database tables
-                resolve(getAllStoreNames(db));
-            } else {
-                resolve({
-                    db: db,
-                    storeNames: [options.storeName]
-                });
-            }
-        }).then(function (operationInfo) {
-            return new Promise$1(function (resolve, reject) {
-                operationInfo.db.transaction(function (t) {
-                    function dropTable(storeName) {
-                        return new Promise$1(function (resolve, reject) {
-                            t.executeSql('DROP TABLE IF EXISTS ' + storeName, [], function () {
-                                resolve();
-                            }, function (t, error) {
-                                reject(error);
-                            });
-                        });
-                    }
-
-                    var operations = [];
-                    for (var i = 0, len = operationInfo.storeNames.length; i < len; i++) {
-                        operations.push(dropTable(operationInfo.storeNames[i]));
-                    }
-
-                    Promise$1.all(operations).then(function () {
-                        resolve();
-                    })["catch"](function (e) {
-                        reject(e);
-                    });
-                }, function (sqlError) {
-                    reject(sqlError);
-                });
-            });
-        });
-    }
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-var webSQLStorage = {
-    _driver: 'webSQLStorage',
-    _initStorage: _initStorage$1,
-    _support: isWebSQLValid(),
-    iterate: iterate$1,
-    getItem: getItem$1,
-    setItem: setItem$1,
-    removeItem: removeItem$1,
-    clear: clear$1,
-    length: length$1,
-    key: key$1,
-    keys: keys$1,
-    dropInstance: dropInstance$1
-};
-
-function isLocalStorageValid() {
-    try {
-        return typeof localStorage !== 'undefined' && 'setItem' in localStorage &&
-        // in IE8 typeof localStorage.setItem === 'object'
-        !!localStorage.setItem;
-    } catch (e) {
-        return false;
-    }
-}
-
-function _getKeyPrefix(options, defaultConfig) {
-    var keyPrefix = options.name + '/';
-
-    if (options.storeName !== defaultConfig.storeName) {
-        keyPrefix += options.storeName + '/';
-    }
-    return keyPrefix;
-}
-
-// Check if localStorage throws when saving an item
-function checkIfLocalStorageThrows() {
-    var localStorageTestKey = '_localforage_support_test';
-
-    try {
-        localStorage.setItem(localStorageTestKey, true);
-        localStorage.removeItem(localStorageTestKey);
-
-        return false;
-    } catch (e) {
-        return true;
-    }
-}
-
-// Check if localStorage is usable and allows to save an item
-// This method checks if localStorage is usable in Safari Private Browsing
-// mode, or in any other case where the available quota for localStorage
-// is 0 and there wasn't any saved items yet.
-function _isLocalStorageUsable() {
-    return !checkIfLocalStorageThrows() || localStorage.length > 0;
-}
-
-// Config the localStorage backend, using options set in the config.
-function _initStorage$2(options) {
-    var self = this;
-    var dbInfo = {};
-    if (options) {
-        for (var i in options) {
-            dbInfo[i] = options[i];
-        }
-    }
-
-    dbInfo.keyPrefix = _getKeyPrefix(options, self._defaultConfig);
-
-    if (!_isLocalStorageUsable()) {
-        return Promise$1.reject();
-    }
-
-    self._dbInfo = dbInfo;
-    dbInfo.serializer = localforageSerializer;
-
-    return Promise$1.resolve();
-}
-
-// Remove all keys from the datastore, effectively destroying all data in
-// the app's key/value store!
-function clear$2(callback) {
-    var self = this;
-    var promise = self.ready().then(function () {
-        var keyPrefix = self._dbInfo.keyPrefix;
-
-        for (var i = localStorage.length - 1; i >= 0; i--) {
-            var key = localStorage.key(i);
-
-            if (key.indexOf(keyPrefix) === 0) {
-                localStorage.removeItem(key);
-            }
-        }
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Retrieve an item from the store. Unlike the original async_storage
-// library in Gaia, we don't modify return values at all. If a key's value
-// is `undefined`, we pass that value to the callback function.
-function getItem$2(key, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = self.ready().then(function () {
-        var dbInfo = self._dbInfo;
-        var result = localStorage.getItem(dbInfo.keyPrefix + key);
-
-        // If a result was found, parse it from the serialized
-        // string into a JS object. If result isn't truthy, the key
-        // is likely undefined and we'll pass it straight to the
-        // callback.
-        if (result) {
-            result = dbInfo.serializer.deserialize(result);
-        }
-
-        return result;
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Iterate over all items in the store.
-function iterate$2(iterator, callback) {
-    var self = this;
-
-    var promise = self.ready().then(function () {
-        var dbInfo = self._dbInfo;
-        var keyPrefix = dbInfo.keyPrefix;
-        var keyPrefixLength = keyPrefix.length;
-        var length = localStorage.length;
-
-        // We use a dedicated iterator instead of the `i` variable below
-        // so other keys we fetch in localStorage aren't counted in
-        // the `iterationNumber` argument passed to the `iterate()`
-        // callback.
-        //
-        // See: github.com/mozilla/localForage/pull/435#discussion_r38061530
-        var iterationNumber = 1;
-
-        for (var i = 0; i < length; i++) {
-            var key = localStorage.key(i);
-            if (key.indexOf(keyPrefix) !== 0) {
-                continue;
-            }
-            var value = localStorage.getItem(key);
-
-            // If a result was found, parse it from the serialized
-            // string into a JS object. If result isn't truthy, the
-            // key is likely undefined and we'll pass it straight
-            // to the iterator.
-            if (value) {
-                value = dbInfo.serializer.deserialize(value);
-            }
-
-            value = iterator(value, key.substring(keyPrefixLength), iterationNumber++);
-
-            if (value !== void 0) {
-                return value;
-            }
-        }
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Same as localStorage's key() method, except takes a callback.
-function key$2(n, callback) {
-    var self = this;
-    var promise = self.ready().then(function () {
-        var dbInfo = self._dbInfo;
-        var result;
-        try {
-            result = localStorage.key(n);
-        } catch (error) {
-            result = null;
-        }
-
-        // Remove the prefix from the key, if a key is found.
-        if (result) {
-            result = result.substring(dbInfo.keyPrefix.length);
-        }
-
-        return result;
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function keys$2(callback) {
-    var self = this;
-    var promise = self.ready().then(function () {
-        var dbInfo = self._dbInfo;
-        var length = localStorage.length;
-        var keys = [];
-
-        for (var i = 0; i < length; i++) {
-            var itemKey = localStorage.key(i);
-            if (itemKey.indexOf(dbInfo.keyPrefix) === 0) {
-                keys.push(itemKey.substring(dbInfo.keyPrefix.length));
-            }
-        }
-
-        return keys;
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Supply the number of keys in the datastore to the callback function.
-function length$2(callback) {
-    var self = this;
-    var promise = self.keys().then(function (keys) {
-        return keys.length;
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Remove an item from the store, nice and simple.
-function removeItem$2(key, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = self.ready().then(function () {
-        var dbInfo = self._dbInfo;
-        localStorage.removeItem(dbInfo.keyPrefix + key);
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-// Set a key's value and run an optional callback once the value is set.
-// Unlike Gaia's implementation, the callback function is passed the value,
-// in case you want to operate on that value only after you're sure it
-// saved, or something like that.
-function setItem$2(key, value, callback) {
-    var self = this;
-
-    key = normalizeKey(key);
-
-    var promise = self.ready().then(function () {
-        // Convert undefined values to null.
-        // https://github.com/mozilla/localForage/pull/42
-        if (value === undefined) {
-            value = null;
-        }
-
-        // Save the original value to pass to the callback.
-        var originalValue = value;
-
-        return new Promise$1(function (resolve, reject) {
-            var dbInfo = self._dbInfo;
-            dbInfo.serializer.serialize(value, function (value, error) {
-                if (error) {
-                    reject(error);
-                } else {
-                    try {
-                        localStorage.setItem(dbInfo.keyPrefix + key, value);
-                        resolve(originalValue);
-                    } catch (e) {
-                        // localStorage capacity exceeded.
-                        // TODO: Make this a specific error/event.
-                        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-                            reject(e);
-                        }
-                        reject(e);
-                    }
-                }
-            });
-        });
-    });
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-function dropInstance$2(options, callback) {
-    callback = getCallback.apply(this, arguments);
-
-    options = typeof options !== 'function' && options || {};
-    if (!options.name) {
-        var currentConfig = this.config();
-        options.name = options.name || currentConfig.name;
-        options.storeName = options.storeName || currentConfig.storeName;
-    }
-
-    var self = this;
-    var promise;
-    if (!options.name) {
-        promise = Promise$1.reject('Invalid arguments');
-    } else {
-        promise = new Promise$1(function (resolve) {
-            if (!options.storeName) {
-                resolve(options.name + '/');
-            } else {
-                resolve(_getKeyPrefix(options, self._defaultConfig));
-            }
-        }).then(function (keyPrefix) {
-            for (var i = localStorage.length - 1; i >= 0; i--) {
-                var key = localStorage.key(i);
-
-                if (key.indexOf(keyPrefix) === 0) {
-                    localStorage.removeItem(key);
-                }
-            }
-        });
-    }
-
-    executeCallback(promise, callback);
-    return promise;
-}
-
-var localStorageWrapper = {
-    _driver: 'localStorageWrapper',
-    _initStorage: _initStorage$2,
-    _support: isLocalStorageValid(),
-    iterate: iterate$2,
-    getItem: getItem$2,
-    setItem: setItem$2,
-    removeItem: removeItem$2,
-    clear: clear$2,
-    length: length$2,
-    key: key$2,
-    keys: keys$2,
-    dropInstance: dropInstance$2
-};
-
-var sameValue = function sameValue(x, y) {
-    return x === y || typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y);
-};
-
-var includes = function includes(array, searchElement) {
-    var len = array.length;
-    var i = 0;
-    while (i < len) {
-        if (sameValue(array[i], searchElement)) {
-            return true;
-        }
-        i++;
-    }
-
-    return false;
-};
-
-var isArray = Array.isArray || function (arg) {
-    return Object.prototype.toString.call(arg) === '[object Array]';
-};
-
-// Drivers are stored here when `defineDriver()` is called.
-// They are shared across all instances of localForage.
-var DefinedDrivers = {};
-
-var DriverSupport = {};
-
-var DefaultDrivers = {
-    INDEXEDDB: asyncStorage,
-    WEBSQL: webSQLStorage,
-    LOCALSTORAGE: localStorageWrapper
-};
-
-var DefaultDriverOrder = [DefaultDrivers.INDEXEDDB._driver, DefaultDrivers.WEBSQL._driver, DefaultDrivers.LOCALSTORAGE._driver];
-
-var OptionalDriverMethods = ['dropInstance'];
-
-var LibraryMethods = ['clear', 'getItem', 'iterate', 'key', 'keys', 'length', 'removeItem', 'setItem'].concat(OptionalDriverMethods);
-
-var DefaultConfig = {
-    description: '',
-    driver: DefaultDriverOrder.slice(),
-    name: 'localforage',
-    // Default DB size is _JUST UNDER_ 5MB, as it's the highest size
-    // we can use without a prompt.
-    size: 4980736,
-    storeName: 'keyvaluepairs',
-    version: 1.0
-};
-
-function callWhenReady(localForageInstance, libraryMethod) {
-    localForageInstance[libraryMethod] = function () {
-        var _args = arguments;
-        return localForageInstance.ready().then(function () {
-            return localForageInstance[libraryMethod].apply(localForageInstance, _args);
-        });
-    };
-}
-
-function extend() {
-    for (var i = 1; i < arguments.length; i++) {
-        var arg = arguments[i];
-
-        if (arg) {
-            for (var _key in arg) {
-                if (arg.hasOwnProperty(_key)) {
-                    if (isArray(arg[_key])) {
-                        arguments[0][_key] = arg[_key].slice();
-                    } else {
-                        arguments[0][_key] = arg[_key];
-                    }
-                }
-            }
-        }
-    }
-
-    return arguments[0];
-}
-
-var LocalForage = function () {
-    function LocalForage(options) {
-        _classCallCheck(this, LocalForage);
-
-        for (var driverTypeKey in DefaultDrivers) {
-            if (DefaultDrivers.hasOwnProperty(driverTypeKey)) {
-                var driver = DefaultDrivers[driverTypeKey];
-                var driverName = driver._driver;
-                this[driverTypeKey] = driverName;
-
-                if (!DefinedDrivers[driverName]) {
-                    // we don't need to wait for the promise,
-                    // since the default drivers can be defined
-                    // in a blocking manner
-                    this.defineDriver(driver);
-                }
-            }
-        }
-
-        this._defaultConfig = extend({}, DefaultConfig);
-        this._config = extend({}, this._defaultConfig, options);
-        this._driverSet = null;
-        this._initDriver = null;
-        this._ready = false;
-        this._dbInfo = null;
-
-        this._wrapLibraryMethodsWithReady();
-        this.setDriver(this._config.driver)["catch"](function () {});
-    }
-
-    // Set any config values for localForage; can be called anytime before
-    // the first API call (e.g. `getItem`, `setItem`).
-    // We loop through options so we don't overwrite existing config
-    // values.
-
-
-    LocalForage.prototype.config = function config(options) {
-        // If the options argument is an object, we use it to set values.
-        // Otherwise, we return either a specified config value or all
-        // config values.
-        if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object') {
-            // If localforage is ready and fully initialized, we can't set
-            // any new configuration values. Instead, we return an error.
-            if (this._ready) {
-                return new Error("Can't call config() after localforage " + 'has been used.');
-            }
-
-            for (var i in options) {
-                if (i === 'storeName') {
-                    options[i] = options[i].replace(/\W/g, '_');
-                }
-
-                if (i === 'version' && typeof options[i] !== 'number') {
-                    return new Error('Database version must be a number.');
-                }
-
-                this._config[i] = options[i];
-            }
-
-            // after all config options are set and
-            // the driver option is used, try setting it
-            if ('driver' in options && options.driver) {
-                return this.setDriver(this._config.driver);
-            }
-
-            return true;
-        } else if (typeof options === 'string') {
-            return this._config[options];
-        } else {
-            return this._config;
-        }
-    };
-
-    // Used to define a custom driver, shared across all instances of
-    // localForage.
-
-
-    LocalForage.prototype.defineDriver = function defineDriver(driverObject, callback, errorCallback) {
-        var promise = new Promise$1(function (resolve, reject) {
-            try {
-                var driverName = driverObject._driver;
-                var complianceError = new Error('Custom driver not compliant; see ' + 'https://mozilla.github.io/localForage/#definedriver');
-
-                // A driver name should be defined and not overlap with the
-                // library-defined, default drivers.
-                if (!driverObject._driver) {
-                    reject(complianceError);
-                    return;
-                }
-
-                var driverMethods = LibraryMethods.concat('_initStorage');
-                for (var i = 0, len = driverMethods.length; i < len; i++) {
-                    var driverMethodName = driverMethods[i];
-
-                    // when the property is there,
-                    // it should be a method even when optional
-                    var isRequired = !includes(OptionalDriverMethods, driverMethodName);
-                    if ((isRequired || driverObject[driverMethodName]) && typeof driverObject[driverMethodName] !== 'function') {
-                        reject(complianceError);
-                        return;
-                    }
-                }
-
-                var configureMissingMethods = function configureMissingMethods() {
-                    var methodNotImplementedFactory = function methodNotImplementedFactory(methodName) {
-                        return function () {
-                            var error = new Error('Method ' + methodName + ' is not implemented by the current driver');
-                            var promise = Promise$1.reject(error);
-                            executeCallback(promise, arguments[arguments.length - 1]);
-                            return promise;
-                        };
-                    };
-
-                    for (var _i = 0, _len = OptionalDriverMethods.length; _i < _len; _i++) {
-                        var optionalDriverMethod = OptionalDriverMethods[_i];
-                        if (!driverObject[optionalDriverMethod]) {
-                            driverObject[optionalDriverMethod] = methodNotImplementedFactory(optionalDriverMethod);
-                        }
-                    }
-                };
-
-                configureMissingMethods();
-
-                var setDriverSupport = function setDriverSupport(support) {
-                    if (DefinedDrivers[driverName]) {
-                        console.info('Redefining LocalForage driver: ' + driverName);
-                    }
-                    DefinedDrivers[driverName] = driverObject;
-                    DriverSupport[driverName] = support;
-                    // don't use a then, so that we can define
-                    // drivers that have simple _support methods
-                    // in a blocking manner
-                    resolve();
-                };
-
-                if ('_support' in driverObject) {
-                    if (driverObject._support && typeof driverObject._support === 'function') {
-                        driverObject._support().then(setDriverSupport, reject);
-                    } else {
-                        setDriverSupport(!!driverObject._support);
-                    }
-                } else {
-                    setDriverSupport(true);
-                }
-            } catch (e) {
-                reject(e);
-            }
-        });
-
-        executeTwoCallbacks(promise, callback, errorCallback);
-        return promise;
-    };
-
-    LocalForage.prototype.driver = function driver() {
-        return this._driver || null;
-    };
-
-    LocalForage.prototype.getDriver = function getDriver(driverName, callback, errorCallback) {
-        var getDriverPromise = DefinedDrivers[driverName] ? Promise$1.resolve(DefinedDrivers[driverName]) : Promise$1.reject(new Error('Driver not found.'));
-
-        executeTwoCallbacks(getDriverPromise, callback, errorCallback);
-        return getDriverPromise;
-    };
-
-    LocalForage.prototype.getSerializer = function getSerializer(callback) {
-        var serializerPromise = Promise$1.resolve(localforageSerializer);
-        executeTwoCallbacks(serializerPromise, callback);
-        return serializerPromise;
-    };
-
-    LocalForage.prototype.ready = function ready(callback) {
-        var self = this;
-
-        var promise = self._driverSet.then(function () {
-            if (self._ready === null) {
-                self._ready = self._initDriver();
-            }
-
-            return self._ready;
-        });
-
-        executeTwoCallbacks(promise, callback, callback);
-        return promise;
-    };
-
-    LocalForage.prototype.setDriver = function setDriver(drivers, callback, errorCallback) {
-        var self = this;
-
-        if (!isArray(drivers)) {
-            drivers = [drivers];
-        }
-
-        var supportedDrivers = this._getSupportedDrivers(drivers);
-
-        function setDriverToConfig() {
-            self._config.driver = self.driver();
-        }
-
-        function extendSelfWithDriver(driver) {
-            self._extend(driver);
-            setDriverToConfig();
-
-            self._ready = self._initStorage(self._config);
-            return self._ready;
-        }
-
-        function initDriver(supportedDrivers) {
-            return function () {
-                var currentDriverIndex = 0;
-
-                function driverPromiseLoop() {
-                    while (currentDriverIndex < supportedDrivers.length) {
-                        var driverName = supportedDrivers[currentDriverIndex];
-                        currentDriverIndex++;
-
-                        self._dbInfo = null;
-                        self._ready = null;
-
-                        return self.getDriver(driverName).then(extendSelfWithDriver)["catch"](driverPromiseLoop);
-                    }
-
-                    setDriverToConfig();
-                    var error = new Error('No available storage method found.');
-                    self._driverSet = Promise$1.reject(error);
-                    return self._driverSet;
-                }
-
-                return driverPromiseLoop();
-            };
-        }
-
-        // There might be a driver initialization in progress
-        // so wait for it to finish in order to avoid a possible
-        // race condition to set _dbInfo
-        var oldDriverSetDone = this._driverSet !== null ? this._driverSet["catch"](function () {
-            return Promise$1.resolve();
-        }) : Promise$1.resolve();
-
-        this._driverSet = oldDriverSetDone.then(function () {
-            var driverName = supportedDrivers[0];
-            self._dbInfo = null;
-            self._ready = null;
-
-            return self.getDriver(driverName).then(function (driver) {
-                self._driver = driver._driver;
-                setDriverToConfig();
-                self._wrapLibraryMethodsWithReady();
-                self._initDriver = initDriver(supportedDrivers);
-            });
-        })["catch"](function () {
-            setDriverToConfig();
-            var error = new Error('No available storage method found.');
-            self._driverSet = Promise$1.reject(error);
-            return self._driverSet;
-        });
-
-        executeTwoCallbacks(this._driverSet, callback, errorCallback);
-        return this._driverSet;
-    };
-
-    LocalForage.prototype.supports = function supports(driverName) {
-        return !!DriverSupport[driverName];
-    };
-
-    LocalForage.prototype._extend = function _extend(libraryMethodsAndProperties) {
-        extend(this, libraryMethodsAndProperties);
-    };
-
-    LocalForage.prototype._getSupportedDrivers = function _getSupportedDrivers(drivers) {
-        var supportedDrivers = [];
-        for (var i = 0, len = drivers.length; i < len; i++) {
-            var driverName = drivers[i];
-            if (this.supports(driverName)) {
-                supportedDrivers.push(driverName);
-            }
-        }
-        return supportedDrivers;
-    };
-
-    LocalForage.prototype._wrapLibraryMethodsWithReady = function _wrapLibraryMethodsWithReady() {
-        // Add a stub for each driver API method that delays the call to the
-        // corresponding driver method until localForage is ready. These stubs
-        // will be replaced by the driver methods as soon as the driver is
-        // loaded, so there is no performance impact.
-        for (var i = 0, len = LibraryMethods.length; i < len; i++) {
-            callWhenReady(this, LibraryMethods[i]);
-        }
-    };
-
-    LocalForage.prototype.createInstance = function createInstance(options) {
-        return new LocalForage(options);
-    };
-
-    return LocalForage;
-}();
-
-// The actual localForage object that we expose as a module or via a
-// global. It's extended by pulling in one of our other libraries.
-
-
-var localforage_js = new LocalForage();
-
-module.exports = localforage_js;
-
-},{"3":3}]},{},[4])(4)
-});
-
-
-/***/ }),
-
 /***/ 1873:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -9505,6 +6682,14 @@ module.exports = function (value) { return value !== _undefined && value !== nul
 
 "use strict";
 module.exports = __WEBPACK_EXTERNAL_MODULE__6838__;
+
+/***/ }),
+
+/***/ 6361:
+/***/ ((module) => {
+
+"use strict";
+module.exports = __WEBPACK_EXTERNAL_MODULE__6361__;
 
 /***/ }),
 
@@ -11456,7 +8641,6 @@ __webpack_require__.d(__webpack_exports__, {
 var core_namespaceObject = {};
 __webpack_require__.r(core_namespaceObject);
 __webpack_require__.d(core_namespaceObject, {
-  RangeObject: () => (RangeObject),
   blob2base64: () => (blob2base64),
   borders: () => (borders),
   bounds: () => (bounds),
@@ -11464,7 +8648,6 @@ __webpack_require__.d(core_namespaceObject, {
   createBlob: () => (createBlob),
   createBlobUrl: () => (createBlobUrl),
   defaults: () => (defaults),
-  defer: () => (defer),
   documentHeight: () => (documentHeight),
   extend: () => (extend),
   filterChildren: () => (filterChildren),
@@ -11518,58 +8701,56 @@ var lib = __webpack_require__(8978);
  * @returns {function} requestAnimationFrame
  */
 const core_requestAnimationFrame = typeof window != "undefined" ? window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame : false;
-const ELEMENT_NODE = 1;
-const TEXT_NODE = 3;
-const COMMENT_NODE = 8;
-const DOCUMENT_NODE = 9;
 const _URL = typeof URL != "undefined" ? URL : typeof window != "undefined" ? window.URL || window.webkitURL || window.mozURL : undefined;
 
 /**
  * Generates a UUID
- * based on: http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+ * @link https://stackoverflow.com/questions/105034/how-do-i-create-a-guid-uuid
  * @returns {string} uuid
  */
-function uuid() {
-  var d = new Date().getTime();
-  var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    var r = (d + Math.random() * 16) % 16 | 0;
+const uuid = () => {
+  let d = new Date().getTime();
+  const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = (d + Math.random() * 16) % 16 | 0;
     d = Math.floor(d / 16);
     return (c == "x" ? r : r & 0x7 | 0x8).toString(16);
   });
   return uuid;
-}
+};
 
 /**
  * Gets the height of a document
  * @returns {number} height
  */
-function documentHeight() {
+const documentHeight = () => {
   return Math.max(document.documentElement.clientHeight, document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight);
-}
+};
 
 /**
  * Checks if a node is an element
  * @param {object} obj
  * @returns {boolean}
  */
-function isElement(obj) {
-  return !!(obj && obj.nodeType == 1);
-}
+const isElement = obj => {
+  return !!(obj && obj.nodeType == Node.ELEMENT_NODE);
+};
 
 /**
+ * isNumber
  * @param {any} n
  * @returns {boolean}
  */
-function isNumber(n) {
+const isNumber = n => {
   return !isNaN(parseFloat(n)) && isFinite(n);
-}
+};
 
 /**
+ * isFloat
  * @param {any} n
  * @returns {boolean}
  */
-function isFloat(n) {
-  let f = parseFloat(n);
+const isFloat = n => {
+  const f = parseFloat(n);
   if (isNumber(n) === false) {
     return false;
   }
@@ -11577,111 +8758,109 @@ function isFloat(n) {
     return true;
   }
   return Math.floor(f) !== f;
-}
+};
 
 /**
  * Get a prefixed css property
  * @param {string} unprefixed
  * @returns {string}
  */
-function prefixed(unprefixed) {
-  var vendors = ["Webkit", "webkit", "Moz", "O", "ms"];
-  var prefixes = ["-webkit-", "-webkit-", "-moz-", "-o-", "-ms-"];
-  var lower = unprefixed.toLowerCase();
-  var length = vendors.length;
-  if (typeof document === "undefined" || typeof document.body.style[lower] != "undefined") {
+const prefixed = unprefixed => {
+  const vendors = ["Webkit", "webkit", "Moz", "O", "ms"];
+  const prefixes = ["-webkit-", "-webkit-", "-moz-", "-o-", "-ms-"];
+  const lower = unprefixed.toLowerCase();
+  const length = vendors.length;
+  if (typeof document === "undefined" || typeof document.body.style[lower] !== "undefined") {
     return unprefixed;
   }
-  for (var i = 0; i < length; i++) {
-    if (typeof document.body.style[prefixes[i] + lower] != "undefined") {
+  for (let i = 0; i < length; i++) {
+    if (typeof document.body.style[prefixes[i] + lower] !== "undefined") {
       return prefixes[i] + lower;
     }
   }
   return unprefixed;
-}
+};
 
 /**
  * Apply defaults to an object
  * @param {object} obj
  * @returns {object}
  */
-function defaults(obj) {
-  for (var i = 1, length = arguments.length; i < length; i++) {
-    var source = arguments[i];
-    for (var prop in source) {
+const defaults = (obj, ...args) => {
+  for (let i = 1, length = args.length; i < length; i++) {
+    const source = args[i];
+    for (const prop in source) {
       if (obj[prop] === void 0) obj[prop] = source[prop];
     }
   }
   return obj;
-}
+};
 
 /**
  * Extend properties of an object
  * @param {object} target
  * @returns {object}
  */
-function extend(target) {
-  var sources = [].slice.call(arguments, 1);
-  sources.forEach(function (source) {
+const extend = (target, ...args) => {
+  args.forEach(source => {
     if (!source) return;
-    Object.getOwnPropertyNames(source).forEach(function (propName) {
-      Object.defineProperty(target, propName, Object.getOwnPropertyDescriptor(source, propName));
+    Object.getOwnPropertyNames(source).forEach(prop => {
+      Object.defineProperty(target, prop, Object.getOwnPropertyDescriptor(source, prop));
     });
   });
   return target;
-}
-
-/**
- * Fast quicksort insert for sorted array -- based on:
- *  http://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
- * @param {any} item
- * @param {array} array
- * @param {function} [compareFunction]
- * @returns {number} location (in array)
- */
-function insert(item, array, compareFunction) {
-  var location = locationOf(item, array, compareFunction);
-  array.splice(location, 0, item);
-  return location;
-}
+};
 
 /**
  * Finds where something would fit into a sorted array
  * @param {any} item
  * @param {array} array
  * @param {function} [compareFunction]
- * @param {function} [_start]
- * @param {function} [_end]
+ * @param {function} [start]
+ * @param {function} [end]
  * @returns {number} location (in array)
  */
-function locationOf(item, array, compareFunction, _start, _end) {
-  var start = _start || 0;
-  var end = _end || array.length;
-  var pivot = parseInt(start + (end - start) / 2);
-  var compared;
+const locationOf = (item, array, compareFunction, start, end) => {
+  const _start = start || 0;
+  const _end = end || array.length;
+  const pivot = parseInt(_start + (_end - _start) / 2);
   if (!compareFunction) {
-    compareFunction = function (a, b) {
+    compareFunction = (a, b) => {
       if (a > b) return 1;
       if (a < b) return -1;
       if (a == b) return 0;
     };
   }
-  if (end - start <= 0) {
+  if (_end - _start <= 0) {
     return pivot;
   }
-  compared = compareFunction(array[pivot], item);
-  if (end - start === 1) {
+  const compared = compareFunction(array[pivot], item);
+  if (_end - _start === 1) {
     return compared >= 0 ? pivot : pivot + 1;
   }
   if (compared === 0) {
     return pivot;
   }
   if (compared === -1) {
-    return locationOf(item, array, compareFunction, pivot, end);
+    return locationOf(item, array, compareFunction, pivot, _end);
   } else {
-    return locationOf(item, array, compareFunction, start, pivot);
+    return locationOf(item, array, compareFunction, _start, pivot);
   }
-}
+};
+
+/**
+ * Fast quicksort insert for sorted array -- based on:
+ * @link https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
+ * @param {any} item
+ * @param {array} array
+ * @param {function} [compareFunction]
+ * @returns {number} location (in array)
+ */
+const insert = (item, array, compareFunction) => {
+  const location = locationOf(item, array, compareFunction);
+  array.splice(location, 0, item);
+  return location;
+};
 
 /**
  * Finds index of something in a sorted array
@@ -11689,112 +8868,110 @@ function locationOf(item, array, compareFunction, _start, _end) {
  * @param {any} item
  * @param {array} array
  * @param {function} [compareFunction]
- * @param {function} [_start]
- * @param {function} [_end]
+ * @param {function} [start]
+ * @param {function} [end]
  * @returns {number} index (in array) or -1
  */
-function indexOfSorted(item, array, compareFunction, _start, _end) {
-  var start = _start || 0;
-  var end = _end || array.length;
-  var pivot = parseInt(start + (end - start) / 2);
-  var compared;
+const indexOfSorted = (item, array, compareFunction, start, end) => {
+  const _start = start || 0;
+  const _end = end || array.length;
+  const pivot = parseInt(_start + (_end - _start) / 2);
   if (!compareFunction) {
-    compareFunction = function (a, b) {
+    compareFunction = (a, b) => {
       if (a > b) return 1;
       if (a < b) return -1;
       if (a == b) return 0;
     };
   }
-  if (end - start <= 0) {
+  if (_end - _start <= 0) {
     return -1; // Not found
   }
-  compared = compareFunction(array[pivot], item);
-  if (end - start === 1) {
+  const compared = compareFunction(array[pivot], item);
+  if (_end - _start === 1) {
     return compared === 0 ? pivot : -1;
   }
   if (compared === 0) {
     return pivot; // Found
   }
   if (compared === -1) {
-    return indexOfSorted(item, array, compareFunction, pivot, end);
+    return indexOfSorted(item, array, compareFunction, pivot, _end);
   } else {
-    return indexOfSorted(item, array, compareFunction, start, pivot);
+    return indexOfSorted(item, array, compareFunction, _start, pivot);
   }
-}
+};
+
 /**
  * Find the bounds of an element
  * taking padding and margin into account
- * @param {element} el
- * @returns {{ width: Number, height: Number}}
+ * @param {Element} el
+ * @returns {{ height: Number, width: Number }}
  */
-function bounds(el) {
-  var style = window.getComputedStyle(el);
-  var widthProps = ["width", "paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
-  var heightProps = ["height", "paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
-  var width = 0;
-  var height = 0;
-  widthProps.forEach(function (prop) {
-    width += parseFloat(style[prop]) || 0;
-  });
-  heightProps.forEach(function (prop) {
-    height += parseFloat(style[prop]) || 0;
-  });
-  return {
-    height: height,
-    width: width
+const bounds = el => {
+  const style = window.getComputedStyle(el);
+  const widthProps = ["width", "paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
+  const heightProps = ["height", "paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
+  const ret = {
+    height: 0,
+    width: 0
   };
-}
+  widthProps.forEach(prop => {
+    ret.width += parseFloat(style[prop]) || 0;
+  });
+  heightProps.forEach(prop => {
+    ret.height += parseFloat(style[prop]) || 0;
+  });
+  return ret;
+};
 
 /**
  * Find the bounds of an element
  * taking padding, margin and borders into account
- * @param {element} el
- * @returns {{ width: Number, height: Number}}
+ * @param {Element} el
+ * @returns {{ height: Number, width: Number }}
  */
-function borders(el) {
-  var style = window.getComputedStyle(el);
-  var widthProps = ["paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
-  var heightProps = ["paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
-  var width = 0;
-  var height = 0;
-  widthProps.forEach(function (prop) {
-    width += parseFloat(style[prop]) || 0;
-  });
-  heightProps.forEach(function (prop) {
-    height += parseFloat(style[prop]) || 0;
-  });
-  return {
-    height: height,
-    width: width
+const borders = el => {
+  const style = window.getComputedStyle(el);
+  const widthProps = ["paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
+  const heightProps = ["paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
+  const ret = {
+    height: 0,
+    width: 0
   };
-}
+  widthProps.forEach(prop => {
+    ret.width += parseFloat(style[prop]) || 0;
+  });
+  heightProps.forEach(prop => {
+    ret.height += parseFloat(style[prop]) || 0;
+  });
+  return ret;
+};
 
 /**
  * Find the bounds of any node
  * allows for getting bounds of text nodes by wrapping them in a range
- * @param {node} node
- * @returns {BoundingClientRect}
+ * @param {Node} node
+ * @returns {DOMRect}
  */
-function nodeBounds(node) {
-  let elPos;
-  let doc = node.ownerDocument;
+const nodeBounds = node => {
+  let rect;
+  const doc = node.ownerDocument;
   if (node.nodeType == Node.TEXT_NODE) {
-    let elRange = doc.createRange();
-    elRange.selectNodeContents(node);
-    elPos = elRange.getBoundingClientRect();
+    const range = doc.createRange();
+    range.selectNodeContents(node);
+    rect = range.getBoundingClientRect();
   } else {
-    elPos = node.getBoundingClientRect();
+    rect = node.getBoundingClientRect();
   }
-  return elPos;
-}
+  return rect;
+};
 
 /**
  * Find the equivalent of getBoundingClientRect of a browser window
  * @returns {{ width: Number, height: Number, top: Number, left: Number, right: Number, bottom: Number }}
  */
-function windowBounds() {
-  var width = window.innerWidth;
-  var height = window.innerHeight;
+const windowBounds = () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
   return {
     top: 0,
     left: 0,
@@ -11803,7 +8980,7 @@ function windowBounds() {
     width: width,
     height: height
   };
-}
+};
 
 /**
  * Gets the index of a node in its parent
@@ -11811,47 +8988,46 @@ function windowBounds() {
  * @param {string} typeId
  * @return {number} index
  */
-function indexOfNode(node, typeId) {
-  var parent = node.parentNode;
-  var children = parent.childNodes;
-  var sib;
-  var index = -1;
-  for (var i = 0; i < children.length; i++) {
-    sib = children[i];
+const indexOfNode = (node, typeId) => {
+  const parent = node.parentNode;
+  const children = parent.childNodes;
+  let index = -1;
+  for (let i = 0; i < children.length; i++) {
+    const sib = children[i];
     if (sib.nodeType === typeId) {
       index++;
     }
     if (sib == node) break;
   }
   return index;
-}
+};
 
 /**
  * Gets the index of a text node in its parent
- * @param {node} textNode
+ * @param {Node} textNode
  * @returns {number} index
  */
-function indexOfTextNode(textNode) {
-  return indexOfNode(textNode, TEXT_NODE);
-}
+const indexOfTextNode = textNode => {
+  return indexOfNode(textNode, Node.TEXT_NODE);
+};
 
 /**
  * Gets the index of an element node in its parent
- * @param {element} elementNode
+ * @param {Element} elementNode
  * @returns {number} index
  */
-function indexOfElementNode(elementNode) {
-  return indexOfNode(elementNode, ELEMENT_NODE);
-}
+const indexOfElementNode = elementNode => {
+  return indexOfNode(elementNode, Node.ELEMENT_NODE);
+};
 
 /**
  * Check if extension is xml
  * @param {string} ext
  * @returns {boolean}
  */
-function isXml(ext) {
+const isXml = ext => {
   return ["xml", "opf", "ncx"].indexOf(ext) > -1;
-}
+};
 
 /**
  * Create a new blob
@@ -11859,11 +9035,11 @@ function isXml(ext) {
  * @param {string} mime
  * @returns {Blob}
  */
-function createBlob(content, mime) {
+const createBlob = (content, mime) => {
   return new Blob([content], {
     type: mime
   });
-}
+};
 
 /**
  * Create a new blob url
@@ -11871,20 +9047,18 @@ function createBlob(content, mime) {
  * @param {string} mime
  * @returns {string} url
  */
-function createBlobUrl(content, mime) {
-  var tempUrl;
-  var blob = createBlob(content, mime);
-  tempUrl = _URL.createObjectURL(blob);
-  return tempUrl;
-}
+const createBlobUrl = (content, mime) => {
+  const blob = createBlob(content, mime);
+  return _URL.createObjectURL(blob);
+};
 
 /**
  * Remove a blob url
  * @param {string} url
  */
-function revokeBlobUrl(url) {
+const revokeBlobUrl = url => {
   return _URL.revokeObjectURL(url);
-}
+};
 
 /**
  * Create a new base64 encoded url
@@ -11892,37 +9066,34 @@ function revokeBlobUrl(url) {
  * @param {string} mime
  * @returns {string} url
  */
-function createBase64Url(content, mime) {
-  var data;
-  var datauri;
+const createBase64Url = (content, mime) => {
   if (typeof content !== "string") {
     // Only handles strings
     return;
   }
-  data = btoa(content);
-  datauri = "data:" + mime + ";base64," + data;
+  const data = btoa(content);
+  const datauri = "data:" + mime + ";base64," + data;
   return datauri;
-}
+};
 
 /**
  * Get type of an object
  * @param {object} obj
  * @returns {string} type
  */
-function type(obj) {
+const type = obj => {
   return Object.prototype.toString.call(obj).slice(8, -1);
-}
+};
 
 /**
  * Parse xml (or html) markup
  * @param {string} markup
  * @param {string} mime
  * @param {boolean} forceXMLDom force using xmlDom to parse instead of native parser
- * @returns {document} document
+ * @returns {Document} document
  */
-function parse(markup, mime, forceXMLDom) {
-  var doc;
-  var Parser;
+const parse = (markup, mime, forceXMLDom) => {
+  let Parser;
   if (typeof DOMParser === "undefined" || forceXMLDom) {
     Parser = lib.DOMParser;
   } else {
@@ -11934,65 +9105,62 @@ function parse(markup, mime, forceXMLDom) {
   if (markup.charCodeAt(0) === 0xFEFF) {
     markup = markup.slice(1);
   }
-  doc = new Parser().parseFromString(markup, mime);
-  return doc;
-}
+  return new Parser().parseFromString(markup, mime);
+};
 
 /**
  * querySelector polyfill
- * @param {element} el
+ * @param {Element} el
  * @param {string} sel selector string
- * @returns {element} element
+ * @returns {Element} element
  */
-function qs(el, sel) {
-  var elements;
+const qs = (el, sel) => {
   if (!el) {
     throw new Error("No Element Provided");
   }
-  if (typeof el.querySelector != "undefined") {
+  if (typeof el.querySelector !== "undefined") {
     return el.querySelector(sel);
   } else {
-    elements = el.getElementsByTagName(sel);
+    const elements = el.getElementsByTagName(sel);
     if (elements.length) {
       return elements[0];
     }
   }
-}
+};
 
 /**
  * querySelectorAll polyfill
- * @param {element} el
+ * @param {Element} el
  * @param {string} sel selector string
- * @returns {element[]} elements
+ * @returns {Element[]} elements
  */
-function qsa(el, sel) {
-  if (typeof el.querySelector != "undefined") {
+const qsa = (el, sel) => {
+  if (typeof el.querySelector !== "undefined") {
     return el.querySelectorAll(sel);
   } else {
     return el.getElementsByTagName(sel);
   }
-}
+};
 
 /**
  * querySelector by property
- * @param {element} el
+ * @param {Element} el
  * @param {string} sel selector string
  * @param {object[]} props
- * @returns {element[]} elements
+ * @returns {Element[]} elements
  */
-function qsp(el, sel, props) {
-  var q, filtered;
-  if (typeof el.querySelector != "undefined") {
+const qsp = (el, sel, props) => {
+  if (typeof el.querySelector !== "undefined") {
     sel += "[";
-    for (var prop in props) {
+    for (const prop in props) {
       sel += prop + "~='" + props[prop] + "'";
     }
     sel += "]";
     return el.querySelector(sel);
   } else {
-    q = el.getElementsByTagName(sel);
-    filtered = Array.prototype.slice.call(q, 0).filter(function (el) {
-      for (var prop in props) {
+    const q = el.getElementsByTagName(sel);
+    const filtered = Array.prototype.slice.call(q, 0).filter(el => {
+      for (const prop in props) {
         if (el.getAttribute(prop) === props[prop]) {
           return true;
         }
@@ -12003,130 +9171,93 @@ function qsp(el, sel, props) {
       return filtered[0];
     }
   }
-}
+};
 
 /**
  * Sprint through all text nodes in a document
- * @memberof Core
- * @param  {element} root element to start with
- * @param  {function} func function to run on each element
+ * @param {Element} root element to start with
+ * @param {function} func function to run on each element
  */
-function sprint(root, func) {
-  var doc = root.ownerDocument || root;
+const sprint = (root, func) => {
+  const doc = root.ownerDocument || root;
   if (typeof doc.createTreeWalker !== "undefined") {
     treeWalker(root, func, NodeFilter.SHOW_TEXT);
   } else {
-    walk(root, function (node) {
-      if (node && node.nodeType === 3) {
-        // Node.TEXT_NODE
+    walk(root, node => {
+      if (node && node.nodeType === Node.TEXT_NODE) {
         func(node);
       }
     }, true);
   }
-}
+};
 
 /**
  * Create a treeWalker
- * @memberof Core
- * @param  {element} root element to start with
- * @param  {function} func function to run on each element
- * @param  {function | object} filter function or object to filter with
+ * @param {Element} root element to start with
+ * @param {function} func function to run on each element
+ * @param {function|object} filter function or object to filter with
  */
-function treeWalker(root, func, filter) {
-  var treeWalker = document.createTreeWalker(root, filter, null, false);
+const treeWalker = (root, func, filter) => {
+  const treeWalker = document.createTreeWalker(root, filter, null, false);
   let node;
   while (node = treeWalker.nextNode()) {
     func(node);
   }
-}
+};
 
 /**
- * @memberof Core
- * @param {node} node
- * @param {callback} return false for continue,true for break inside callback
+ * @param {Node} node
+ * @param {method} callback false for continue,true for break inside callback
+ * @returns {boolean}
  */
-function walk(node, callback) {
+const walk = (node, callback) => {
   if (callback(node)) {
     return true;
   }
   node = node.firstChild;
   if (node) {
     do {
-      let walked = walk(node, callback);
+      let walked = walk(node, callback); // recursive call
       if (walked) {
         return true;
       }
       node = node.nextSibling;
     } while (node);
   }
-}
+  return false;
+};
 
 /**
  * Convert a blob to a base64 encoded string
  * @param {Blog} blob
- * @returns {string}
+ * @returns {Promise}
  */
-function blob2base64(blob) {
-  return new Promise(function (resolve, reject) {
-    var reader = new FileReader();
+const blob2base64 = blob => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
     reader.readAsDataURL(blob);
-    reader.onloadend = function () {
+    reader.onloadend = () => {
       resolve(reader.result);
     };
   });
-}
-
-/**
- * Creates a new pending promise and provides methods to resolve or reject it.
- * From: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred#backwards_forwards_compatible
- * @returns {object}
- */
-function defer() {
-  /* A method to resolve the associated Promise with the value passed.
-   * If the promise is already settled it does nothing.
-   *
-   * @param {anything} value : This value is used to resolve the promise
-   * If the value is a Promise then the associated promise assumes the state
-   * of Promise passed as value.
-   */
-  this.resolve = null;
-
-  /* A method to reject the associated Promise with the value passed.
-   * If the promise is already settled it does nothing.
-   *
-   * @param {anything} reason: The reason for the rejection of the Promise.
-   * Generally its an Error object. If however a Promise is passed, then the Promise
-   * itself will be the reason for rejection no matter the state of the Promise.
-   */
-  this.reject = null;
-  this.id = uuid();
-
-  /* A newly created Pomise object.
-   * Initially in pending state.
-   */
-  this.promise = new Promise((resolve, reject) => {
-    this.resolve = resolve;
-    this.reject = reject;
-  });
-  Object.freeze(this);
-}
+};
 
 /**
  * querySelector with filter by epub type
- * @param {element} html
+ * @param {Element} html
  * @param {string} element element type to find
  * @param {string} type epub type to find
- * @returns {element[]} elements
+ * @returns {Element[]} elements
  */
-function querySelectorByType(html, element, type) {
-  var query;
-  if (typeof html.querySelector != "undefined") {
+const querySelectorByType = (html, element, type) => {
+  let query;
+  if (typeof html.querySelector !== "undefined") {
     query = html.querySelector(`${element}[*|type="${type}"]`);
   }
   // Handle IE not supporting namespaced epub:type in querySelector
   if (!query || query.length === 0) {
     query = qsa(html, element);
-    for (var i = 0; i < query.length; i++) {
+    for (let i = 0; i < query.length; i++) {
       if (query[i].getAttributeNS("http://www.idpf.org/2007/ops", "type") === type || query[i].getAttribute("epub:type") === type) {
         return query[i];
       }
@@ -12134,51 +9265,51 @@ function querySelectorByType(html, element, type) {
   } else {
     return query;
   }
-}
+};
 
 /**
  * Find direct descendents of an element
- * @param {element} el
- * @returns {element[]} children
+ * @param {Element} el
+ * @returns {Element[]} children
  */
-function findChildren(el) {
-  var result = [];
-  var childNodes = el.childNodes;
-  for (var i = 0; i < childNodes.length; i++) {
-    let node = childNodes[i];
-    if (node.nodeType === 1) {
+const findChildren = el => {
+  const result = [];
+  const childNodes = el.childNodes;
+  for (let i = 0; i < childNodes.length; i++) {
+    const node = childNodes[i];
+    if (node.nodeType === Node.ELEMENT_NODE) {
       result.push(node);
     }
   }
   return result;
-}
+};
 
 /**
  * Find all parents (ancestors) of an element
- * @param {element} node
- * @returns {element[]} parents
+ * @param {Node} node
+ * @returns {Node[]} parents
  */
-function parents(node) {
-  var nodes = [node];
+const parents = node => {
+  const nodes = [node];
   for (; node; node = node.parentNode) {
     nodes.unshift(node);
   }
   return nodes;
-}
+};
 
 /**
  * Find all direct descendents of a specific type
- * @param {element} el
+ * @param {Element} el
  * @param {string} nodeName
  * @param {boolean} [single]
- * @returns {element[]} children
+ * @returns {Element[]} children
  */
-function filterChildren(el, nodeName, single) {
-  var result = [];
-  var childNodes = el.childNodes;
-  for (var i = 0; i < childNodes.length; i++) {
-    let node = childNodes[i];
-    if (node.nodeType === 1 && node.nodeName.toLowerCase() === nodeName) {
+const filterChildren = (el, nodeName, single) => {
+  const result = [];
+  const childNodes = el.childNodes;
+  for (let i = 0; i < childNodes.length; i++) {
+    const node = childNodes[i];
+    if (node.nodeType === Node.ELEMENT_NODE && node.nodeName.toLowerCase() === nodeName) {
       if (single) {
         return node;
       } else {
@@ -12189,105 +9320,74 @@ function filterChildren(el, nodeName, single) {
   if (!single) {
     return result;
   }
-}
+};
 
 /**
  * Filter all parents (ancestors) with tag name
- * @param {element} node
+ * @param {Node} node
  * @param {string} tagname
- * @returns {element[]} parents
+ * @returns {Node[]} parents
  */
-function getParentByTagName(node, tagname) {
-  let parent;
-  if (node === null || tagname === '') return;
-  parent = node.parentNode;
-  while (parent.nodeType === 1) {
+const getParentByTagName = (node, tagname) => {
+  if (node === null || tagname === "") return;
+  let parent = node.parentNode;
+  while (parent.nodeType === Node.ELEMENT_NODE) {
     if (parent.tagName.toLowerCase() === tagname) {
       return parent;
     }
     parent = parent.parentNode;
   }
-}
+};
+;// CONCATENATED MODULE: ./src/utils/defer.js
+
 
 /**
- * Lightweight Polyfill for DOM Range
- * @class
+ * Creates a new pending promise and provides methods to resolve or reject it.
  */
-class RangeObject {
+class Defer {
   constructor() {
-    this.collapsed = false;
-    this.commonAncestorContainer = undefined;
-    this.endContainer = undefined;
-    this.endOffset = undefined;
-    this.startContainer = undefined;
-    this.startOffset = undefined;
-  }
-  setStart(startNode, startOffset) {
-    this.startContainer = startNode;
-    this.startOffset = startOffset;
-    if (!this.endContainer) {
-      this.collapse(true);
-    } else {
-      this.commonAncestorContainer = this._commonAncestorContainer();
-    }
-    this._checkCollapsed();
-  }
-  setEnd(endNode, endOffset) {
-    this.endContainer = endNode;
-    this.endOffset = endOffset;
-    if (!this.startContainer) {
-      this.collapse(false);
-    } else {
-      this.collapsed = false;
-      this.commonAncestorContainer = this._commonAncestorContainer();
-    }
-    this._checkCollapsed();
-  }
-  collapse(toStart) {
-    this.collapsed = true;
-    if (toStart) {
-      this.endContainer = this.startContainer;
-      this.endOffset = this.startOffset;
-      this.commonAncestorContainer = this.startContainer.parentNode;
-    } else {
-      this.startContainer = this.endContainer;
-      this.startOffset = this.endOffset;
-      this.commonAncestorContainer = this.endOffset.parentNode;
-    }
-  }
-  selectNode(referenceNode) {
-    let parent = referenceNode.parentNode;
-    let index = Array.prototype.indexOf.call(parent.childNodes, referenceNode);
-    this.setStart(parent, index);
-    this.setEnd(parent, index + 1);
-  }
-  selectNodeContents(referenceNode) {
-    let end = referenceNode.childNodes[referenceNode.childNodes - 1];
-    let endIndex = referenceNode.nodeType === 3 ? referenceNode.textContent.length : parent.childNodes.length;
-    this.setStart(referenceNode, 0);
-    this.setEnd(referenceNode, endIndex);
-  }
-  _commonAncestorContainer(startContainer, endContainer) {
-    var startParents = parents(startContainer || this.startContainer);
-    var endParents = parents(endContainer || this.endContainer);
-    if (startParents[0] != endParents[0]) return undefined;
-    for (var i = 0; i < startParents.length; i++) {
-      if (startParents[i] != endParents[i]) {
-        return startParents[i - 1];
-      }
-    }
-  }
-  _checkCollapsed() {
-    if (this.startContainer === this.endContainer && this.startOffset === this.endOffset) {
-      this.collapsed = true;
-    } else {
-      this.collapsed = false;
-    }
-  }
-  toString() {
-    // TODO: implement walking between start and end to find text
+    /**
+     * @member {string} id
+     * @memberof Defer
+     * @readonly
+     */
+    this.id = uuid();
+    /**
+     * A method to resolve the associated Promise with the value passed.
+     * If the promise is already settled it does nothing.
+     * @member {method} resolve
+     * @param {anything} value : This value is used to resolve the promise
+     * If the value is a Promise then the associated promise assumes the state
+     * of Promise passed as value.
+     * @memberof Defer
+     * @readonly
+     */
+    this.resolve = null;
+    /**
+     * A method to reject the associated Promise with the value passed.
+     * If the promise is already settled it does nothing.
+     * @member {method} reject
+     * @param {anything} reason: The reason for the rejection of the Promise.
+     * Generally its an Error object. If however a Promise is passed, then the Promise
+     * itself will be the reason for rejection no matter the state of the Promise.
+     * @memberof Defer
+     * @readonly
+     */
+    this.reject = null;
+    /**
+     * A newly created Pomise object.
+     * Initially in pending state.
+     * @member {Promise} promise
+     * @memberof Defer
+     * @readonly
+     */
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
   }
 }
+/* harmony default export */ const defer = (Defer);
 ;// CONCATENATED MODULE: ./src/utils/path.js
 /* provided dependency */ var process = __webpack_require__(5606);
 /**
@@ -12386,7 +9486,7 @@ class Path {
    * @returns {boolean}
    */
   isAbsolute(path) {
-    return path.charAt(0) === '/';
+    return path.charAt(0) === "/";
   }
 
   /**
@@ -12395,7 +9495,7 @@ class Path {
    * @returns {boolean}
    */
   isDirectory(path) {
-    return path.charAt(path.length - 1) === '/';
+    return path.charAt(path.length - 1) === "/";
   }
 
   /**
@@ -12419,7 +9519,7 @@ class Path {
       resolvedPath = path + "/" + resolvedPath;
       resolvedAbsolute = this.isAbsolute(path);
     }
-    resolvedPath = this.normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
+    resolvedPath = this.normalizeArray(resolvedPath.split("/"), !resolvedAbsolute).join("/");
     return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
   }
 
@@ -12435,8 +9535,8 @@ class Path {
     from = this.resolve(from);
     to = this.resolve(to);
     if (from === to) return "";
-    const fromParts = this.trimArray(from.split('/'));
-    const toParts = this.trimArray(to.split('/'));
+    const fromParts = this.trimArray(from.split("/"));
+    const toParts = this.trimArray(to.split("/"));
     const length = Math.min(fromParts.length, toParts.length);
     let samePartsLength = length;
     for (let i = 0; i < length; i++) {
@@ -12450,7 +9550,7 @@ class Path {
       outputParts.push("..");
     }
     outputParts = outputParts.concat(toParts.slice(samePartsLength));
-    return outputParts.join('/');
+    return outputParts.join("/");
   }
 
   /**
@@ -12461,8 +9561,8 @@ class Path {
    */
   normalize(path) {
     const isAbsolute = this.isAbsolute(path);
-    const trailingSlash = path && path[path.length - 1] === '/';
-    path = this.normalizeArray(path.split('/'), !isAbsolute).join('/');
+    const trailingSlash = path && path[path.length - 1] === "/";
+    path = this.normalizeArray(path.split("/"), !isAbsolute).join("/");
     if (!path && !isAbsolute) {
       path = ".";
     }
@@ -12623,12 +9723,293 @@ class Url {
   }
 }
 /* harmony default export */ const utils_url = (Url);
+;// CONCATENATED MODULE: ./src/utils/queue.js
+
+
+
+/**
+ * Queue for handling tasks one at a time
+ */
+class Queue {
+  /**
+   * Constructor
+   * @param {object} context what this will resolve to in the tasks
+   */
+  constructor(context) {
+    this._q = [];
+    this.context = context;
+    this.tick = core_requestAnimationFrame;
+    this.running = false;
+    this.paused = false;
+  }
+
+  /**
+   * Add an item to the queue
+   * @return {Promise}
+   */
+  enqueue() {
+    const task = [].shift.call(arguments);
+    if (!task) {
+      throw new Error("No Task Provided");
+    }
+    let queued;
+    if (typeof task === "function") {
+      const deferred = new defer();
+      const promise = deferred.promise;
+      queued = {
+        task: task,
+        args: arguments,
+        //context: context,
+        deferred: deferred,
+        promise: promise
+      };
+    } else {
+      // Task is a promise
+      queued = {
+        "promise": task
+      };
+    }
+    this._q.push(queued);
+
+    // Wait to start queue flush
+    if (this.paused == false && !this.running) {
+      // setTimeout(this.flush.bind(this), 0);
+      // this.tick.call(window, this.run.bind(this));
+      this.run();
+    }
+    return queued.promise;
+  }
+
+  /**
+   * Run one item
+   * @return {Promise}
+   */
+  dequeue() {
+    let inwait;
+    if (this._q.length && !this.paused) {
+      inwait = this._q.shift();
+      const task = inwait.task;
+      if (task) {
+        const result = task.apply(this.context, inwait.args);
+        if (result && typeof result["then"] === "function") {
+          // Task is a function that returns a promise
+          return result.then(() => {
+            inwait.deferred.resolve.apply(this.context, arguments);
+          }, () => {
+            inwait.deferred.reject.apply(this.context, arguments);
+          });
+        } else {
+          // Task resolves immediately
+          inwait.deferred.resolve.apply(this.context, result);
+          return inwait.promise;
+        }
+      } else if (inwait.promise) {
+        // Task is a promise
+        return inwait.promise;
+      }
+    } else {
+      inwait = new defer();
+      inwait.deferred.resolve();
+      return inwait.promise;
+    }
+  }
+
+  /**
+   * Run All Immediately
+   */
+  dump() {
+    while (this._q.length) {
+      this.dequeue();
+    }
+  }
+
+  /**
+   * Run all tasks sequentially, at convince
+   * @return {Promise}
+   */
+  run() {
+    if (!this.running) {
+      this.running = true;
+      this.defered = new defer();
+    }
+    this.tick.call(window, () => {
+      if (this._q.length) {
+        this.dequeue().then(() => {
+          this.run();
+        });
+      } else {
+        this.defered.resolve();
+        this.running = undefined;
+      }
+    });
+
+    // Unpause
+    if (this.paused == true) {
+      this.paused = false;
+    }
+    return this.defered.promise;
+  }
+
+  /**
+   * Flush all, as quickly as possible
+   * @return {Promise}
+   */
+  flush() {
+    if (this.running) {
+      return this.running;
+    }
+    if (this._q.length) {
+      this.running = this.dequeue().then(() => {
+        this.running = undefined;
+        return this.flush();
+      });
+      return this.running;
+    }
+  }
+
+  /**
+   * Clear all items in wait
+   */
+  clear() {
+    this._q = [];
+  }
+
+  /**
+   * Get the number of tasks in the queue
+   * @return {number} tasks
+   */
+  length() {
+    return this._q.length;
+  }
+
+  /**
+   * Pause a running queue
+   */
+  pause() {
+    this.paused = true;
+  }
+
+  /**
+   * End the queue
+   */
+  stop() {
+    this._q = [];
+    this.running = false;
+    this.paused = true;
+  }
+}
+/* harmony default export */ const queue = (Queue);
+;// CONCATENATED MODULE: ./src/utils/rangeobject.js
+
+
+/**
+ * Lightweight Polyfill for DOM Range
+ */
+class RangeObject {
+  constructor() {
+    this.collapsed = false;
+    this.commonAncestorContainer = undefined;
+    this.endContainer = undefined;
+    this.endOffset = undefined;
+    this.startContainer = undefined;
+    this.startOffset = undefined;
+  }
+
+  /**
+   * Set start
+   * @param {Node} startNode 
+   * @param {Node} startOffset 
+   */
+  setStart(startNode, startOffset) {
+    this.startContainer = startNode;
+    this.startOffset = startOffset;
+    if (!this.endContainer) {
+      this.collapse(true);
+    } else {
+      this.commonAncestorContainer = this._commonAncestorContainer();
+    }
+    this._checkCollapsed();
+  }
+
+  /**
+   * Set end
+   * @param {Node} endNode 
+   * @param {Node} endOffset 
+   */
+  setEnd(endNode, endOffset) {
+    this.endContainer = endNode;
+    this.endOffset = endOffset;
+    if (!this.startContainer) {
+      this.collapse(false);
+    } else {
+      this.collapsed = false;
+      this.commonAncestorContainer = this._commonAncestorContainer();
+    }
+    this._checkCollapsed();
+  }
+
+  /**
+   * collapse
+   * @param {boolean} toStart 
+   */
+  collapse(toStart) {
+    this.collapsed = true;
+    if (toStart) {
+      this.endContainer = this.startContainer;
+      this.endOffset = this.startOffset;
+      this.commonAncestorContainer = this.startContainer.parentNode;
+    } else {
+      this.startContainer = this.endContainer;
+      this.startOffset = this.endOffset;
+      this.commonAncestorContainer = this.endOffset.parentNode;
+    }
+  }
+
+  /**
+   * Select Node
+   * @param {Node} referenceNode 
+   */
+  selectNode(referenceNode) {
+    const parent = referenceNode.parentNode;
+    const index = Array.prototype.indexOf.call(parent.childNodes, referenceNode);
+    this.setStart(parent, index);
+    this.setEnd(parent, index + 1);
+  }
+
+  /**
+   * Select Node Contents
+   * @param {Node} referenceNode 
+   */
+  selectNodeContents(referenceNode) {
+    const endIndex = referenceNode.nodeType === Node.TEXT_NODE ? referenceNode.textContent.length : parent.childNodes.length;
+    this.setStart(referenceNode, 0);
+    this.setEnd(referenceNode, endIndex);
+  }
+  _commonAncestorContainer(startContainer, endContainer) {
+    const startParents = parents(startContainer || this.startContainer);
+    const endParents = parents(endContainer || this.endContainer);
+    if (startParents[0] != endParents[0]) return undefined;
+    for (let i = 0; i < startParents.length; i++) {
+      if (startParents[i] != endParents[i]) {
+        return startParents[i - 1];
+      }
+    }
+  }
+  _checkCollapsed() {
+    if (this.startContainer === this.endContainer && this.startOffset === this.endOffset) {
+      this.collapsed = true;
+    } else {
+      this.collapsed = false;
+    }
+  }
+  toString() {
+    // TODO: implement walking between start and end to find text
+  }
+}
+/* harmony default export */ const rangeobject = (RangeObject);
 ;// CONCATENATED MODULE: ./src/epubcfi.js
 
-const epubcfi_ELEMENT_NODE = 1;
-const epubcfi_TEXT_NODE = 3;
-const epubcfi_COMMENT_NODE = 8;
-const epubcfi_DOCUMENT_NODE = 9;
+
 
 /**
  * Parsing and creation of EpubCFIs: https://idpf.org/epub/linking/cfi/epub-cfi.html
@@ -12916,7 +10297,7 @@ class EpubCFI {
     };
     let step,
       curNode = node;
-    while (curNode && curNode.parentNode && curNode.parentNode.nodeType != epubcfi_DOCUMENT_NODE) {
+    while (curNode && curNode.parentNode && curNode.parentNode.nodeType !== Node.DOCUMENT_NODE) {
       if (ignoreClass) {
         step = this.filteredStep(curNode, ignoreClass);
       } else {
@@ -12961,9 +10342,9 @@ class EpubCFI {
    */
   filter(node, ignoreClass) {
     let parent;
-    let isText = false;
+    let isText;
     let needsIgnoring;
-    if (node.nodeType === epubcfi_TEXT_NODE) {
+    if (node.nodeType === Node.TEXT_NODE) {
       isText = true;
       parent = node.parentNode;
       needsIgnoring = node.parentNode.classList.contains(ignoreClass);
@@ -12977,9 +10358,9 @@ class EpubCFI {
       let sibling; // to join with
 
       // If the sibling is a text node, join the nodes
-      if (prevSibling && prevSibling.nodeType === epubcfi_TEXT_NODE) {
+      if (prevSibling && prevSibling.nodeType === Node.TEXT_NODE) {
         sibling = prevSibling;
-      } else if (nextSibling && nextSibling.nodeType === epubcfi_TEXT_NODE) {
+      } else if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
         sibling = nextSibling;
       }
       return sibling || node;
@@ -13001,9 +10382,9 @@ class EpubCFI {
    */
   filteredPosition(node, ignoreClass) {
     let children, map;
-    if (node.nodeType === epubcfi_ELEMENT_NODE) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
       children = node.parentNode.children;
-      map = this.normalizedMap(children, epubcfi_ELEMENT_NODE, ignoreClass);
+      map = this.normalizedMap(children, Node.ELEMENT_NODE, ignoreClass);
     } else {
       children = node.parentNode.childNodes;
       // Inside an ignored node
@@ -13011,7 +10392,7 @@ class EpubCFI {
         node = node.parentNode;
         children = node.parentNode.childNodes;
       }
-      map = this.normalizedMap(children, epubcfi_TEXT_NODE, ignoreClass);
+      map = this.normalizedMap(children, Node.TEXT_NODE, ignoreClass);
     }
     const index = Array.prototype.indexOf.call(children, node);
     return map[index];
@@ -13033,7 +10414,7 @@ class EpubCFI {
       id: _node.id,
       index: this.filteredPosition(_node, ignoreClass),
       tagName: _node.tagName,
-      type: _node.nodeType === epubcfi_TEXT_NODE ? "text" : "element"
+      type: _node.nodeType === Node.TEXT_NODE ? "text" : "element"
     };
   }
 
@@ -13073,7 +10454,7 @@ class EpubCFI {
     let container = this.findNode(steps.slice(0, -1), doc, ignoreClass);
     const children = container.childNodes;
     const lastStepIndex = steps[steps.length - 1].index;
-    const map = this.normalizedMap(children, epubcfi_TEXT_NODE, ignoreClass);
+    const map = this.normalizedMap(children, Node.TEXT_NODE, ignoreClass);
     for (const childIndex in map) {
       if (!map.hasOwnProperty(childIndex)) return;
       if (map[childIndex] === lastStepIndex) {
@@ -13082,7 +10463,7 @@ class EpubCFI {
         if (offset > len) {
           offset = offset - len;
         } else {
-          if (child.nodeType === epubcfi_ELEMENT_NODE) {
+          if (child.nodeType === Node.ELEMENT_NODE) {
             container = child.childNodes[0];
           } else {
             container = child;
@@ -13126,13 +10507,14 @@ class EpubCFI {
   fromRange(range, base, ignoreClass) {
     const cfi = new EpubCFI();
     const start = range.startContainer;
+    const doc = start.ownerDocument;
     const end = range.endContainer;
     let startOffset = range.startOffset;
     let endOffset = range.endOffset;
     let needsIgnoring = false;
     if (ignoreClass) {
       // Tell pathTo if / what to ignore
-      needsIgnoring = start.ownerDocument.querySelector("." + ignoreClass) != null;
+      needsIgnoring = doc.querySelector("." + ignoreClass) !== null;
     }
     if (typeof base === "string") {
       cfi.base = this.parseComponent(base);
@@ -13217,10 +10599,10 @@ class EpubCFI {
       currNodeType = children[i].nodeType;
 
       // Check if needs ignoring
-      if (currNodeType === epubcfi_ELEMENT_NODE && children[i].classList.contains(ignoreClass)) {
-        currNodeType = epubcfi_TEXT_NODE;
+      if (currNodeType === Node.ELEMENT_NODE && children[i].classList.contains(ignoreClass)) {
+        currNodeType = Node.TEXT_NODE;
       }
-      if (i > 0 && currNodeType === epubcfi_TEXT_NODE && prevNodeType === epubcfi_TEXT_NODE) {
+      if (i > 0 && currNodeType === Node.TEXT_NODE && prevNodeType === Node.TEXT_NODE) {
         // join text nodes
         output[i] = prevIndex;
       } else if (nodeType === currNodeType) {
@@ -13346,7 +10728,7 @@ class EpubCFI {
    * @private
    */
   patchOffset(node, offset, ignoreClass) {
-    if (node.nodeType !== epubcfi_TEXT_NODE) {
+    if (node.nodeType !== Node.TEXT_NODE) {
       throw new Error("Anchor must be a text node");
     }
     let curr = node;
@@ -13357,7 +10739,7 @@ class EpubCFI {
       curr = node.parentNode;
     }
     while (curr.previousSibling) {
-      if (curr.previousSibling.nodeType === epubcfi_ELEMENT_NODE) {
+      if (curr.previousSibling.nodeType === Node.ELEMENT_NODE) {
         // Originally a text node, so join
         if (curr.previousSibling.classList.contains(ignoreClass)) {
           totalOffset += curr.previousSibling.textContent.length;
@@ -13381,7 +10763,7 @@ class EpubCFI {
    */
   position(node) {
     let children, index;
-    if (node.nodeType === epubcfi_ELEMENT_NODE) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
       children = node.parentNode.children;
       if (!children) {
         children = findChildren(node.parentNode);
@@ -13423,7 +10805,7 @@ class EpubCFI {
       id: node.id,
       index: this.position(node),
       tagName: node.tagName,
-      type: node.nodeType === epubcfi_TEXT_NODE ? "text" : "element"
+      type: node.nodeType === Node.TEXT_NODE ? "text" : "element"
     };
   }
 
@@ -13479,7 +10861,7 @@ class EpubCFI {
    */
   textNodes(container, ignoreClass) {
     return Array.prototype.slice.call(container.childNodes).filter(node => {
-      if (node.nodeType === epubcfi_TEXT_NODE) {
+      if (node.nodeType === Node.TEXT_NODE) {
         return true;
       } else if (node.classList.contains(ignoreClass)) {
         return true;
@@ -13497,16 +10879,14 @@ class EpubCFI {
   toRange(doc, ignoreClass) {
     const _doc = doc || document;
     let start, end, startContainer, endContainer;
-    let startSteps,
-      endSteps,
-      hasOffset = false;
-    const needsIgnoring = ignoreClass && _doc.querySelector("." + ignoreClass) != null;
+    let startSteps, endSteps, hasOffset;
+    const needsIgnoring = ignoreClass && _doc.querySelector("." + ignoreClass) !== null;
     const reqClass = needsIgnoring ? ignoreClass : undefined;
     let range, missed;
     if (typeof _doc.createRange !== "undefined") {
       range = _doc.createRange();
     } else {
-      range = new RangeObject();
+      range = new rangeobject();
     }
     if (this.range) {
       start = this.start;
@@ -13604,1023 +10984,6 @@ class EpubCFI {
   }
 }
 /* harmony default export */ const src_epubcfi = (EpubCFI);
-;// CONCATENATED MODULE: ./src/utils/hook.js
-/**
- * Hooks allow for injecting functions that must all complete in order before finishing
- * They will execute in parallel but all must finish before continuing
- * Functions may return a promise if they are async.
- * @param {any} context scope of this
- * @example this.content = new EPUBJS.Hook(this);
- */
-class Hook {
-  constructor(context) {
-    this.context = context || this;
-    this.hooks = [];
-  }
-
-  /**
-   * Adds a function to be run before a hook completes
-   * @example this.content.register(function(){...});
-   */
-  register() {
-    for (var i = 0; i < arguments.length; ++i) {
-      if (typeof arguments[i] === "function") {
-        this.hooks.push(arguments[i]);
-      } else {
-        // unpack array
-        for (var j = 0; j < arguments[i].length; ++j) {
-          this.hooks.push(arguments[i][j]);
-        }
-      }
-    }
-  }
-
-  /**
-   * Removes a function
-   * @example this.content.deregister(function(){...});
-   */
-  deregister(func) {
-    let hook;
-    for (let i = 0; i < this.hooks.length; i++) {
-      hook = this.hooks[i];
-      if (hook === func) {
-        this.hooks.splice(i, 1);
-        break;
-      }
-    }
-  }
-
-  /**
-   * Triggers a hook to run all functions
-   * @example this.content.trigger(args).then(function(){...});
-   */
-  trigger() {
-    var args = arguments;
-    var context = this.context;
-    var promises = [];
-    this.hooks.forEach(function (task) {
-      try {
-        var executing = task.apply(context, args);
-      } catch (err) {
-        console.log(err);
-      }
-      if (executing && typeof executing["then"] === "function") {
-        // Task is a function that returns a promise
-        promises.push(executing);
-      }
-      // Otherwise Task resolves immediately, continue
-    });
-    return Promise.all(promises);
-  }
-
-  // Adds a function to be run before a hook completes
-  list() {
-    return this.hooks;
-  }
-  clear() {
-    return this.hooks = [];
-  }
-}
-/* harmony default export */ const hook = (Hook);
-;// CONCATENATED MODULE: ./src/utils/replacements.js
-/**
- * @module replacements
- */
-
-
-
-
-/**
- * replaceBase
- * @param {*} doc 
- * @param {*} section 
- */
-function replaceBase(doc, section) {
-  var base;
-  var head;
-  var url = section.url;
-  var absolute = url.indexOf("://") > -1;
-  if (!doc) {
-    return;
-  }
-  head = qs(doc, "head");
-  base = qs(head, "base");
-  if (!base) {
-    base = doc.createElement("base");
-    head.insertBefore(base, head.firstChild);
-  }
-  if (!absolute) {
-    url = doc.documentURI;
-  }
-  base.setAttribute("href", url);
-}
-
-/**
- * replaceCanonical
- * @param {*} doc 
- * @param {*} section 
- */
-function replaceCanonical(doc, section) {
-  var head;
-  var link;
-  var url = section.canonical;
-  if (!doc) {
-    return;
-  }
-  head = qs(doc, "head");
-  link = qs(head, "link[rel='canonical']");
-  if (link) {
-    link.setAttribute("href", url);
-  } else {
-    link = doc.createElement("link");
-    link.setAttribute("rel", "canonical");
-    link.setAttribute("href", url);
-    head.appendChild(link);
-  }
-}
-
-/**
- * replaceMeta
- * @param {*} doc 
- * @param {*} section 
- */
-function replaceMeta(doc, section) {
-  var head;
-  var meta;
-  var id = section.idref;
-  if (!doc) {
-    return;
-  }
-  head = qs(doc, "head");
-  meta = qs(head, "link[property='dc.identifier']");
-  if (meta) {
-    meta.setAttribute("content", id);
-  } else {
-    meta = doc.createElement("meta");
-    meta.setAttribute("name", "dc.identifier");
-    meta.setAttribute("content", id);
-    head.appendChild(meta);
-  }
-}
-
-/**
- * replaceLinks
- * TODO: move me to Contents
- * @param {*} contents 
- * @param {*} fn 
- */
-function replaceLinks(contents, fn) {
-  var links = contents.querySelectorAll("a[href]");
-  if (!links.length) {
-    return;
-  }
-  var base = qs(contents.ownerDocument, "base");
-  var location = base ? base.getAttribute("href") : undefined;
-  var replaceLink = function (link) {
-    var href = link.getAttribute("href");
-    if (href.indexOf("mailto:") === 0) {
-      return;
-    }
-    var absolute = href.indexOf("://") > -1;
-    if (absolute) {
-      link.setAttribute("target", "_blank");
-    } else {
-      var linkUrl;
-      try {
-        linkUrl = new utils_url(href, location);
-      } catch (error) {
-        // NOOP
-      }
-      link.onclick = function () {
-        if (linkUrl && linkUrl.hash) {
-          fn(linkUrl.Path.path + linkUrl.hash);
-        } else if (linkUrl) {
-          fn(linkUrl.Path.path);
-        } else {
-          fn(href);
-        }
-        return false;
-      };
-    }
-  }.bind(this);
-  for (var i = 0; i < links.length; i++) {
-    replaceLink(links[i]);
-  }
-}
-
-/**
- * substitute
- * @param {*} content 
- * @param {*} urls 
- * @param {*} replacements s
- */
-function substitute(content, urls, replacements) {
-  urls.forEach(function (url, i) {
-    if (url && replacements[i]) {
-      // Account for special characters in the file name.
-      // See https://stackoverflow.com/a/6318729.
-      url = url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-      content = content.replace(new RegExp(url, "g"), replacements[i]);
-    }
-  });
-  return content;
-}
-;// CONCATENATED MODULE: ./src/section.js
-
-
-
-
-/**
- * Represents a Section of the Book
- * In most books this is equivalent to a Chapter
- */
-class Section {
-  /**
-   * Constructor
-   * @param {object} item 
-   * @param {object} hooks 
-   */
-  constructor(item, hooks) {
-    /**
-     * @member {string} idref
-     * @memberof Section
-     * @readonly
-     */
-    this.idref = item.idref;
-    /**
-     * @member {boolean} linear
-     * @memberof Section
-     * @readonly
-     */
-    this.linear = item.linear === "yes";
-    /**
-     * @member {number} index
-     * @memberof Section
-     * @readonly
-     */
-    this.index = item.index;
-    /**
-     * @member {string} href
-     * @memberof Section
-     * @readonly
-     */
-    this.href = item.href;
-    /**
-     * @member {string} url
-     * @memberof Section
-     * @readonly
-     */
-    this.url = item.url;
-    /**
-     * @member {string} canonical
-     * @memberof Section
-     * @readonly
-     */
-    this.canonical = item.canonical;
-    /**
-     * @member {string} cfiBase
-     * @memberof Section
-     * @readonly
-     */
-    this.cfiBase = item.cfiBase;
-    /**
-     * @member {function} next
-     * @memberof Section
-     * @readonly
-     */
-    this.next = item.next;
-    /**
-     * @member {function} prev
-     * @memberof Section
-     * @readonly
-     */
-    this.prev = item.prev;
-    /**
-     * @member {object[]} properties
-     * @memberof Section
-     * @readonly
-     */
-    this.properties = item.properties;
-    this.hooks = hooks;
-    this.document = undefined;
-    this.contents = undefined;
-    this.output = undefined;
-  }
-
-  /**
-   * Load the section from its url
-   * @param {function} request a request method to use for loading
-   * @return {Promise} a promise with the xml document
-   */
-  load(request) {
-    const loading = new defer();
-    const loaded = loading.promise;
-    if (this.contents) {
-      loading.resolve(this.contents);
-    } else {
-      request(this.url).then(xml => {
-        this.document = xml;
-        this.contents = xml.documentElement;
-        return this.hooks.content.trigger(this.document, this);
-      }).then(() => {
-        loading.resolve(this.contents);
-      }).catch(error => {
-        loading.reject(error);
-      });
-    }
-    return loaded;
-  }
-
-  /**
-   * Adds a base tag for resolving urls in the section (unused)
-   * @private
-   */
-  base() {
-    return replaceBase(this.document, this);
-  }
-
-  /**
-   * Render the contents of a section
-   * @param {function} request a request method to use for loading
-   * @return {Promise} output a serialized XML Document
-   */
-  render(request) {
-    const rendering = new defer();
-    const rendered = rendering.promise;
-    this.output; // TODO: better way to return this from hooks?
-    this.load(request).then(contents => {
-      const serializer = new XMLSerializer();
-      this.output = serializer.serializeToString(contents);
-      return this.output;
-    }).then(() => {
-      return this.hooks.serialize.trigger(this.output, this);
-    }).then(() => {
-      rendering.resolve(this.output);
-    }).catch(error => {
-      rendering.reject(error);
-    });
-    return rendered;
-  }
-
-  /**
-   * Find a string in a section
-   * @param {string} query The query string to find
-   * @return {object[]} A list of matches, with form {cfi, excerpt}
-   */
-  find(query) {
-    const section = this;
-    const matches = [];
-    const q = query.toLowerCase();
-    const find = node => {
-      const text = node.textContent.toLowerCase();
-      const limit = 150;
-      let pos,
-        last = -1;
-      while (pos !== -1) {
-        // Search for the query
-        pos = text.indexOf(q, last + 1);
-        if (pos !== -1) {
-          // We found it! Generate a CFI
-          const range = section.document.createRange();
-          range.setStart(node, pos);
-          range.setEnd(node, pos + q.length);
-          const cfi = section.cfiFromRange(range);
-          let excerpt;
-          // Generate the excerpt
-          if (node.textContent.length < limit) {
-            excerpt = node.textContent;
-          } else {
-            excerpt = node.textContent.substring(pos - limit / 2, pos + limit / 2);
-            excerpt = "..." + excerpt + "...";
-          }
-
-          // Add the CFI to the matches list
-          matches.push({
-            cfi: cfi,
-            excerpt: excerpt
-          });
-        }
-        last = pos;
-      }
-    };
-    sprint(section.document, node => find(node));
-    return matches;
-  }
-
-  /**
-   * Search a string in multiple sequential Element of the section.
-   * If the document.createTreeWalker api is missed(eg: IE8), use 
-   * `find` as a fallback.
-   * @param {string} query The query string to search
-   * @param {number} [maxSeqEle=5] The maximum number of Element that are combined for search, default value is 5.
-   * @return {object[]} A list of matches, with form {cfi, excerpt}
-   */
-  search(query, maxSeqEle = 5) {
-    if (typeof document.createTreeWalker == "undefined") {
-      return this.find(query);
-    }
-    const matches = [];
-    const excerptLimit = 150;
-    const section = this;
-    const q = query.toLowerCase();
-    const search = nodeList => {
-      const textWithCase = nodeList.reduce((acc, current) => {
-        return acc + current.textContent;
-      }, "");
-      const text = textWithCase.toLowerCase();
-      const pos = text.indexOf(q);
-      if (pos !== -1) {
-        const startNodeIndex = 0,
-          endPos = pos + q.length;
-        let endNodeIndex = 0,
-          len = 0;
-        if (pos < nodeList[startNodeIndex].length) {
-          while (endNodeIndex < nodeList.length - 1) {
-            len += nodeList[endNodeIndex].length;
-            if (endPos <= len) {
-              break;
-            }
-            endNodeIndex += 1;
-          }
-          const startNode = nodeList[startNodeIndex];
-          const endNode = nodeList[endNodeIndex];
-          const range = section.document.createRange();
-          range.setStart(startNode, pos);
-          const beforeEndLengthCount = nodeList.slice(0, endNodeIndex).reduce((acc, current) => {
-            return acc + current.textContent.length;
-          }, 0);
-          range.setEnd(endNode, beforeEndLengthCount > endPos ? endPos : endPos - beforeEndLengthCount);
-          const cfi = section.cfiFromRange(range);
-          let excerpt = nodeList.slice(0, endNodeIndex + 1).reduce((acc, current) => {
-            return acc + current.textContent;
-          }, "");
-          if (excerpt.length > excerptLimit) {
-            excerpt = excerpt.substring(pos - excerptLimit / 2, pos + excerptLimit / 2);
-            excerpt = "..." + excerpt + "...";
-          }
-          matches.push({
-            cfi: cfi,
-            excerpt: excerpt
-          });
-        }
-      }
-    };
-    const treeWalker = document.createTreeWalker(section.document, NodeFilter.SHOW_TEXT, null, false);
-    let node,
-      nodeList = [];
-    while (node = treeWalker.nextNode()) {
-      nodeList.push(node);
-      if (nodeList.length == maxSeqEle) {
-        search(nodeList.slice(0, maxSeqEle));
-        nodeList = nodeList.slice(1, maxSeqEle);
-      }
-    }
-    if (nodeList.length > 0) {
-      search(nodeList);
-    }
-    return matches;
-  }
-
-  /**
-  * Reconciles the current chapters layout properties with
-  * the global layout properties.
-  * @param {object} globalLayout The global layout settings object, chapter properties string
-  * @return {object} layoutProperties Object with layout properties
-  */
-  reconcileLayoutSettings(globalLayout) {
-    //-- Get the global defaults
-    const settings = {
-      layout: globalLayout.layout,
-      spread: globalLayout.spread,
-      orientation: globalLayout.orientation
-    };
-
-    //-- Get the chapter's display type
-    this.properties.forEach(prop => {
-      const rendition = prop.replace("rendition:", "");
-      const split = rendition.indexOf("-");
-      if (split !== -1) {
-        const property = rendition.slice(0, split);
-        const value = rendition.slice(split + 1);
-        settings[property] = value;
-      }
-    });
-    return settings;
-  }
-
-  /**
-   * Get a CFI from a Range in the Section
-   * @param {range} range
-   * @return {string} cfi an EpubCFI string
-   */
-  cfiFromRange(range) {
-    return new src_epubcfi(range, this.cfiBase).toString();
-  }
-
-  /**
-   * Get a CFI from an Element in the Section
-   * @param {element} el
-   * @return {string} cfi an EpubCFI string
-   */
-  cfiFromElement(el) {
-    return new src_epubcfi(el, this.cfiBase).toString();
-  }
-
-  /**
-   * Unload the section document
-   */
-  unload() {
-    this.document = undefined;
-    this.contents = undefined;
-    this.output = undefined;
-  }
-
-  /**
-   * destroy
-   */
-  destroy() {
-    this.unload();
-    this.hooks.serialize.clear();
-    this.hooks.content.clear();
-    this.hooks = undefined;
-    this.idref = undefined;
-    this.linear = undefined;
-    this.properties = undefined;
-    this.index = undefined;
-    this.href = undefined;
-    this.url = undefined;
-    this.next = undefined;
-    this.prev = undefined;
-    this.cfiBase = undefined;
-  }
-}
-/* harmony default export */ const section = (Section);
-;// CONCATENATED MODULE: ./src/spine.js
-
-
-
-
-
-/**
- * A collection of Spine Items
- */
-class Spine {
-  constructor() {
-    this.spineItems = [];
-    this.spineByHref = {};
-    this.spineById = {};
-    /**
-     * @member {object} hooks
-     * @property {Hook} content
-     * @property {Hook} serialize
-     * @memberof Spine
-     * @readonly
-     */
-    this.hooks = {
-      content: new hook(),
-      serialize: new hook()
-    };
-
-    // Register replacements
-    this.hooks.content.register(replaceBase);
-    this.hooks.content.register(replaceMeta);
-    this.hooks.content.register(replaceCanonical);
-    this.epubcfi = new src_epubcfi();
-    /**
-     * @member {boolean} loaded
-     * @memberof Spine
-     * @readonly
-     */
-    this.loaded = false;
-    this.items = undefined;
-    this.manifest = undefined;
-    this.spineNodeIndex = undefined;
-    this.baseUrl = undefined;
-    this.length = undefined;
-  }
-
-  /**
-   * Unpack items from a opf into spine items
-   * @param {Packaging} packaging
-   * @param {method} resolver URL resolver
-   * @param {method} canonical Resolve canonical url
-   */
-  unpack(packaging, resolver, canonical) {
-    this.items = packaging.spine;
-    this.manifest = packaging.manifest;
-    this.spineNodeIndex = packaging.spineNodeIndex;
-    this.baseUrl = packaging.baseUrl || packaging.basePath || "";
-    this.length = this.items.length;
-    this.items.forEach((item, index) => {
-      const manifestItem = this.manifest[item.idref];
-      item.index = index;
-      item.cfiBase = this.epubcfi.generateChapterComponent(this.spineNodeIndex, item.index, item.id);
-      if (item.href) {
-        item.url = resolver(item.href, true);
-        item.canonical = canonical(item.href);
-      }
-      if (manifestItem) {
-        item.href = manifestItem.href;
-        item.url = resolver(item.href, true);
-        item.canonical = canonical(item.href);
-        if (manifestItem.properties.length) {
-          item.properties.push.apply(item.properties, manifestItem.properties);
-        }
-      }
-      if (item.linear === "yes") {
-        item.prev = function () {
-          let prevIndex = item.index;
-          while (prevIndex > 0) {
-            let prev = this.get(prevIndex - 1);
-            if (prev && prev.linear) {
-              return prev;
-            }
-            prevIndex -= 1;
-          }
-          return;
-        }.bind(this);
-        item.next = function () {
-          let nextIndex = item.index;
-          while (nextIndex < this.spineItems.length - 1) {
-            let next = this.get(nextIndex + 1);
-            if (next && next.linear) {
-              return next;
-            }
-            nextIndex += 1;
-          }
-          return;
-        }.bind(this);
-      } else {
-        item.prev = function () {
-          return;
-        };
-        item.next = function () {
-          return;
-        };
-      }
-      const spineItem = new section(item, this.hooks);
-      this.append(spineItem);
-    });
-    this.loaded = true;
-  }
-
-  /**
-   * Get an item from the spine
-   * @param {string|number} [target]
-   * @return {Section|null} section
-   * @example spine.get();
-   * @example spine.get(1);
-   * @example spine.get("chap1.html");
-   * @example spine.get("#id1234");
-   */
-  get(target) {
-    let index = 0;
-    if (typeof target === "undefined") {
-      while (index < this.spineItems.length) {
-        let next = this.spineItems[index];
-        if (next && next.linear) {
-          break;
-        }
-        index += 1;
-      }
-    } else if (this.epubcfi.isCfiString(target)) {
-      let cfi = new src_epubcfi(target);
-      index = cfi.spinePos;
-    } else if (typeof target === "number" || isNaN(target) === false) {
-      index = target;
-    } else if (typeof target === "string" && target.indexOf("#") === 0) {
-      index = this.spineById[target.substring(1)];
-    } else if (typeof target === "string") {
-      // Remove fragments
-      target = target.split("#")[0];
-      index = this.spineByHref[target] || this.spineByHref[encodeURI(target)];
-    }
-    return this.spineItems[index] || null;
-  }
-
-  /**
-   * Append a Section to the Spine
-   * @param {Section} section
-   * @returns {number} index
-   * @private
-   */
-  append(section) {
-    const index = this.spineItems.length;
-    section.index = index;
-    this.spineItems.push(section);
-
-    // Encode and Decode href lookups
-    // see pr for details: https://github.com/futurepress/epub.js/pull/358
-    this.spineByHref[decodeURI(section.href)] = index;
-    this.spineByHref[encodeURI(section.href)] = index;
-    this.spineByHref[section.href] = index;
-    this.spineById[section.idref] = index;
-    return index;
-  }
-
-  /**
-   * Prepend a Section to the Spine (unused)
-   * @param {Section} section
-   * @returns {number}
-   * @private
-   */
-  prepend(section) {
-    // var index = this.spineItems.unshift(section);
-    this.spineByHref[section.href] = 0;
-    this.spineById[section.idref] = 0;
-
-    // Re-index
-    this.spineItems.forEach((item, index) => {
-      item.index = index;
-    });
-    return 0;
-  }
-
-  /**
-   * Remove a Section from the Spine (unused)
-   * @param {Section} section
-   * @private
-   */
-  remove(section) {
-    const index = this.spineItems.indexOf(section);
-    if (index > -1) {
-      delete this.spineByHref[section.href];
-      delete this.spineById[section.idref];
-      return this.spineItems.splice(index, 1);
-    }
-  }
-
-  /**
-   * Loop over the Sections in the Spine
-   * @return {method} forEach
-   */
-  each() {
-    return this.spineItems.forEach.apply(this.spineItems, arguments);
-  }
-
-  /**
-   * Find the first Section in the Spine
-   * @return {Section} first section
-   */
-  first() {
-    let index = 0;
-    do {
-      const next = this.get(index);
-      if (next && next.linear) {
-        return next;
-      }
-      index += 1;
-    } while (index < this.spineItems.length);
-  }
-
-  /**
-   * Find the last Section in the Spine
-   * @return {Section} last section
-   */
-  last() {
-    let index = this.spineItems.length - 1;
-    do {
-      const prev = this.get(index);
-      if (prev && prev.linear) {
-        return prev;
-      }
-      index -= 1;
-    } while (index >= 0);
-  }
-
-  /**
-   * destroy
-   */
-  destroy() {
-    this.each(section => section.destroy());
-    this.spineItems = undefined;
-    this.spineByHref = undefined;
-    this.spineById = undefined;
-    this.hooks.serialize.clear();
-    this.hooks.content.clear();
-    this.hooks = undefined;
-    this.epubcfi = undefined;
-    this.loaded = false;
-    this.items = undefined;
-    this.manifest = undefined;
-    this.spineNodeIndex = undefined;
-    this.baseUrl = undefined;
-    this.length = undefined;
-  }
-}
-/* harmony default export */ const spine = (Spine);
-;// CONCATENATED MODULE: ./src/utils/queue.js
-
-
-/**
- * Queue for handling tasks one at a time
- * @class
- * @param {scope} context what this will resolve to in the tasks
- */
-class Queue {
-  constructor(context) {
-    this._q = [];
-    this.context = context;
-    this.tick = core_requestAnimationFrame;
-    this.running = false;
-    this.paused = false;
-  }
-
-  /**
-   * Add an item to the queue
-   * @return {Promise}
-   */
-  enqueue() {
-    var deferred, promise;
-    var queued;
-    var task = [].shift.call(arguments);
-    var args = arguments;
-
-    // Handle single args without context
-    // if(args && !Array.isArray(args)) {
-    //   args = [args];
-    // }
-    if (!task) {
-      throw new Error("No Task Provided");
-    }
-    if (typeof task === "function") {
-      deferred = new defer();
-      promise = deferred.promise;
-      queued = {
-        "task": task,
-        "args": args,
-        //"context"  : context,
-        "deferred": deferred,
-        "promise": promise
-      };
-    } else {
-      // Task is a promise
-      queued = {
-        "promise": task
-      };
-    }
-    this._q.push(queued);
-
-    // Wait to start queue flush
-    if (this.paused == false && !this.running) {
-      // setTimeout(this.flush.bind(this), 0);
-      // this.tick.call(window, this.run.bind(this));
-      this.run();
-    }
-    return queued.promise;
-  }
-
-  /**
-   * Run one item
-   * @return {Promise}
-   */
-  dequeue() {
-    var inwait, task, result;
-    if (this._q.length && !this.paused) {
-      inwait = this._q.shift();
-      task = inwait.task;
-      if (task) {
-        // console.log(task)
-
-        result = task.apply(this.context, inwait.args);
-        if (result && typeof result["then"] === "function") {
-          // Task is a function that returns a promise
-          return result.then(function () {
-            inwait.deferred.resolve.apply(this.context, arguments);
-          }.bind(this), function () {
-            inwait.deferred.reject.apply(this.context, arguments);
-          }.bind(this));
-        } else {
-          // Task resolves immediately
-          inwait.deferred.resolve.apply(this.context, result);
-          return inwait.promise;
-        }
-      } else if (inwait.promise) {
-        // Task is a promise
-        return inwait.promise;
-      }
-    } else {
-      inwait = new defer();
-      inwait.deferred.resolve();
-      return inwait.promise;
-    }
-  }
-
-  // Run All Immediately
-  dump() {
-    while (this._q.length) {
-      this.dequeue();
-    }
-  }
-
-  /**
-   * Run all tasks sequentially, at convince
-   * @return {Promise}
-   */
-  run() {
-    if (!this.running) {
-      this.running = true;
-      this.defered = new defer();
-    }
-    this.tick.call(window, () => {
-      if (this._q.length) {
-        this.dequeue().then(function () {
-          this.run();
-        }.bind(this));
-      } else {
-        this.defered.resolve();
-        this.running = undefined;
-      }
-    });
-
-    // Unpause
-    if (this.paused == true) {
-      this.paused = false;
-    }
-    return this.defered.promise;
-  }
-
-  /**
-   * Flush all, as quickly as possible
-   * @return {Promise}
-   */
-  flush() {
-    if (this.running) {
-      return this.running;
-    }
-    if (this._q.length) {
-      this.running = this.dequeue().then(function () {
-        this.running = undefined;
-        return this.flush();
-      }.bind(this));
-      return this.running;
-    }
-  }
-
-  /**
-   * Clear all items in wait
-   */
-  clear() {
-    this._q = [];
-  }
-
-  /**
-   * Get the number of tasks in the queue
-   * @return {number} tasks
-   */
-  length() {
-    return this._q.length;
-  }
-
-  /**
-   * Pause a running queue
-   */
-  pause() {
-    this.paused = true;
-  }
-
-  /**
-   * End the queue
-   */
-  stop() {
-    this._q = [];
-    this.running = false;
-    this.paused = true;
-  }
-}
-
-/**
- * Create a new task from a callback
- * @class
- * @private
- * @param {function} task
- * @param {array} args
- * @param {scope} context
- * @return {function} task
- */
-class Task {
-  constructor(task, args, context) {
-    return function () {
-      var toApply = arguments || [];
-      return new Promise((resolve, reject) => {
-        var callback = function (value, err) {
-          if (!value && err) {
-            reject(err);
-          } else {
-            resolve(value);
-          }
-        };
-        // Add the callback to the arguments list
-        toApply.push(callback);
-
-        // Apply all arguments to the functions
-        task.apply(context || this, toApply);
-      });
-    };
-  }
-}
-/* harmony default export */ const queue = (Queue);
-
 ;// CONCATENATED MODULE: ./src/utils/constants.js
 /**
  * @module constants
@@ -14696,19 +11059,20 @@ const EVENTS = {
 
 
 
+
 /**
  * Find Locations for a Book
  */
 class Locations extends Array {
   /**
    * Constructor
-   * @param {Spine} [spine]
+   * @param {Sections} [sections]
    * @param {method} [request]
    * @param {number} [pause=100]
    */
-  constructor(spine, request, pause) {
+  constructor(sections, request, pause) {
     super();
-    this.spine = spine;
+    this.sections = sections;
     this.pause = pause || 100;
     this.break = 150;
     this.request = request;
@@ -14742,7 +11106,7 @@ class Locations extends Array {
       console.warn("The input value type is not an integer");
     }
     this.q.pause();
-    this.spine.each(section => {
+    this.sections.each(section => {
       if (section.linear) {
         this.q.enqueue(this.process.bind(this), section);
       }
@@ -15032,7 +11396,7 @@ class Locations extends Array {
    * destroy
    */
   destroy() {
-    this.spine = undefined;
+    this.sections = undefined;
     this.pause = undefined;
     this.break = undefined;
     this.request = undefined;
@@ -15123,7 +11487,172 @@ class Container {
   }
 }
 /* harmony default export */ const container = (Container);
+;// CONCATENATED MODULE: ./src/manifest.js
+
+
+/**
+ * Manifest class
+ * @extends {Map}
+ */
+class Manifest extends Map {
+  constructor() {
+    super();
+  }
+
+  /**
+   * Parse the manifest node
+   * @param {Node} node 
+   */
+  parse(node) {
+    //-- Turn items into an array
+    const items = qsa(node, "item");
+    //-- Create an object with the id as key
+    items.forEach(item => {
+      const id = item.getAttribute("id");
+      const props = item.getAttribute("properties") || "";
+      this.set(id, {
+        href: item.getAttribute("href") || "",
+        type: item.getAttribute("media-type") || "",
+        overlay: item.getAttribute("media-overlay") || "",
+        properties: props.length ? props.split(" ") : []
+      });
+    });
+  }
+
+  /**
+   * destroy
+   */
+  destroy() {
+    this.clear();
+  }
+}
+/* harmony default export */ const manifest = (Manifest);
+;// CONCATENATED MODULE: ./src/metadata.js
+/**
+ * Metadata class
+ * @extends {Map}
+ */
+class Metadata extends Map {
+  constructor() {
+    super();
+  }
+
+  /**
+   * Parse the metadata node
+   * @param {Node} node 
+   */
+  parse(node) {
+    for (const item of node.children) {
+      if (item.nodeName === "meta") {
+        this.parseMeta(item);
+      } else if (/dc:/.test(item.nodeName)) {
+        // dc:title
+        // dc:creator
+        // dc:description
+        // dc:publisher
+        // dc:identifier
+        // dc:language
+        // dc:subject
+        // dc:rights
+        // dc:date
+        // dc:type
+        const key = item.nodeName.substring(3);
+        this.set(key, item.textContent);
+      }
+    }
+  }
+
+  /**
+   * Parse the meta node
+   * @param {Node} item 
+   * @returns {void}
+   * @private
+   */
+  parseMeta(item) {
+    const prop = item.getAttribute("property");
+    if (typeof prop === "undefined" || typeof prop !== "string") {
+      return;
+    } else if (/rendition:/.test(prop)) {
+      // rendition:layout
+      // rendition:spread
+      // rendition:flow
+      // rendition:viewport
+      // rendition:orientation
+      const key = prop.substring(10);
+      this.set(key, item.textContent);
+    } else if (/dcterms:/.test(prop)) {
+      // dcterms:modified
+      const key = prop.substring(8);
+      this.set(key, item.textContent);
+    } else if (/media:/.test(prop)) {
+      // media:active-class
+      // media:duration
+      // media:narrator
+      // media:playback-active-class
+      this.set(prop, item.textContent);
+    }
+  }
+
+  /**
+   * destroy
+   */
+  destroy() {
+    this.clear();
+  }
+}
+/* harmony default export */ const metadata = (Metadata);
+;// CONCATENATED MODULE: ./src/spine.js
+
+
+/**
+ * A collection of Spine Items
+ * @extends {Map}
+ */
+class Spine extends Map {
+  constructor() {
+    super();
+    /**
+     * Node index from the package.opf
+     * @member {number} nodeIndex
+     * @memberof Spine
+     * @readonly
+     */
+    this.nodeIndex = undefined;
+  }
+
+  /**
+   * Parse element spine
+   * @param {Node} node 
+   */
+  parse(node) {
+    const items = qsa(node, "itemref");
+    items.forEach((item, index) => {
+      const props = item.getAttribute("properties") || "";
+      const idref = item.getAttribute("idref");
+      this.set(idref, {
+        id: item.getAttribute("id"),
+        idref: idref,
+        index: index,
+        linear: item.getAttribute("linear") || "yes",
+        properties: props.length ? props.split(" ") : []
+      });
+    });
+    this.nodeIndex = indexOfNode(node, Node.ELEMENT_NODE);
+  }
+
+  /**
+   * destroy
+   */
+  destroy() {
+    this.clear();
+    this.nodeIndex = undefined;
+  }
+}
+/* harmony default export */ const spine = (Spine);
 ;// CONCATENATED MODULE: ./src/packaging.js
+
+
+
 
 
 /**
@@ -15132,35 +11661,21 @@ class Container {
 class Packaging {
   /**
    * Constructor
-   * @param {*} packageDocument OPF XML
+   * @param {Document} [packageXml] OPF XML
    */
-  constructor(packageDocument) {
+  constructor(packageXml) {
     /**
-     * @member {object} manifest
+     * @member {Metadata} metadata
      * @memberof Packaging
      * @readonly
      */
-    this.manifest = {};
+    this.metadata = new metadata();
     /**
-     * @member {object} metadata
-     * @property {string} title
-     * @property {string} creator
-     * @property {string} description
-     * @property {string} publisher
-     * @property {string} language
-     * @property {string} rights
-     * @property {string} date
-     * @property {string} modified
-     * @property {string} flow
-     * @property {string} layout
-     * @property {string} spread
-     * @property {string} viewport
-     * @property {string} orientation
-     * @property {string} media_active_class
+     * @member {Manifest} manifest
      * @memberof Packaging
      * @readonly
      */
-    this.metadata = {};
+    this.manifest = new manifest();
     /**
      * @member {string} navPath
      * @memberof Packaging
@@ -15180,159 +11695,99 @@ class Packaging {
      */
     this.coverPath = "";
     /**
-     * @member {object[]} spine
+     * @member {Spine} spine
      * @memberof Packaging
      * @readonly
      */
-    this.spine = [];
+    this.spine = new spine();
     /**
-     * @member {number} spineNodeIndex
+     * @member {string} version Package version
      * @memberof Packaging
      * @readonly
      */
-    this.spineNodeIndex = 0;
-    if (packageDocument) {
-      this.parse(packageDocument);
+    this.version = "";
+    /**
+     * @member {string} direction
+     * @memberof Packaging
+     * @readonly
+     */
+    this.direction = "";
+    if (packageXml) {
+      this.parse(packageXml);
     }
   }
 
   /**
    * Parse OPF XML
-   * @param  {document} packageDocument OPF XML
+   * @param {Document} packageXml OPF XML
    * @return {object} parsed package parts
    */
-  parse(packageDocument) {
-    if (!packageDocument) {
+  parse(packageXml) {
+    if (!packageXml) {
       throw new Error("Package File Not Found");
     }
-    const metadataNode = qs(packageDocument, "metadata");
+    const metadataNode = qs(packageXml, "metadata");
     if (!metadataNode) {
       throw new Error("No Metadata Found");
     }
-    const manifestNode = qs(packageDocument, "manifest");
+    const manifestNode = qs(packageXml, "manifest");
     if (!manifestNode) {
       throw new Error("No Manifest Found");
     }
-    const spineNode = qs(packageDocument, "spine");
+    const spineNode = qs(packageXml, "spine");
     if (!spineNode) {
       throw new Error("No Spine Found");
     }
-    this.manifest = this.parseManifest(manifestNode);
+    this.metadata.parse(metadataNode);
+    this.manifest.parse(manifestNode);
+    this.spine.parse(spineNode);
     this.navPath = this.findNavPath(manifestNode);
     this.ncxPath = this.findNcxPath(manifestNode, spineNode);
-    this.coverPath = this.findCoverPath(packageDocument);
-    this.spineNodeIndex = indexOfElementNode(spineNode);
-    this.spine = this.parseSpine(spineNode, this.manifest);
-    this.uniqueIdentifier = this.findUniqueIdentifier(packageDocument);
-    this.metadata = this.parseMetadata(metadataNode);
-    this.metadata.direction = spineNode.getAttribute("page-progression-direction");
+    this.coverPath = this.findCoverPath(packageXml);
+    this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
+    this.direction = this.parseDirection(packageXml, spineNode);
+    this.version = this.parseVersion(packageXml);
     return {
       metadata: this.metadata,
-      spine: this.spine,
       manifest: this.manifest,
+      spine: this.spine,
       navPath: this.navPath,
       ncxPath: this.ncxPath,
       coverPath: this.coverPath,
-      spineNodeIndex: this.spineNodeIndex
+      direction: this.direction,
+      version: this.version
     };
   }
 
   /**
-   * Parse Metadata
-   * @private
-   * @param  {node} xml
-   * @return {object} metadata
-   */
-  parseMetadata(xml) {
-    const metadata = {};
-    //-- dc:
-    metadata.title = this.getElementText(xml, "title");
-    metadata.creator = this.getElementText(xml, "creator");
-    metadata.description = this.getElementText(xml, "description");
-    metadata.publisher = this.getElementText(xml, "publisher");
-    metadata.identifier = this.getElementText(xml, "identifier");
-    metadata.language = this.getElementText(xml, "language");
-    metadata.rights = this.getElementText(xml, "rights");
-    metadata.date = this.getElementText(xml, "date");
-    //-- dcterms:
-    metadata.modified = this.getPropertyText(xml, "dcterms:modified");
-    //-- rendition:
-    metadata.flow = this.getPropertyText(xml, "rendition:flow");
-    metadata.layout = this.getPropertyText(xml, "rendition:layout");
-    metadata.spread = this.getPropertyText(xml, "rendition:spread");
-    metadata.viewport = this.getPropertyText(xml, "rendition:viewport");
-    metadata.orientation = this.getPropertyText(xml, "rendition:orientation");
-    //-- media:
-    metadata.media_active_class = this.getPropertyText(xml, "media:active-class");
-    return metadata;
-  }
-
-  /**
-   * Parse Manifest
-   * @param {node} manifestXml
-   * @return {object} manifest
+   * Parse direction flow
+   * @param {Document} packageXml
+   * @param {Node} node spine node 
+   * @returns {string}
    * @private
    */
-  parseManifest(manifestXml) {
-    const manifest = {};
-    //-- Turn items into an array
-    const selected = qsa(manifestXml, "item");
-    const items = Array.prototype.slice.call(selected);
-    //-- Create an object with the id as key
-    items.forEach(item => {
-      const id = item.getAttribute("id"),
-        href = item.getAttribute("href") || "",
-        type = item.getAttribute("media-type") || "",
-        overlay = item.getAttribute("media-overlay") || "",
-        properties = item.getAttribute("properties") || "";
-      manifest[id] = {
-        href: href,
-        type: type,
-        overlay: overlay,
-        properties: properties.length ? properties.split(" ") : []
-      };
-    });
-    return manifest;
-  }
-
-  /**
-   * Parse Spine
-   * @private
-   * @param  {node} spineXml
-   * @param  {Packaging.manifest} manifest
-   * @return {object} spine
-   */
-  parseSpine(spineXml, manifest) {
-    const spine = [];
-    const selected = qsa(spineXml, "itemref");
-    const items = Array.prototype.slice.call(selected);
-    //-- Add to array to maintain ordering and cross reference with manifest
-    items.forEach((item, index) => {
-      const props = item.getAttribute("properties") || "";
-      const itemref = {
-        id: item.getAttribute("id"),
-        idref: item.getAttribute("idref"),
-        index: index,
-        linear: item.getAttribute("linear") || "yes",
-        properties: props.length ? props.split(" ") : []
-      };
-      spine.push(itemref);
-    });
-    return spine;
+  parseDirection(packageXml, node) {
+    const el = packageXml.documentElement;
+    let dir = el.getAttribute("dir");
+    if (dir === null) {
+      dir = node.getAttribute("page-progression-direction");
+    }
+    return dir || "";
   }
 
   /**
    * Find Unique Identifier
-   * @private
-   * @param  {node} packageXml
+   * @param {Document} packageXml
    * @return {string} Unique Identifier text
+   * @private
    */
   findUniqueIdentifier(packageXml) {
-    const uniqueIdentifierId = packageXml.documentElement.getAttribute("unique-identifier");
-    if (!uniqueIdentifierId) {
+    const el = packageXml.documentElement;
+    const uniqueIdentifier = el.getAttribute("unique-identifier");
+    if (!uniqueIdentifier) {
       return "";
     }
-    const identifier = packageXml.getElementById(uniqueIdentifierId);
+    const identifier = packageXml.getElementById(uniqueIdentifier);
     if (!identifier) {
       return "";
     }
@@ -15344,9 +11799,9 @@ class Packaging {
 
   /**
    * Find TOC NAV
-   * @private
-   * @param {element} manifestNode
+   * @param {Node} manifestNode
    * @return {string}
+   * @private
    */
   findNavPath(manifestNode) {
     // Find item with property "nav"
@@ -15360,13 +11815,13 @@ class Packaging {
   /**
    * Find TOC NCX
    * - `media-type="application/x-dtbncx+xml" href="toc.ncx"`
-   * @private
-   * @param {element} manifestNode
-   * @param {element} spineNode
+   * @param {Node} manifestNode
+   * @param {Node} spineNode
    * @return {string}
+   * @private
    */
   findNcxPath(manifestNode, spineNode) {
-    const node = qsp(manifestNode, "item", {
+    let node = qsp(manifestNode, "item", {
       "media-type": "application/x-dtbncx+xml"
     });
     // If we can't find the toc by media-type then try to look for id of the item in the spine attributes as
@@ -15386,14 +11841,11 @@ class Packaging {
    * - `<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml"/>`
    * 
    * Fallback for Epub 2.0
-   * @param  {node} packageXml
+   * @param {Document} packageXml
    * @return {string} href
    * @private
    */
   findCoverPath(packageXml) {
-    const pkg = qs(packageXml, "package");
-    const epubVersion = pkg.getAttribute("version");
-
     // Try parsing cover with epub 3.
     const node = qsp(packageXml, "item", {
       properties: "cover-image"
@@ -15414,68 +11866,49 @@ class Packaging {
   }
 
   /**
-   * Get text of a namespaced element
+   * Parse package version
+   * @param {Document} packageXml 
+   * @returns {string}
    * @private
-   * @param  {node} xml
-   * @param  {string} tag
-   * @return {string} text
    */
-  getElementText(xml, tag) {
-    const found = xml.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", tag);
-    if (!found || found.length === 0) return "";
-    const el = found[0];
-    return el.childNodes.length ? el.childNodes[0].nodeValue : "";
-  }
-
-  /**
-   * Get text by property
-   * @private
-   * @param  {node} xml
-   * @param  {string} property
-   * @return {string} text
-   */
-  getPropertyText(xml, property) {
-    const el = qsp(xml, "meta", {
-      property: property
-    });
-    if (el && el.childNodes.length) {
-      return el.childNodes[0].nodeValue;
-    }
-    return "";
+  parseVersion(packageXml) {
+    const pkg = qs(packageXml, "package");
+    return pkg.getAttribute("version") || "";
   }
 
   /**
    * Load JSON Manifest
-   * @param  {document} packageDocument OPF XML
+   * @param {json} json 
    * @return {object} parsed package parts
    */
   load(json) {
-    this.metadata = json.metadata;
+    const metadata = json.metadata;
+    Object.keys(metadata).forEach(prop => {
+      this.metadata.set(prop, metadata[prop]);
+    });
     const spine = json.readingOrder || json.spine;
-    this.spine = spine.map((item, index) => {
+    this.spine.items = spine.map((item, index) => {
       item.index = index;
       item.linear = item.linear || "yes";
       return item;
     });
     json.resources.forEach((item, index) => {
-      this.manifest[index] = item;
+      this.manifest.set(index, item);
       if (item.rel && item.rel[0] === "cover") {
         this.coverPath = item.href;
       }
     });
-    this.spineNodeIndex = 0;
     this.toc = json.toc.map((item, index) => {
       item.label = item.title;
       return item;
     });
     return {
       metadata: this.metadata,
-      spine: this.spine,
       manifest: this.manifest,
+      spine: this.spine,
       navPath: this.navPath,
       ncxPath: this.ncxPath,
       coverPath: this.coverPath,
-      spineNodeIndex: this.spineNodeIndex,
       toc: this.toc
     };
   }
@@ -15484,13 +11917,17 @@ class Packaging {
    * destroy
    */
   destroy() {
+    this.metadata.destroy();
+    this.manifest.destroy();
+    this.spine.destroy();
+    this.metadata = undefined;
     this.manifest = undefined;
+    this.spine = undefined;
     this.navPath = undefined;
     this.ncxPath = undefined;
     this.coverPath = undefined;
-    this.spineNodeIndex = undefined;
-    this.spine = undefined;
-    this.metadata = undefined;
+    this.direction = undefined;
+    this.version = undefined;
   }
 }
 /* harmony default export */ const packaging = (Packaging);
@@ -15499,9 +11936,12 @@ class Packaging {
 
 /**
  * Navigation Parser
- * @param {document} xml navigation html / xhtml / ncx
  */
 class Navigation {
+  /**
+   * Constructor
+   * @param {Document} xml navigation html / xhtml / ncx
+   */
   constructor(xml) {
     this.toc = [];
     this.tocByHref = {};
@@ -15516,10 +11956,10 @@ class Navigation {
 
   /**
    * Parse out the navigation items
-   * @param {document} xml navigation html / xhtml / ncx
+   * @param {Document} xml navigation html / xhtml / ncx
    */
   parse(xml) {
-    let isXml = xml.nodeType;
+    const isXml = xml.nodeType;
     let html;
     let ncx;
     if (isXml) {
@@ -15540,13 +11980,12 @@ class Navigation {
 
   /**
    * Unpack navigation items
+   * @param {Array} toc
    * @private
-   * @param  {array} toc
    */
   unpack(toc) {
-    var item;
-    for (var i = 0; i < toc.length; i++) {
-      item = toc[i];
+    for (let i = 0; i < toc.length; i++) {
+      const item = toc[i];
       if (item.href) {
         this.tocByHref[item.href] = i;
       }
@@ -15562,14 +12001,14 @@ class Navigation {
 
   /**
    * Get an item from the navigation
-   * @param  {string} target
+   * @param {string} target
    * @return {object} navItem
    */
   get(target) {
-    var index;
     if (!target) {
       return this.toc;
     }
+    let index;
     if (target.indexOf("#") === 0) {
       index = this.tocById[target.substring(1)];
     } else if (target in this.tocByHref) {
@@ -15580,9 +12019,9 @@ class Navigation {
 
   /**
    * Get an item from navigation subitems recursively by index
-   * @param  {string} target
-   * @param  {number} index
-   * @param  {array} navItems
+   * @param {string} target
+   * @param {number} index
+   * @param {Array} navItems
    * @return {object} navItem
    */
   getByIndex(target, index, navItems) {
@@ -15606,47 +12045,47 @@ class Navigation {
 
   /**
    * Get a landmark by type
-   * List of types: https://idpf.github.io/epub-vocabs/structure/
-   * @param  {string} type
+   * @link https://idpf.github.io/epub-vocabs/structure/
+   * @param {string} type
    * @return {object} landmarkItem
    */
   landmark(type) {
-    var index;
     if (!type) {
       return this.landmarks;
     }
-    index = this.landmarksByType[type];
+    const index = this.landmarksByType[type];
     return this.landmarks[index];
   }
 
   /**
    * Parse toc from a Epub > 3.0 Nav
+   * @param {Document} navHtml
+   * @return {Array} navigation list
    * @private
-   * @param  {document} navHtml
-   * @return {array} navigation list
    */
   parseNav(navHtml) {
-    var navElement = querySelectorByType(navHtml, "nav", "toc");
-    var list = [];
+    const navElement = querySelectorByType(navHtml, "nav", "toc");
+    const list = [];
     if (!navElement) return list;
-    let navList = filterChildren(navElement, "ol", true);
+    const navList = filterChildren(navElement, "ol", true);
     if (!navList) return list;
-    list = this.parseNavList(navList);
-    return list;
+    return this.parseNavList(navList);
   }
 
   /**
    * Parses lists in the toc
-   * @param  {document} navListHtml
-   * @param  {string} parent id
-   * @return {array} navigation list
+   * @param {Document} navListHtml
+   * @param {string} parent id
+   * @return {Array} navigation list
    */
   parseNavList(navListHtml, parent) {
     const result = [];
     if (!navListHtml) return result;
     if (!navListHtml.children) return result;
-    for (let i = 0; i < navListHtml.children.length; i++) {
-      const item = this.navItem(navListHtml.children[i], parent);
+    const len = navListHtml.children.length;
+    for (let i = 0; i < len; i++) {
+      const child = navListHtml.children[i];
+      const item = this.navItem(child, parent);
       if (item) {
         result.push(item);
       }
@@ -15656,51 +12095,46 @@ class Navigation {
 
   /**
    * Create a navItem
-   * @private
-   * @param  {element} item
+   * @param {Element} item
    * @return {object} navItem
+   * @private
    */
   navItem(item, parent) {
-    let id = item.getAttribute("id") || undefined;
-    let content = filterChildren(item, "a", true) || filterChildren(item, "span", true);
+    const content = filterChildren(item, "a", true) || filterChildren(item, "span", true);
     if (!content) {
       return;
     }
     let src = content.getAttribute("href") || "";
-    if (!id) {
-      id = src;
-    }
-    let text = content.textContent || "";
-    let subitems = [];
+    let id = item.getAttribute("id") || undefined;
+    if (!id) id = src;
+    let subitems;
     let nested = filterChildren(item, "ol", true);
     if (nested) {
       subitems = this.parseNavList(nested, id);
     }
     return {
-      "id": id,
-      "href": src,
-      "label": text,
-      "subitems": subitems,
-      "parent": parent
+      id: id,
+      href: src,
+      label: content.textContent || "",
+      subitems: subitems || [],
+      parent: parent
     };
   }
 
   /**
    * Parse landmarks from a Epub > 3.0 Nav
+   * @param {Document} navHtml
+   * @return {Array} landmarks list
    * @private
-   * @param  {document} navHtml
-   * @return {array} landmarks list
    */
   parseLandmarks(navHtml) {
-    var navElement = querySelectorByType(navHtml, "nav", "landmarks");
-    var navItems = navElement ? qsa(navElement, "li") : [];
-    var length = navItems.length;
-    var i;
-    var list = [];
-    var item;
+    const navElement = querySelectorByType(navHtml, "nav", "landmarks");
+    const navItems = navElement ? qsa(navElement, "li") : [];
+    const length = navItems.length;
+    const list = [];
     if (!navItems || length === 0) return list;
-    for (i = 0; i < length; ++i) {
-      item = this.landmarkItem(navItems[i]);
+    for (let i = 0; i < length; ++i) {
+      const item = this.landmarkItem(navItems[i]);
       if (item) {
         list.push(item);
         this.landmarksByType[item.type] = i;
@@ -15711,46 +12145,42 @@ class Navigation {
 
   /**
    * Create a landmarkItem
+   * @param {Element} item
+   * @return {object|null} landmarkItem
    * @private
-   * @param  {element} item
-   * @return {object} landmarkItem
    */
   landmarkItem(item) {
-    let content = filterChildren(item, "a", true);
-    if (!content) {
-      return;
-    }
-    let type = content.getAttributeNS("http://www.idpf.org/2007/ops", "type") || undefined;
-    let href = content.getAttribute("href") || "";
-    let text = content.textContent || "";
+    const content = filterChildren(item, "a", true);
+    if (!content) return null;
+    const type = content.getAttributeNS("http://www.idpf.org/2007/ops", "type") || undefined;
+    const href = content.getAttribute("href") || "";
+    const text = content.textContent || "";
     return {
-      "href": href,
-      "label": text,
-      "type": type
+      href: href,
+      label: text,
+      type: type
     };
   }
 
   /**
    * Parse from a Epub > 3.0 NC
+   * @param {Document} navHtml
+   * @return {Array} navigation list
    * @private
-   * @param  {document} navHtml
-   * @return {array} navigation list
    */
   parseNcx(tocXml) {
-    var navPoints = qsa(tocXml, "navPoint");
-    var length = navPoints.length;
-    var i;
-    var toc = {};
-    var list = [];
-    var item, parent;
+    const navPoints = qsa(tocXml, "navPoint");
+    const length = navPoints.length;
+    const toc = {};
+    const list = [];
     if (!navPoints || length === 0) return list;
-    for (i = 0; i < length; ++i) {
-      item = this.ncxItem(navPoints[i]);
+    for (let i = 0; i < length; ++i) {
+      const item = this.ncxItem(navPoints[i]);
       toc[item.id] = item;
       if (!item.parent) {
         list.push(item);
       } else {
-        parent = toc[item.parent];
+        const parent = toc[item.parent];
         parent.subitems.push(item);
       }
     }
@@ -15759,28 +12189,25 @@ class Navigation {
 
   /**
    * Create a ncxItem
-   * @private
-   * @param  {element} item
+   * @param  {Element} item
    * @return {object} ncxItem
+   * @private
    */
   ncxItem(item) {
-    var id = item.getAttribute("id") || false,
-      content = qs(item, "content"),
-      src = content.getAttribute("src"),
-      navLabel = qs(item, "navLabel"),
-      text = navLabel.textContent ? navLabel.textContent : "",
-      subitems = [],
-      parentNode = item.parentNode,
-      parent;
-    if (parentNode && (parentNode.nodeName === "navPoint" || parentNode.nodeName.split(':').slice(-1)[0] === "navPoint")) {
-      parent = parentNode.getAttribute("id");
+    const content = qs(item, "content");
+    const navLabel = qs(item, "navLabel");
+    const text = navLabel.textContent ? navLabel.textContent : "";
+    const pn = item.parentNode;
+    let parent;
+    if (pn && (pn.nodeName === "navPoint" || pn.nodeName.split(":").slice(-1)[0] === "navPoint")) {
+      parent = pn.getAttribute("id");
     }
     return {
-      "id": id,
-      "href": src,
-      "label": text,
-      "subitems": subitems,
-      "parent": parent
+      id: item.getAttribute("id") || false,
+      href: content.getAttribute("src"),
+      label: text,
+      subitems: [],
+      parent: parent
     };
   }
 
@@ -15799,7 +12226,7 @@ class Navigation {
 
   /**
    * forEach pass through
-   * @param  {Function} fn function to run on each item
+   * @param {Function} fn function to run on each item
    * @return {method} forEach loop
    */
   forEach(fn) {
@@ -15807,17 +12234,144 @@ class Navigation {
   }
 }
 /* harmony default export */ const navigation = (Navigation);
+;// CONCATENATED MODULE: ./src/utils/replacements.js
+/**
+ * @module replacements
+ */
+
+
+
+
+/**
+ * replaceBase
+ * @param {Document} doc 
+ * @param {Section} section 
+ */
+const replaceBase = (doc, section) => {
+  if (!doc) return;
+  let head = qs(doc, "head");
+  let base = qs(head, "base");
+  if (!base) {
+    base = doc.createElement("base");
+    head.insertBefore(base, head.firstChild);
+  }
+  let url = section.url;
+  const absolute = url.indexOf("://") > -1;
+  if (!absolute) {
+    url = doc.documentURI;
+  }
+  base.setAttribute("href", url);
+};
+
+/**
+ * replaceCanonical
+ * @param {Document} doc 
+ * @param {Section} section 
+ */
+const replaceCanonical = (doc, section) => {
+  if (!doc) return;
+  let url = section.canonical;
+  let head = qs(doc, "head");
+  let link = qs(head, "link[rel='canonical']");
+  if (link) {
+    link.setAttribute("href", url);
+  } else {
+    link = doc.createElement("link");
+    link.setAttribute("rel", "canonical");
+    link.setAttribute("href", url);
+    head.appendChild(link);
+  }
+};
+
+/**
+ * replaceMeta
+ * @param {Document} doc 
+ * @param {Section} section 
+ */
+const replaceMeta = (doc, section) => {
+  if (!doc) return;
+  let head = qs(doc, "head");
+  let meta = qs(head, "link[property='dc.identifier']");
+  if (meta) {
+    meta.setAttribute("content", section.idref);
+  } else {
+    meta = doc.createElement("meta");
+    meta.setAttribute("name", "dc.identifier");
+    meta.setAttribute("content", section.idref);
+    head.appendChild(meta);
+  }
+};
+
+/**
+ * replaceLinks
+ * TODO: move me to Contents
+ * @param {Element} contents 
+ * @param {method} fn 
+ */
+const replaceLinks = (contents, fn) => {
+  const links = contents.querySelectorAll("a[href]");
+  if (!links.length) return;
+  const base = qs(contents.ownerDocument, "base");
+  const location = base ? base.getAttribute("href") : undefined;
+  const replaceLink = link => {
+    const href = link.getAttribute("href");
+    if (href.indexOf("mailto:") === 0) {
+      return;
+    }
+    if (href.indexOf("://") > -1) {
+      // is absolute
+      link.setAttribute("target", "_blank");
+    } else {
+      let linkUrl;
+      try {
+        linkUrl = new utils_url(href, location);
+      } catch (err) {
+        console.error(err);
+      }
+      link.onclick = e => {
+        if (linkUrl && linkUrl.hash) {
+          fn(linkUrl.path.path + linkUrl.hash);
+        } else if (linkUrl) {
+          fn(linkUrl.path.path);
+        } else {
+          fn(href);
+        }
+        return false;
+      };
+    }
+  };
+  for (let i = 0; i < links.length; i++) {
+    replaceLink(links[i]);
+  }
+};
+
+/**
+ * substitute
+ * @param {string} content 
+ * @param {Array} urls 
+ * @param {Array} replacements 
+ */
+const substitute = (content, urls, replacements) => {
+  urls.forEach((url, i) => {
+    if (url && replacements[i]) {
+      // Account for special characters in the file name.
+      // See https://stackoverflow.com/a/6318729.
+      url = url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      content = content.replace(new RegExp(url, "g"), replacements[i]);
+    }
+  });
+  return content;
+};
 ;// CONCATENATED MODULE: ./src/utils/mime.js
 /**
  * @module mime
  */
 
-/*
- From Zip.js, by Gildas Lormeau
-edited down
+/**
+ * From Zip.js, by Gildas Lormeau edited down
+ * @private
  */
-
-var table = {
+const table = {
   "application": {
     "ecmascript": ["es", "ecma"],
     "javascript": "js",
@@ -15952,41 +12506,41 @@ var table = {
     "x-smv": "smv"
   }
 };
-var mime_mimeTypes = function () {
-  var type,
-    subtype,
-    val,
-    index,
-    mimeTypes = {};
-  for (type in table) {
+const mime_mimeTypes = (() => {
+  const types = {};
+  for (const type in table) {
     if (table.hasOwnProperty(type)) {
-      for (subtype in table[type]) {
+      for (const subtype in table[type]) {
         if (table[type].hasOwnProperty(subtype)) {
-          val = table[type][subtype];
-          if (typeof val == "string") {
-            mimeTypes[val] = type + "/" + subtype;
+          const val = table[type][subtype];
+          if (typeof val === "string") {
+            types[val] = type + "/" + subtype;
           } else {
-            for (index = 0; index < val.length; index++) {
-              mimeTypes[val[index]] = type + "/" + subtype;
+            for (let i = 0; i < val.length; i++) {
+              types[val[i]] = type + "/" + subtype;
             }
           }
         }
       }
     }
   }
-  return mimeTypes;
-}();
-var defaultValue = "text/plain"; //"application/octet-stream";
+  return types;
+})();
+const defaultValue = "text/plain";
 
 /**
  * lookup
  * @param {string} filename 
  * @returns {string}
  */
-function lookup(filename) {
-  return filename && mime_mimeTypes[filename.split(".").pop().toLowerCase()] || defaultValue;
-}
-;
+const lookup = filename => {
+  let value;
+  if (filename) {
+    const type = filename.split(".").pop().toLowerCase();
+    value = mime_mimeTypes[type];
+  }
+  return value || defaultValue;
+};
 /* harmony default export */ const mime = ({
   lookup
 });
@@ -16030,60 +12584,21 @@ class Resources {
    * @param {Manifest} manifest
    */
   process(manifest) {
-    this.manifest = manifest;
-    this.resources = Object.keys(manifest).map(key => {
-      return manifest[key];
-    });
-    this.replacementUrls = [];
+    this.css = [];
     this.html = [];
     this.assets = [];
-    this.css = [];
     this.urls = [];
-    this.cssUrls = [];
-    this.split();
-    this.splitUrls();
-  }
-
-  /**
-   * Split resources by type
-   * @private
-   */
-  split() {
-    // HTML
-    this.html = this.resources.filter(item => {
+    this.replacementUrls = [];
+    manifest.forEach((item, key) => {
       if (item.type === "application/xhtml+xml" || item.type === "text/html") {
-        return true;
+        this.html.push(item);
+      } else {
+        if (item.type === "text/css") {
+          this.css.push(item);
+        }
+        this.assets.push(item);
+        this.urls.push(item.href);
       }
-    });
-
-    // Exclude HTML
-    this.assets = this.resources.filter(item => {
-      if (item.type !== "application/xhtml+xml" && item.type !== "text/html") {
-        return true;
-      }
-    });
-
-    // Only CSS
-    this.css = this.resources.filter(item => {
-      if (item.type === "text/css") {
-        return true;
-      }
-    });
-  }
-
-  /**
-   * Convert split resources into Urls
-   * @private
-   */
-  splitUrls() {
-    // All Assets Urls
-    this.urls = this.assets.map(item => {
-      return item.href;
-    });
-
-    // Css Urls
-    this.cssUrls = this.css.map(item => {
-      return item.href;
     });
   }
 
@@ -16153,16 +12668,15 @@ class Resources {
    * @param {Archive} [archive]
    * @param {method} [resolve]
    * @return {Promise}
-   * @private
    */
   replaceCss(archive, resolve) {
     const replaced = [];
     archive = archive || this.archive;
     resolve = resolve || this.resolve;
-    this.cssUrls.forEach(href => {
-      const replacement = this.createCssFile(href, archive, resolve).then(url => {
+    this.css.forEach(item => {
+      const replacement = this.createCssFile(item.href, archive, resolve).then(url => {
         // switch the url in the replacementUrls
-        const index = this.urls.indexOf(href);
+        const index = this.urls.indexOf(item.href);
         if (index > -1) {
           this.replacementUrls[index] = url;
         }
@@ -16279,14 +12793,11 @@ class Resources {
    */
   destroy() {
     this.settings = undefined;
-    this.manifest = undefined;
-    this.resources = undefined;
     this.replacementUrls = undefined;
     this.html = undefined;
     this.assets = undefined;
     this.css = undefined;
     this.urls = undefined;
-    this.cssUrls = undefined;
   }
 }
 /* harmony default export */ const resources = (Resources);
@@ -16296,9 +12807,12 @@ class Resources {
 
 /**
  * Page List Parser
- * @param {document} [xml]
  */
 class PageList {
+  /**
+   * Constructor
+   * @param {Document} [xml] 
+   */
   constructor(xml) {
     this.pages = [];
     this.locations = [];
@@ -16318,111 +12832,112 @@ class PageList {
 
   /**
    * Parse PageList Xml
-   * @param  {document} xml
+   * @param {Document} xml
+   * @returns {Array}
    */
   parse(xml) {
-    var html = qs(xml, "html");
-    var ncx = qs(xml, "ncx");
+    const html = qs(xml, "html");
+    const ncx = qs(xml, "ncx");
     if (html) {
       return this.parseNav(xml);
     } else if (ncx) {
       return this.parseNcx(xml);
     }
+    return [];
   }
 
   /**
    * Parse a Nav PageList
-   * @private
-   * @param  {node} navHtml
+   * @param {Node} navHtml
    * @return {PageList.item[]} list
+   * @private
    */
   parseNav(navHtml) {
-    var navElement = querySelectorByType(navHtml, "nav", "page-list");
-    var navItems = navElement ? qsa(navElement, "li") : [];
-    var length = navItems.length;
-    var i;
-    var list = [];
-    var item;
+    const navElement = querySelectorByType(navHtml, "nav", "page-list");
+    const navItems = navElement ? qsa(navElement, "li") : [];
+    const length = navItems.length;
+    const list = [];
     if (!navItems || length === 0) return list;
-    for (i = 0; i < length; ++i) {
-      item = this.item(navItems[i]);
+    for (let i = 0; i < length; ++i) {
+      const item = this.item(navItems[i]);
       list.push(item);
     }
     return list;
   }
+
+  /**
+   * parseNcx
+   * @param {Node} navXml 
+   * @returns {Array}
+   * @private
+   */
   parseNcx(navXml) {
-    var list = [];
-    var i = 0;
-    var item;
-    var pageList;
-    var pageTargets;
-    var length = 0;
-    pageList = qs(navXml, "pageList");
+    const list = [];
+    const pageList = qs(navXml, "pageList");
     if (!pageList) return list;
-    pageTargets = qsa(pageList, "pageTarget");
-    length = pageTargets.length;
+    const pageTargets = qsa(pageList, "pageTarget");
+    const length = pageTargets.length;
     if (!pageTargets || pageTargets.length === 0) {
       return list;
     }
-    for (i = 0; i < length; ++i) {
-      item = this.ncxItem(pageTargets[i]);
+    for (let i = 0; i < length; ++i) {
+      const item = this.ncxItem(pageTargets[i]);
       list.push(item);
     }
     return list;
   }
+
+  /**
+   * ncxItem
+   * @param {Node} item 
+   * @returns {object}
+   * @private
+   */
   ncxItem(item) {
-    var navLabel = qs(item, "navLabel");
-    var navLabelText = qs(navLabel, "text");
-    var pageText = navLabelText.textContent;
-    var content = qs(item, "content");
-    var href = content.getAttribute("src");
-    var page = parseInt(pageText, 10);
+    const navLabel = qs(item, "navLabel");
+    const navLabelText = qs(navLabel, "text");
+    const pageText = navLabelText.textContent;
+    const content = qs(item, "content");
     return {
-      "href": href,
-      "page": page
+      href: content.getAttribute("src"),
+      page: parseInt(pageText, 10)
     };
   }
 
   /**
    * Page List Item
-   * @private
-   * @param  {node} item
+   * @param {Node} item
    * @return {object} pageListItem
+   * @private
    */
   item(item) {
-    var content = qs(item, "a"),
-      href = content.getAttribute("href") || "",
-      text = content.textContent || "",
-      page = parseInt(text),
-      isCfi = href.indexOf("epubcfi"),
-      split,
-      packageUrl,
-      cfi;
-    if (isCfi != -1) {
-      split = href.split("#");
-      packageUrl = split[0];
-      cfi = split.length > 1 ? split[1] : false;
+    const content = qs(item, "a");
+    const href = content.getAttribute("href") || "";
+    const text = content.textContent || "";
+    const page = parseInt(text);
+    if (href.indexOf("epubcfi") !== -1) {
+      const split = href.split("#");
       return {
-        "cfi": cfi,
-        "href": href,
-        "packageUrl": packageUrl,
-        "page": page
+        cfi: split.length > 1 ? split[1] : false,
+        href: href,
+        packageUrl: split[0],
+        page: page
       };
     } else {
       return {
-        "href": href,
-        "page": page
+        href: href,
+        page: page
       };
     }
   }
 
   /**
    * Process pageList items
+   * @param {array} pageList
    * @private
-   * @param  {array} pageList
    */
   process(pageList) {
-    pageList.forEach(function (item) {
+    pageList.forEach(item => {
       this.pages.push(item.page);
       if (item.cfi) {
         this.locations.push(item.cfi);
@@ -16435,22 +12950,20 @@ class PageList {
 
   /**
    * Get a PageList result from a EpubCFI
-   * @param  {string} cfi EpubCFI String
+   * @param {string} cfi EpubCFI String
    * @return {number} page
    */
   pageFromCfi(cfi) {
-    var pg = -1;
-
     // Check if the pageList has not been set yet
     if (this.locations.length === 0) {
       return -1;
     }
-
     // TODO: check if CFI is valid?
 
     // check if the cfi is in the location list
     // var index = this.locations.indexOf(cfi);
-    var index = indexOfSorted(cfi, this.locations, this.epubcfi.compare);
+    let pg,
+      index = indexOfSorted(cfi, this.locations, this.epubcfi.compare);
     if (index != -1) {
       pg = this.pages[index];
     } else {
@@ -16472,20 +12985,20 @@ class PageList {
 
   /**
    * Get an EpubCFI from a Page List Item
-   * @param  {string | number} pg
+   * @param {string|number} pg
    * @return {string} cfi
    */
   cfiFromPage(pg) {
-    var cfi = -1;
     // check that pg is an int
-    if (typeof pg != "number") {
+    if (typeof pg !== "number") {
       pg = parseInt(pg);
     }
 
     // check if the cfi is in the page list
     // Pages could be unsorted.
-    var index = this.pages.indexOf(pg);
-    if (index != -1) {
+    const index = this.pages.indexOf(pg);
+    let cfi = -1;
+    if (index !== -1) {
       cfi = this.locations[index];
     }
     // TODO: handle pages not in the list
@@ -16494,32 +13007,31 @@ class PageList {
 
   /**
    * Get a Page from Book percentage
-   * @param  {number} percent
+   * @param {number} percent
    * @return {number} page
    */
   pageFromPercentage(percent) {
-    var pg = Math.round(this.totalPages * percent);
-    return pg;
+    return Math.round(this.totalPages * percent);
   }
 
   /**
    * Returns a value between 0 - 1 corresponding to the location of a page
-   * @param  {number} pg the page
+   * @param {number} pg the page
    * @return {number} percentage
    */
   percentageFromPage(pg) {
-    var percentage = (pg - this.firstPage) / this.totalPages;
+    const percentage = (pg - this.firstPage) / this.totalPages;
     return Math.round(percentage * 1000) / 1000;
   }
 
   /**
    * Returns a value between 0 - 1 corresponding to the location of a cfi
-   * @param  {string} cfi EpubCFI String
+   * @param {string} cfi EpubCFI String
    * @return {number} percentage
    */
   percentageFromCfi(cfi) {
-    var pg = this.pageFromCfi(cfi);
-    var percentage = this.percentageFromPage(pg);
+    const pg = this.pageFromCfi(cfi);
+    const percentage = this.percentageFromPage(pg);
     return percentage;
   }
 
@@ -16536,6 +13048,222 @@ class PageList {
   }
 }
 /* harmony default export */ const pagelist = (PageList);
+;// CONCATENATED MODULE: ./src/annotation.js
+
+
+
+
+/**
+ * Annotation class
+ */
+class Annotation {
+  /**
+   * Constructor
+   * @param {string} type Type of annotation to add: `"highlight"` OR `"underline"`
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   * @param {object} [options]
+   * @param {object} [options.data] Data to assign to annotation
+   * @param {method} [options.cb] Callback after annotation is clicked
+   * @param {string} [options.className] CSS class to assign to annotation
+   * @param {object} [options.styles] CSS styles to assign to annotation
+   */
+  constructor(type, cfiRange, {
+    data,
+    cb,
+    className,
+    styles
+  }) {
+    /**
+     * @member {string} type
+     * @memberof Annotation
+     * @readonly
+     */
+    this.type = type;
+    this.cfiRange = cfiRange;
+    /**
+     * @member {number} sectionIndex
+     * @memberof Annotation
+     * @readonly
+     */
+    this.sectionIndex = new src_epubcfi(cfiRange).spinePos;
+    this.data = data;
+    this.cb = cb;
+    this.className = className;
+    this.styles = styles;
+    /**
+     * @member {Mark} mark
+     * @memberof Annotation
+     * @readonly
+     */
+    this.mark = undefined;
+  }
+
+  /**
+   * Update stored data
+   * @param {object} data
+   */
+  update(data) {
+    this.data = data;
+  }
+
+  /**
+   * Add to a view
+   * @param {View} view
+   * @returns {object|null}
+   */
+  attach(view) {
+    let result;
+    if (!view) {
+      return null;
+    } else if (this.type === "highlight") {
+      result = view.highlight(this.cfiRange, this.data, this.cb, this.className, this.styles);
+    } else if (this.type === "underline") {
+      result = view.underline(this.cfiRange, this.data, this.cb, this.className, this.styles);
+    }
+    this.mark = result;
+    /**
+     * @event attach
+     * @param {Mark} result
+     * @memberof Annotation
+     */
+    this.emit(EVENTS.ANNOTATION.ATTACH, result);
+    return result;
+  }
+
+  /**
+   * Remove from a view
+   * @param {View} view
+   * @returns {boolean}
+   */
+  detach(view) {
+    let result = false;
+    if (!view) {
+      return result;
+    } else if (this.type === "highlight") {
+      result = view.unhighlight(this.cfiRange);
+    } else if (this.type === "underline") {
+      result = view.ununderline(this.cfiRange);
+    }
+    this.mark = undefined;
+    /**
+     * @event detach
+     * @param {boolean} result
+     * @memberof Annotation
+     */
+    this.emit(EVENTS.ANNOTATION.DETACH, result);
+    return result;
+  }
+
+  /**
+   * [Not Implemented] Get text of an annotation
+   * @TODO: needs implementation in contents
+   */
+  text() {}
+}
+event_emitter_default()(Annotation.prototype);
+/* harmony default export */ const src_annotation = (Annotation);
+;// CONCATENATED MODULE: ./src/annotations.js
+
+
+/**
+ * Handles managing adding & removing Annotations
+ */
+class Annotations extends Map {
+  /**
+   * Constructor
+   * @param {Rendition} rendition
+   */
+  constructor(rendition) {
+    super();
+    this.rendition = rendition;
+    this.rendition.hooks.render.register(this.inject.bind(this));
+    this.rendition.hooks.unloaded.register(this.reject.bind(this));
+  }
+
+  /**
+   * Append an annotation to store
+   * @param {string} type Type of annotation to append: `"highlight"` OR `"underline"`
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   * @param {object} [options]
+   * @param {object} [options.data] Data to assign to annotation
+   * @param {method} [options.cb] Callback after annotation is added
+   * @param {string} [options.className] CSS class to assign to annotation
+   * @param {object} [options.styles] CSS styles to assign to annotation
+   * @returns {Annotation} Annotation that was append
+   */
+  append(type, cfiRange, options) {
+    const key = encodeURI(type + ":" + cfiRange);
+    const annotation = new src_annotation(type, cfiRange, options);
+    this.rendition.views().forEach(view => {
+      const index = view.section.index;
+      if (annotation.sectionIndex === index) {
+        annotation.attach(view);
+      }
+    });
+    this.set(key, annotation);
+    return annotation;
+  }
+
+  /**
+   * Remove an annotation from store
+   * @param {string} type Type of annotation to remove: `"highlight"` OR `"underline"`
+   * @param {string} cfiRange EpubCFI range to attach annotation to
+   */
+  remove(type, cfiRange) {
+    const key = encodeURI(type + ":" + cfiRange);
+    const annotation = this.get(key);
+    if (annotation) {
+      this.rendition.views().forEach(view => {
+        const index = view.section.index;
+        if (annotation.sectionIndex === index) {
+          annotation.detach(view);
+        }
+      });
+      this.delete(key);
+    }
+  }
+
+  /**
+   * Hook for injecting annotation into a view
+   * @param {View} view
+   * @private
+   */
+  inject(view) {
+    const index = view.section.index;
+    this.forEach((note, key) => {
+      if (note.sectionIndex === index) {
+        note.attach(view);
+      }
+    });
+  }
+
+  /**
+   * Hook for removing annotation from a view
+   * @param {View} view
+   * @private
+   */
+  reject(view) {
+    const index = view.section.index;
+    this.forEach((note, key) => {
+      if (note.sectionIndex === index) {
+        note.detach(view);
+      }
+    });
+  }
+
+  /**
+   * [Not Implemented] Show annotations
+   * @TODO: needs implementation in View
+   */
+  show() {}
+
+  /**
+   * [Not Implemented] Hide annotations
+   * @TODO: needs implementation in View
+   */
+  hide() {}
+}
+/* harmony default export */ const annotations = (Annotations);
 ;// CONCATENATED MODULE: ./src/layout.js
 
 
@@ -17043,6 +13771,93 @@ class Themes extends Map {
 }
 event_emitter_default()(Themes.prototype);
 /* harmony default export */ const themes = (Themes);
+;// CONCATENATED MODULE: ./src/utils/hook.js
+/**
+ * Hooks allow for injecting functions that must all complete in order before finishing
+ * They will execute in parallel but all must finish before continuing
+ * Functions may return a promise if they are async.
+ */
+class Hook {
+  /**
+   * Constructor
+   * @param {any} context scope of this
+   * @example this.content = new Hook(this);
+   */
+  constructor(context) {
+    this.context = context || this;
+    this.hooks = [];
+  }
+
+  /**
+   * Adds a function to be run before a hook completes
+   * @example this.content.register(() => {...});
+   */
+  register() {
+    for (let i = 0; i < arguments.length; ++i) {
+      if (typeof arguments[i] === "function") {
+        this.hooks.push(arguments[i]);
+      } else if (arguments[i] instanceof Array) {
+        // unpack array
+        this.register(arguments[i]); // recursive call
+      } else {
+        throw new TypeError("Invalid argument type");
+      }
+    }
+  }
+
+  /**
+   * Removes a function
+   * @example this.content.deregister(() => {...});
+   */
+  deregister(func) {
+    for (let i = 0; i < this.hooks.length; i++) {
+      if (this.hooks[i] === func) {
+        this.hooks.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Triggers a hook to run all functions
+   * @example this.content.trigger(args).then(() => {...});
+   * @returns {Promise[]}
+   */
+  trigger() {
+    const args = arguments;
+    const context = this.context;
+    const promises = [];
+    let executing;
+    this.hooks.forEach(task => {
+      try {
+        executing = task.apply(context, args);
+      } catch (err) {
+        console.error(err);
+      }
+      if (executing && typeof executing["then"] === "function") {
+        // Task is a function that returns a promise
+        promises.push(executing);
+      }
+    });
+    return Promise.all(promises);
+  }
+
+  /**
+   * list
+   * @returns {Array}
+   */
+  list() {
+    return this.hooks;
+  }
+
+  /**
+   * clear
+   */
+  clear() {
+    this.hooks = [];
+  }
+}
+/* harmony default export */ const hook = (Hook);
 ;// CONCATENATED MODULE: ./src/mapping.js
 
 
@@ -17439,6 +14254,486 @@ class Mapping {
   }
 }
 /* harmony default export */ const src_mapping = (Mapping);
+// EXTERNAL MODULE: ./node_modules/lodash/throttle.js
+var throttle = __webpack_require__(7350);
+var throttle_default = /*#__PURE__*/__webpack_require__.n(throttle);
+;// CONCATENATED MODULE: ./src/managers/helpers/stage.js
+
+
+
+
+/**
+ * Stage
+ */
+class Stage {
+  /**
+   * Constructor
+   * @param {Layout} layout 
+   * @param {object} options
+   * @param {string} options.axis
+   * @param {boolean} options.fullsize
+   * @param {string|number} options.width
+   * @param {string|number} options.height
+   */
+  constructor(layout, options) {
+    /**
+     * @member {object} settings
+     * @memberof Stage
+     * @readonly
+     */
+    this.settings = options || {};
+    /**
+     * @member {string} id
+     * @memberof Stage
+     * @readonly
+     */
+    this.id = "epubjs-container-" + uuid();
+    /**
+     * @member {Element} container
+     * @memberof Stage
+     * @readonly
+     */
+    this.container = this.create(this.settings);
+    this.layout = layout;
+    this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+      if (changed.flow) {
+        this.updateFlow(changed.flow);
+      } else if (changed.direction) {
+        this.direction(changed.direction);
+      }
+    });
+    this.updateFlow();
+    this.direction();
+    this.axis(options.axis || "vertical");
+    if (this.settings.hidden) {
+      this.wrapper = this.wrap(this.container);
+    }
+  }
+
+  /**
+   * Creates an element to render to.
+   * Resizes to passed width and height or to the elements size
+   * @param {object} options 
+   * @returns {Element} container
+   */
+  create(options) {
+    let width = options.width;
+    let height = options.height;
+    extend(this.settings, options);
+    if (options.height && isNumber(options.height)) {
+      height = options.height + "px";
+    }
+    if (options.width && isNumber(options.width)) {
+      width = options.width + "px";
+    }
+
+    // Create new container element
+    const container = document.createElement("div");
+    container.id = this.id;
+    container.classList.add("epub-container");
+
+    // Style Element
+    container.style.wordSpacing = "0";
+    container.style.lineHeight = "0";
+    container.style.verticalAlign = "top";
+    container.style.position = "relative";
+    container.style.display = "flex";
+    container.style.flexWrap = "nowrap";
+    if (width) {
+      container.style.width = width;
+    }
+    if (height) {
+      container.style.height = height;
+    }
+    return container;
+  }
+
+  /**
+   * wrap
+   * @param {Element} container 
+   * @returns {Element} wrapper
+   */
+  wrap(container) {
+    const wrapper = document.createElement("div");
+    wrapper.style.visibility = "hidden";
+    wrapper.style.overflow = "hidden";
+    wrapper.style.width = "0";
+    wrapper.style.height = "0";
+    wrapper.appendChild(container);
+    return wrapper;
+  }
+
+  /**
+   * getElement
+   * @param {Element|string} element 
+   * @returns {Element}
+   */
+  getElement(element) {
+    let elm;
+    if (isElement(element)) {
+      elm = element;
+    } else if (typeof element === "string") {
+      elm = document.getElementById(element);
+    } else {
+      throw new TypeError("not valid argument type");
+    }
+    return elm;
+  }
+
+  /**
+   * attachTo
+   * @param {Element|string} what 
+   * @returns {Element}
+   */
+  attachTo(what) {
+    const element = this.getElement(what);
+    if (!element) return;
+    let base;
+    if (this.settings.hidden) {
+      base = this.wrapper;
+    } else {
+      base = this.container;
+    }
+    element.appendChild(base);
+    this.parentElement = element;
+    return element;
+  }
+
+  /**
+   * getContainer
+   * @returns {Element} container
+   */
+  getContainer() {
+    return this.container;
+  }
+
+  /**
+   * onResize
+   * @param {*} func 
+   */
+  onResize(func) {
+    // Only listen to window for resize event if width and height are not fixed.
+    // This applies if it is set to a percent or auto.
+    if (!isNumber(this.settings.width) || !isNumber(this.settings.height)) {
+      this.resizeFunc = throttle_default()(func, 50);
+      window.addEventListener("resize", this.resizeFunc, false);
+    }
+  }
+
+  /**
+   * onOrientationChange
+   * @param {*} func 
+   */
+  onOrientationChange(func) {
+    this.orientationChangeFunc = func;
+    window.addEventListener("orientationchange", this.orientationChangeFunc, false);
+  }
+
+  /**
+   * size
+   * @param {string|number} [width] 
+   * @param {string|number} [height] 
+   * @returns {object}
+   */
+  size(width, height) {
+    let bounds;
+    let _width = width || this.settings.width;
+    let _height = height || this.settings.height;
+
+    // If width or height are set to false, inherit them from containing element
+    if (!width) {
+      bounds = this.parentElement.getBoundingClientRect();
+      if (bounds.width) {
+        width = Math.floor(bounds.width);
+        this.container.style.width = width + "px";
+      }
+    } else {
+      if (isNumber(width)) {
+        this.container.style.width = width + "px";
+      } else {
+        this.container.style.width = width;
+      }
+    }
+    if (!height) {
+      bounds = bounds || this.parentElement.getBoundingClientRect();
+      if (bounds.height) {
+        height = bounds.height;
+        this.container.style.height = height + "px";
+      }
+    } else {
+      if (isNumber(height)) {
+        this.container.style.height = height + "px";
+      } else {
+        this.container.style.height = height;
+      }
+    }
+    if (!isNumber(width)) {
+      width = this.container.clientWidth;
+    }
+    if (!isNumber(height)) {
+      height = this.container.clientHeight;
+    }
+    this.containerStyles = window.getComputedStyle(this.container);
+    this.containerPadding = {
+      left: parseFloat(this.containerStyles["padding-left"]) || 0,
+      right: parseFloat(this.containerStyles["padding-right"]) || 0,
+      top: parseFloat(this.containerStyles["padding-top"]) || 0,
+      bottom: parseFloat(this.containerStyles["padding-bottom"]) || 0
+    };
+
+    // Bounds not set, get them from window
+    let wndBounds = windowBounds();
+    let bodyStyles = window.getComputedStyle(document.body);
+    let bodyPadding = {
+      left: parseFloat(bodyStyles["padding-left"]) || 0,
+      right: parseFloat(bodyStyles["padding-right"]) || 0,
+      top: parseFloat(bodyStyles["padding-top"]) || 0,
+      bottom: parseFloat(bodyStyles["padding-bottom"]) || 0
+    };
+    if (!_width) {
+      width = wndBounds.width - bodyPadding.left - bodyPadding.right;
+    }
+    if (this.settings.fullsize && !_height || !_height) {
+      height = wndBounds.height - bodyPadding.top - bodyPadding.bottom;
+    }
+    return {
+      width: width - this.containerPadding.left - this.containerPadding.right,
+      height: height - this.containerPadding.top - this.containerPadding.bottom
+    };
+  }
+
+  /**
+   * Get bounding client rect
+   * @returns {DOMRect|object}
+   */
+  bounds() {
+    let box;
+    if (this.container.style.overflow !== "visible") {
+      box = this.container && this.container.getBoundingClientRect();
+    }
+    if (!box || !box.width || !box.height) {
+      return windowBounds();
+    } else {
+      return box;
+    }
+  }
+
+  /**
+   * getSheet
+   * @returns {CSSStyleSheet}
+   */
+  getSheet() {
+    const style = document.createElement("style");
+    // WebKit hack --> https://davidwalsh.name/add-rules-stylesheets
+    style.appendChild(document.createTextNode(""));
+    document.head.appendChild(style);
+    return style.sheet;
+  }
+
+  /**
+   * addStyleRules
+   * @param {string} selector 
+   * @param {object[]} rulesArray 
+   */
+  addStyleRules(selector, rulesArray) {
+    let scope = "#" + this.id + " ";
+    let rules = "";
+    if (!this.sheet) {
+      this.sheet = this.getSheet();
+    }
+    rulesArray.forEach(set => {
+      for (const prop in set) {
+        if (set.hasOwnProperty(prop)) {
+          rules += prop + ":" + set[prop] + ";";
+        }
+      }
+    });
+    this.sheet.insertRule(scope + selector + " {" + rules + "}", 0);
+  }
+
+  /**
+   * Set axis
+   * @param {string} value values: `"horizontal"` OR `"vertical"`
+   */
+  axis(value) {
+    if (value === "horizontal") {
+      this.container.style.flexDirection = "row";
+    } else {
+      this.container.style.flexDirection = null;
+    }
+    this.settings.axis = value;
+  }
+
+  /**
+   * Update direction
+   * @param {string} [value] direction
+   * @private
+   */
+  direction(value) {
+    value = value || this.layout.direction;
+    if (this.container) {
+      this.container.dir = value;
+    }
+    if (this.settings.fullsize) {
+      document.body.style["direction"] = value;
+    }
+  }
+
+  /**
+   * Update Flow
+   * @param {string} [value] `layout.flow` value
+   * @private
+   */
+  updateFlow(value) {
+    value = value || this.layout.flow;
+    switch (value) {
+      case "paginated":
+        this.container.style["overflow-y"] = "hidden";
+        this.container.style["overflow-x"] = "hidden";
+        this.container.style.flexWrap = "nowrap";
+        break;
+      case "scrolled":
+        this.container.style["overflow-y"] = "auto";
+        this.container.style["overflow-x"] = "hidden";
+        this.container.style.flexWrap = "wrap";
+        break;
+      case "scrolled-doc":
+        this.container.style["overflow-y"] = "hidden";
+        this.container.style["overflow-x"] = "hidden";
+        this.container.style.flexWrap = "wrap";
+        break;
+    }
+  }
+
+  /**
+   * destroy
+   */
+  destroy() {
+    if (this.parentElement) {
+      let base;
+      if (this.settings.hidden) {
+        base = this.wrapper;
+      } else {
+        base = this.container;
+      }
+      if (this.parentElement.contains(base)) {
+        this.parentElement.removeChild(base);
+      }
+      window.removeEventListener("resize", this.resizeFunc);
+      window.removeEventListener("orientationChange", this.orientationChangeFunc);
+    }
+  }
+}
+/* harmony default export */ const stage = (Stage);
+;// CONCATENATED MODULE: ./src/managers/helpers/views.js
+/**
+ * Views
+ */
+class Views extends Array {
+  /**
+   * Constructor
+   * @param {Element} container 
+   */
+  constructor(container) {
+    super();
+    this.container = container;
+    this.hidden = false;
+  }
+  first() {
+    return this[0];
+  }
+  last() {
+    return this[this.length - 1];
+  }
+  get(i) {
+    return this[i];
+  }
+  append(view) {
+    if (this.container) {
+      this.container.appendChild(view.element);
+    }
+    this.push(view);
+    return view;
+  }
+  prepend(view) {
+    if (this.container) {
+      this.container.insertBefore(view.element, this.container.firstChild);
+    }
+    this.unshift(view);
+    return view;
+  }
+  insert(view, index) {
+    if (this.container) {
+      if (index < this.container.children.length) {
+        this.container.insertBefore(view.element, this.container.children[index]);
+      } else {
+        this.container.appendChild(view.element);
+      }
+    }
+    this.splice(index, 0, view);
+    return view;
+  }
+  remove(view) {
+    const index = this.indexOf(view);
+    if (index > -1) {
+      this.splice(index, 1);
+    }
+    this.destroy(view);
+  }
+  destroy(view) {
+    if (view.displayed) {
+      view.destroy();
+    }
+    if (this.container) {
+      this.container.removeChild(view.element);
+    }
+  }
+  clear() {
+    if (this.length === 0) return;
+    for (let i = 0; i < this.length; i++) {
+      const view = this[i];
+      this.destroy(view);
+    }
+    this.splice(0);
+  }
+  find(section) {
+    for (let i = 0; i < this.length; i++) {
+      const view = this[i];
+      if (view.displayed && view.section.index == section.index) {
+        return view;
+      }
+    }
+  }
+  displayed() {
+    const displayed = [];
+    for (let i = 0; i < this.length; i++) {
+      const view = this[i];
+      if (view.displayed) {
+        displayed.push(view);
+      }
+    }
+    return displayed;
+  }
+  show() {
+    for (let i = 0; i < this.length; i++) {
+      const view = this[i];
+      if (view.displayed) {
+        view.show();
+      }
+    }
+    this.hidden = false;
+  }
+  hide() {
+    for (let i = 0; i < this.length; i++) {
+      const view = this[i];
+      if (view.displayed) {
+        view.hide();
+      }
+    }
+    this.hidden = true;
+  }
+}
+/* harmony default export */ const views = (Views);
 ;// CONCATENATED MODULE: ./src/contents.js
 
 
@@ -17449,8 +14744,6 @@ class Mapping {
 const hasNavigator = typeof navigator !== "undefined";
 const isChrome = hasNavigator && /Chrome/.test(navigator.userAgent);
 const isWebkit = hasNavigator && !isChrome && /AppleWebKit/.test(navigator.userAgent);
-const contents_ELEMENT_NODE = 1;
-const contents_TEXT_NODE = 3;
 
 /**
  * Handles DOM manipulation, queries and events for View contents
@@ -17836,7 +15129,7 @@ class Contents {
             const container = range.startContainer;
             const newRange = new Range();
             try {
-              if (container.nodeType === contents_ELEMENT_NODE) {
+              if (container.nodeType === Node.ELEMENT_NODE) {
                 position = container.getBoundingClientRect();
               } else if (range.startOffset + 2 < container.length) {
                 newRange.setStart(container, range.startOffset);
@@ -17990,14 +15283,14 @@ class Contents {
             const _rules = Object.keys(item);
             const result = _rules.map(rule => {
               return `${rule}:${item[rule]}`;
-            }).join(';');
+            }).join(";");
             styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
           });
         } else {
           const _rules = Object.keys(definition);
           const result = _rules.map(rule => {
             return `${rule}:${definition[rule]}`;
-          }).join(';');
+          }).join(";");
           styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
         }
       });
@@ -18474,10 +15767,10 @@ class Contents {
    */
   transitionListeners() {
     const body = this.content;
-    body.style['transitionProperty'] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
-    body.style['transitionDuration'] = "0.001ms";
-    body.style['transitionTimingFunction'] = "linear";
-    body.style['transitionDelay'] = "0";
+    body.style["transitionProperty"] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
+    body.style["transitionDuration"] = "0.001ms";
+    body.style["transitionTimingFunction"] = "linear";
+    body.style["transitionDelay"] = "0";
 
     //this.document.addEventListener('transitionend', this.resize.bind(this));
   }
@@ -18511,703 +15804,6 @@ class Contents {
 }
 event_emitter_default()(Contents.prototype);
 /* harmony default export */ const contents = (Contents);
-;// CONCATENATED MODULE: ./src/annotation.js
-
-
-
-
-/**
- * Annotation class
- */
-class Annotation {
-  /**
-   * Constructor
-   * @param {string} type Type of annotation to add: `"highlight"` OR `"underline"`
-   * @param {string} cfiRange EpubCFI range to attach annotation to
-   * @param {object} [options]
-   * @param {object} [options.data] Data to assign to annotation
-   * @param {method} [options.cb] Callback after annotation is clicked
-   * @param {string} [options.className] CSS class to assign to annotation
-   * @param {object} [options.styles] CSS styles to assign to annotation
-   */
-  constructor(type, cfiRange, {
-    data,
-    cb,
-    className,
-    styles
-  }) {
-    /**
-     * @member {string} type
-     * @memberof Annotation
-     * @readonly
-     */
-    this.type = type;
-    this.cfiRange = cfiRange;
-    /**
-     * @member {number} sectionIndex
-     * @memberof Annotation
-     * @readonly
-     */
-    this.sectionIndex = new src_epubcfi(cfiRange).spinePos;
-    this.data = data;
-    this.cb = cb;
-    this.className = className;
-    this.styles = styles;
-    /**
-     * @member {Mark} mark
-     * @memberof Annotation
-     * @readonly
-     */
-    this.mark = undefined;
-  }
-
-  /**
-   * Update stored data
-   * @param {object} data
-   */
-  update(data) {
-    this.data = data;
-  }
-
-  /**
-   * Add to a view
-   * @param {View} view
-   * @returns {object|null}
-   */
-  attach(view) {
-    let result;
-    if (!view) {
-      return null;
-    } else if (this.type === "highlight") {
-      result = view.highlight(this.cfiRange, this.data, this.cb, this.className, this.styles);
-    } else if (this.type === "underline") {
-      result = view.underline(this.cfiRange, this.data, this.cb, this.className, this.styles);
-    }
-    this.mark = result;
-    /**
-     * @event attach
-     * @param {Mark} result
-     * @memberof Annotation
-     */
-    this.emit(EVENTS.ANNOTATION.ATTACH, result);
-    return result;
-  }
-
-  /**
-   * Remove from a view
-   * @param {View} view
-   * @returns {boolean}
-   */
-  detach(view) {
-    let result = false;
-    if (!view) {
-      return result;
-    } else if (this.type === "highlight") {
-      result = view.unhighlight(this.cfiRange);
-    } else if (this.type === "underline") {
-      result = view.ununderline(this.cfiRange);
-    }
-    this.mark = undefined;
-    /**
-     * @event detach
-     * @param {boolean} result
-     * @memberof Annotation
-     */
-    this.emit(EVENTS.ANNOTATION.DETACH, result);
-    return result;
-  }
-
-  /**
-   * [Not Implemented] Get text of an annotation
-   * @TODO: needs implementation in contents
-   */
-  text() {}
-}
-event_emitter_default()(Annotation.prototype);
-/* harmony default export */ const src_annotation = (Annotation);
-;// CONCATENATED MODULE: ./src/annotations.js
-
-
-/**
- * Handles managing adding & removing Annotations
- */
-class Annotations extends Map {
-  /**
-   * Constructor
-   * @param {Rendition} rendition
-   */
-  constructor(rendition) {
-    super();
-    this.rendition = rendition;
-    this.rendition.hooks.render.register(this.inject.bind(this));
-    this.rendition.hooks.unloaded.register(this.reject.bind(this));
-  }
-
-  /**
-   * Append an annotation to store
-   * @param {string} type Type of annotation to append: `"highlight"` OR `"underline"`
-   * @param {string} cfiRange EpubCFI range to attach annotation to
-   * @param {object} [options]
-   * @param {object} [options.data] Data to assign to annotation
-   * @param {method} [options.cb] Callback after annotation is added
-   * @param {string} [options.className] CSS class to assign to annotation
-   * @param {object} [options.styles] CSS styles to assign to annotation
-   * @returns {Annotation} Annotation that was append
-   */
-  append(type, cfiRange, options) {
-    const key = encodeURI(type + ":" + cfiRange);
-    const annotation = new src_annotation(type, cfiRange, options);
-    this.rendition.views().forEach(view => {
-      const index = view.section.index;
-      if (annotation.sectionIndex === index) {
-        annotation.attach(view);
-      }
-    });
-    this.set(key, annotation);
-    return annotation;
-  }
-
-  /**
-   * Remove an annotation from store
-   * @param {string} type Type of annotation to remove: `"highlight"` OR `"underline"`
-   * @param {string} cfiRange EpubCFI range to attach annotation to
-   */
-  remove(type, cfiRange) {
-    const key = encodeURI(type + ":" + cfiRange);
-    const annotation = this.get(key);
-    if (annotation) {
-      this.rendition.views().forEach(view => {
-        const index = view.section.index;
-        if (annotation.sectionIndex === index) {
-          annotation.detach(view);
-        }
-      });
-      this.delete(key);
-    }
-  }
-
-  /**
-   * Hook for injecting annotation into a view
-   * @param {View} view
-   * @private
-   */
-  inject(view) {
-    const index = view.section.index;
-    this.forEach((note, key) => {
-      if (note.sectionIndex === index) {
-        note.attach(view);
-      }
-    });
-  }
-
-  /**
-   * Hook for removing annotation from a view
-   * @param {View} view
-   * @private
-   */
-  reject(view) {
-    const index = view.section.index;
-    this.forEach((note, key) => {
-      if (note.sectionIndex === index) {
-        note.detach(view);
-      }
-    });
-  }
-
-  /**
-   * [Not Implemented] Show annotations
-   * @TODO: needs implementation in View
-   */
-  show() {}
-
-  /**
-   * [Not Implemented] Hide annotations
-   * @TODO: needs implementation in View
-   */
-  hide() {}
-}
-/* harmony default export */ const annotations = (Annotations);
-// EXTERNAL MODULE: ./node_modules/lodash/throttle.js
-var throttle = __webpack_require__(7350);
-var throttle_default = /*#__PURE__*/__webpack_require__.n(throttle);
-;// CONCATENATED MODULE: ./src/managers/helpers/stage.js
-
-
-
-
-/**
- * Stage
- */
-class Stage {
-  /**
-   * Constructor
-   * @param {Layout} layout 
-   * @param {object} options
-   * @param {string} options.axis
-   * @param {boolean} options.fullsize
-   * @param {string|number} options.width
-   * @param {string|number} options.height
-   */
-  constructor(layout, options) {
-    /**
-     * @member {object} settings
-     * @memberof Stage
-     * @readonly
-     */
-    this.settings = options || {};
-    /**
-     * @member {string} id
-     * @memberof Stage
-     * @readonly
-     */
-    this.id = "epubjs-container-" + uuid();
-    /**
-     * @member {Element} container
-     * @memberof Stage
-     * @readonly
-     */
-    this.container = this.create(this.settings);
-    this.layout = layout;
-    this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
-      if (changed.flow) {
-        this.updateFlow(changed.flow);
-      } else if (changed.direction) {
-        this.direction(changed.direction);
-      }
-    });
-    this.updateFlow();
-    this.direction();
-    this.axis(options.axis || "vertical");
-    if (this.settings.hidden) {
-      this.wrapper = this.wrap(this.container);
-    }
-  }
-
-  /**
-   * Creates an element to render to.
-   * Resizes to passed width and height or to the elements size
-   * @param {object} options 
-   * @returns {Element} container
-   */
-  create(options) {
-    let width = options.width;
-    let height = options.height;
-    extend(this.settings, options);
-    if (options.height && isNumber(options.height)) {
-      height = options.height + "px";
-    }
-    if (options.width && isNumber(options.width)) {
-      width = options.width + "px";
-    }
-
-    // Create new container element
-    const container = document.createElement("div");
-    container.id = this.id;
-    container.classList.add("epub-container");
-
-    // Style Element
-    container.style.wordSpacing = "0";
-    container.style.lineHeight = "0";
-    container.style.verticalAlign = "top";
-    container.style.position = "relative";
-    container.style.display = "flex";
-    container.style.flexWrap = "nowrap";
-    if (width) {
-      container.style.width = width;
-    }
-    if (height) {
-      container.style.height = height;
-    }
-    return container;
-  }
-
-  /**
-   * wrap
-   * @param {Element} container 
-   * @returns {Element} wrapper
-   */
-  wrap(container) {
-    const wrapper = document.createElement("div");
-    wrapper.style.visibility = "hidden";
-    wrapper.style.overflow = "hidden";
-    wrapper.style.width = "0";
-    wrapper.style.height = "0";
-    wrapper.appendChild(container);
-    return wrapper;
-  }
-
-  /**
-   * getElement
-   * @param {Element|string} element 
-   * @returns {Element}
-   */
-  getElement(element) {
-    let elm;
-    if (isElement(element)) {
-      elm = element;
-    } else if (typeof element === "string") {
-      elm = document.getElementById(element);
-    } else {
-      throw new TypeError("not valid argument type");
-    }
-    return elm;
-  }
-
-  /**
-   * attachTo
-   * @param {Element|string} what 
-   * @returns {Element}
-   */
-  attachTo(what) {
-    const element = this.getElement(what);
-    if (!element) return;
-    let base;
-    if (this.settings.hidden) {
-      base = this.wrapper;
-    } else {
-      base = this.container;
-    }
-    element.appendChild(base);
-    this.parentElement = element;
-    return element;
-  }
-
-  /**
-   * getContainer
-   * @returns {Element} container
-   */
-  getContainer() {
-    return this.container;
-  }
-
-  /**
-   * onResize
-   * @param {*} func 
-   */
-  onResize(func) {
-    // Only listen to window for resize event if width and height are not fixed.
-    // This applies if it is set to a percent or auto.
-    if (!isNumber(this.settings.width) || !isNumber(this.settings.height)) {
-      this.resizeFunc = throttle_default()(func, 50);
-      window.addEventListener("resize", this.resizeFunc, false);
-    }
-  }
-
-  /**
-   * onOrientationChange
-   * @param {*} func 
-   */
-  onOrientationChange(func) {
-    this.orientationChangeFunc = func;
-    window.addEventListener("orientationchange", this.orientationChangeFunc, false);
-  }
-
-  /**
-   * size
-   * @param {string|number} [width] 
-   * @param {string|number} [height] 
-   * @returns {object}
-   */
-  size(width, height) {
-    let bounds;
-    let _width = width || this.settings.width;
-    let _height = height || this.settings.height;
-
-    // If width or height are set to false, inherit them from containing element
-    if (!width) {
-      bounds = this.parentElement.getBoundingClientRect();
-      if (bounds.width) {
-        width = Math.floor(bounds.width);
-        this.container.style.width = width + "px";
-      }
-    } else {
-      if (isNumber(width)) {
-        this.container.style.width = width + "px";
-      } else {
-        this.container.style.width = width;
-      }
-    }
-    if (!height) {
-      bounds = bounds || this.parentElement.getBoundingClientRect();
-      if (bounds.height) {
-        height = bounds.height;
-        this.container.style.height = height + "px";
-      }
-    } else {
-      if (isNumber(height)) {
-        this.container.style.height = height + "px";
-      } else {
-        this.container.style.height = height;
-      }
-    }
-    if (!isNumber(width)) {
-      width = this.container.clientWidth;
-    }
-    if (!isNumber(height)) {
-      height = this.container.clientHeight;
-    }
-    this.containerStyles = window.getComputedStyle(this.container);
-    this.containerPadding = {
-      left: parseFloat(this.containerStyles["padding-left"]) || 0,
-      right: parseFloat(this.containerStyles["padding-right"]) || 0,
-      top: parseFloat(this.containerStyles["padding-top"]) || 0,
-      bottom: parseFloat(this.containerStyles["padding-bottom"]) || 0
-    };
-
-    // Bounds not set, get them from window
-    let wndBounds = windowBounds();
-    let bodyStyles = window.getComputedStyle(document.body);
-    let bodyPadding = {
-      left: parseFloat(bodyStyles["padding-left"]) || 0,
-      right: parseFloat(bodyStyles["padding-right"]) || 0,
-      top: parseFloat(bodyStyles["padding-top"]) || 0,
-      bottom: parseFloat(bodyStyles["padding-bottom"]) || 0
-    };
-    if (!_width) {
-      width = wndBounds.width - bodyPadding.left - bodyPadding.right;
-    }
-    if (this.settings.fullsize && !_height || !_height) {
-      height = wndBounds.height - bodyPadding.top - bodyPadding.bottom;
-    }
-    return {
-      width: width - this.containerPadding.left - this.containerPadding.right,
-      height: height - this.containerPadding.top - this.containerPadding.bottom
-    };
-  }
-
-  /**
-   * Get bounding client rect
-   * @returns {DOMRect|object}
-   */
-  bounds() {
-    let box;
-    if (this.container.style.overflow !== "visible") {
-      box = this.container && this.container.getBoundingClientRect();
-    }
-    if (!box || !box.width || !box.height) {
-      return windowBounds();
-    } else {
-      return box;
-    }
-  }
-
-  /**
-   * getSheet
-   * @returns {CSSStyleSheet}
-   */
-  getSheet() {
-    const style = document.createElement("style");
-    // WebKit hack --> https://davidwalsh.name/add-rules-stylesheets
-    style.appendChild(document.createTextNode(""));
-    document.head.appendChild(style);
-    return style.sheet;
-  }
-
-  /**
-   * addStyleRules
-   * @param {string} selector 
-   * @param {object[]} rulesArray 
-   */
-  addStyleRules(selector, rulesArray) {
-    let scope = "#" + this.id + " ";
-    let rules = "";
-    if (!this.sheet) {
-      this.sheet = this.getSheet();
-    }
-    rulesArray.forEach(set => {
-      for (const prop in set) {
-        if (set.hasOwnProperty(prop)) {
-          rules += prop + ":" + set[prop] + ";";
-        }
-      }
-    });
-    this.sheet.insertRule(scope + selector + " {" + rules + "}", 0);
-  }
-
-  /**
-   * Set axis
-   * @param {string} value values: `"horizontal"` OR `"vertical"`
-   */
-  axis(value) {
-    if (value === "horizontal") {
-      this.container.style.flexDirection = "row";
-    } else {
-      this.container.style.flexDirection = null;
-    }
-    this.settings.axis = value;
-  }
-
-  /**
-   * Update direction
-   * @param {string} [value] direction
-   * @private
-   */
-  direction(value) {
-    value = value || this.layout.direction;
-    if (this.container) {
-      this.container.dir = value;
-    }
-    if (this.settings.fullsize) {
-      document.body.style["direction"] = value;
-    }
-  }
-
-  /**
-   * Update Flow
-   * @param {string} [value] `layout.flow` value
-   * @private
-   */
-  updateFlow(value) {
-    value = value || this.layout.flow;
-    switch (value) {
-      case "paginated":
-        this.container.style["overflow-y"] = "hidden";
-        this.container.style["overflow-x"] = "hidden";
-        this.container.style.flexWrap = "nowrap";
-        break;
-      case "scrolled":
-        this.container.style["overflow-y"] = "auto";
-        this.container.style["overflow-x"] = "hidden";
-        this.container.style.flexWrap = "wrap";
-        break;
-      case "scrolled-doc":
-        this.container.style["overflow-y"] = "hidden";
-        this.container.style["overflow-x"] = "hidden";
-        this.container.style.flexWrap = "wrap";
-        break;
-    }
-  }
-
-  /**
-   * destroy
-   */
-  destroy() {
-    if (this.parentElement) {
-      let base;
-      if (this.settings.hidden) {
-        base = this.wrapper;
-      } else {
-        base = this.container;
-      }
-      if (this.parentElement.contains(base)) {
-        this.parentElement.removeChild(base);
-      }
-      window.removeEventListener("resize", this.resizeFunc);
-      window.removeEventListener("orientationChange", this.orientationChangeFunc);
-    }
-  }
-}
-/* harmony default export */ const stage = (Stage);
-;// CONCATENATED MODULE: ./src/managers/helpers/views.js
-/**
- * Views
- */
-class Views extends Array {
-  /**
-   * Constructor
-   * @param {Element} container 
-   */
-  constructor(container) {
-    super();
-    this.container = container;
-    this.hidden = false;
-  }
-  first() {
-    return this[0];
-  }
-  last() {
-    return this[this.length - 1];
-  }
-  get(i) {
-    return this[i];
-  }
-  append(view) {
-    if (this.container) {
-      this.container.appendChild(view.element);
-    }
-    this.push(view);
-    return view;
-  }
-  prepend(view) {
-    if (this.container) {
-      this.container.insertBefore(view.element, this.container.firstChild);
-    }
-    this.unshift(view);
-    return view;
-  }
-  insert(view, index) {
-    if (this.container) {
-      if (index < this.container.children.length) {
-        this.container.insertBefore(view.element, this.container.children[index]);
-      } else {
-        this.container.appendChild(view.element);
-      }
-    }
-    this.splice(index, 0, view);
-    return view;
-  }
-  remove(view) {
-    const index = this.indexOf(view);
-    if (index > -1) {
-      this.splice(index, 1);
-    }
-    this.destroy(view);
-  }
-  destroy(view) {
-    if (view.displayed) {
-      view.destroy();
-    }
-    if (this.container) {
-      this.container.removeChild(view.element);
-    }
-    view = null;
-  }
-  clear() {
-    if (this.length === 0) return;
-    for (let i = 0; i < this.length; i++) {
-      const view = this[i];
-      this.destroy(view);
-    }
-    this.splice(0);
-  }
-  find(section) {
-    for (let i = 0; i < this.length; i++) {
-      const view = this[i];
-      if (view.displayed && view.section.index == section.index) {
-        return view;
-      }
-    }
-  }
-  displayed() {
-    const displayed = [];
-    for (let i = 0; i < this.length; i++) {
-      const view = this[i];
-      if (view.displayed) {
-        displayed.push(view);
-      }
-    }
-    return displayed;
-  }
-  show() {
-    for (let i = 0; i < this.length; i++) {
-      const view = this[i];
-      if (view.displayed) {
-        view.show();
-      }
-    }
-    this.hidden = false;
-  }
-  hide() {
-    for (let i = 0; i < this.length; i++) {
-      const view = this[i];
-      if (view.displayed) {
-        view.hide();
-      }
-    }
-    this.hidden = true;
-  }
-}
-/* harmony default export */ const views = (Views);
 ;// CONCATENATED MODULE: ./src/marks-pane/events.js
 const rectContains = (rect, x, y, offset) => {
   const top = rect.top - offset.top;
@@ -19281,7 +15877,7 @@ const dispatch = (e, target, marks) => {
  * @param {Mark[]} marks A (possibly mutable) array of marks to which to proxy events.
  */
 const proxyMouse = (target, marks) => {
-  let node = target;
+  let node;
   if (target.nodeName === "iframe" || target.nodeName === "IFRAME") {
     node = target.contentDocument;
   } else {
@@ -19593,6 +16189,7 @@ class Underline extends highlight {
 }
 /* harmony default export */ const underline = (Underline);
 ;// CONCATENATED MODULE: ./src/managers/views/iframe.js
+
 
 
 
@@ -19984,7 +16581,7 @@ class IframeView {
   /**
    * onLoad
    * @param {Event} event 
-   * @param {defer} promise 
+   * @param {Defer} promise 
    */
   onLoad(event, promise) {
     this.window = this.iframe.contentWindow;
@@ -20144,15 +16741,14 @@ class IframeView {
 
   /**
    * locationOf
-   * @param {*} target 
+   * @param {string|EpubCFI} target 
    * @returns {object}
    */
   locationOf(target) {
-    const parentPos = this.iframe.getBoundingClientRect();
-    const targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
+    const pos = this.contents.locationOf(target, this.settings.ignoreClass);
     return {
-      "left": targetPos.left,
-      "top": targetPos.top
+      left: pos.left,
+      top: pos.top
     };
   }
 
@@ -20356,18 +16952,45 @@ event_emitter_default()(IframeView.prototype);
 /* harmony default export */ const iframe = (IframeView);
 ;// CONCATENATED MODULE: ./src/utils/scrolltype.js
 /**
+ * createDefiner
+ * @returns {Element}
+ */
+const createDefiner = () => {
+  const definer = document.createElement("div");
+  definer.dir = "rtl";
+  definer.style.position = "fixed";
+  definer.style.width = "1px";
+  definer.style.height = "1px";
+  definer.style.top = "0px";
+  definer.style.left = "0px";
+  definer.style.overflow = "hidden";
+  const innerDiv = document.createElement("div");
+  innerDiv.style.width = "2px";
+  const spanA = document.createElement("span");
+  spanA.style.width = "1px";
+  spanA.style.display = "inline-block";
+  const spanB = document.createElement("span");
+  spanB.style.width = "1px";
+  spanB.style.display = "inline-block";
+  innerDiv.appendChild(spanA);
+  innerDiv.appendChild(spanB);
+  definer.appendChild(innerDiv);
+  return definer;
+};
+
+/**
  * Detect RTL scroll type
- * Based on https://github.com/othree/jquery.rtl-scroll-type/blob/master/src/jquery.rtl-scroll.js
+ * @link https://github.com/othree/jquery.rtl-scroll-type/blob/master/src/jquery.rtl-scroll.js
  * @returns {string} scroll type
  */
-function scrollType() {
-  var type = "reverse";
-  var definer = createDefiner();
+const scrollType = () => {
+  let type = "reverse";
+  const definer = createDefiner();
   document.body.appendChild(definer);
   if (definer.scrollLeft > 0) {
     type = "default";
   } else {
-    if (typeof Element !== 'undefined' && Element.prototype.scrollIntoView) {
+    if (typeof Element !== "undefined" && Element.prototype.scrollIntoView) {
       definer.children[0].children[1].scrollIntoView();
       if (definer.scrollLeft < 0) {
         type = "negative";
@@ -20381,35 +17004,10 @@ function scrollType() {
   }
   document.body.removeChild(definer);
   return type;
-}
-
-/**
- * createDefiner
- * @returns {Element}
- */
-function createDefiner() {
-  var definer = document.createElement('div');
-  definer.dir = "rtl";
-  definer.style.position = "fixed";
-  definer.style.width = "1px";
-  definer.style.height = "1px";
-  definer.style.top = "0px";
-  definer.style.left = "0px";
-  definer.style.overflow = "hidden";
-  var innerDiv = document.createElement('div');
-  innerDiv.style.width = "2px";
-  var spanA = document.createElement('span');
-  spanA.style.width = "1px";
-  spanA.style.display = "inline-block";
-  var spanB = document.createElement('span');
-  spanB.style.width = "1px";
-  spanB.style.display = "inline-block";
-  innerDiv.appendChild(spanA);
-  innerDiv.appendChild(spanB);
-  definer.appendChild(innerDiv);
-  return definer;
-}
+};
+/* harmony default export */ const scrolltype = (scrollType);
 ;// CONCATENATED MODULE: ./src/managers/default/index.js
+
 
 
 
@@ -20512,7 +17110,7 @@ class DefaultViewManager {
     if (this.settings.fullsize === null && tag) {
       this.settings.fullsize = true;
     }
-    this.settings.rtlScrollType = scrollType();
+    this.settings.rtlScrollType = scrolltype();
     /**
      * @member {Stage} stage
      * @memberof DefaultViewManager
@@ -20819,7 +17417,7 @@ class DefaultViewManager {
    */
   moveTo(offset, width) {
     let distX = 0,
-      distY = 0;
+      distY;
     if (this.paginated) {
       distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
       if (distX + this.layout.delta > this.container.scrollWidth) {
@@ -21439,6 +18037,7 @@ event_emitter_default()(DefaultViewManager.prototype);
 
 
 
+
 // easing equations from https://github.com/danro/easing-js/blob/master/easing.js
 const PI_D2 = Math.PI / 2;
 const EASING_EQUATIONS = {
@@ -21476,7 +18075,7 @@ class Snap {
       duration: 300,
       minVelocity: 0.2,
       minDistance: 10,
-      easing: EASING_EQUATIONS['easeInCubic']
+      easing: EASING_EQUATIONS["easeInCubic"]
     }, options || {});
     if (this.supportsTouch()) {
       this.setup(manager);
@@ -21824,6 +18423,7 @@ var debounce_default = /*#__PURE__*/__webpack_require__.n(debounce);
 
 
 
+
 /**
  * Continuous view manager
  * @extends {DefaultViewManager}
@@ -21892,7 +18492,7 @@ class ContinuousViewManager extends managers_default {
 
   /**
    * fill
-   * @param {defer} value
+   * @param {Defer} value
    * @returns {Promise}
    */
   fill(value) {
@@ -21917,15 +18517,14 @@ class ContinuousViewManager extends managers_default {
   moveTo(offset) {
     let distX = 0,
       distY = 0;
-    let offsetX = 0,
-      offsetY = 0; // unused
+    //let offsetX = 0, offsetY = 0; // unused
 
     if (this.paginated) {
       distX = Math.floor(offset.left / this.layout.delta) * this.layout.delta;
-      offsetX = distX + this.settings.offsetDelta;
+      //offsetX = distX + this.settings.offsetDelta;
     } else {
       distY = offset.top;
-      offsetY = offset.top + this.settings.offsetDelta;
+      //offsetY = offset.top + this.settings.offsetDelta;
     }
     if (distX > 0 || distY > 0) {
       this.scrollBy(distX, distY, true);
@@ -22021,7 +18620,6 @@ class ContinuousViewManager extends managers_default {
   async update(offset) {
     const rect = this.bounds();
     const views = this.views;
-    const visible = [];
     const _offset = typeof offset !== "undefined" ? offset : this.settings.offset || 0;
     const updating = new defer();
     const promises = [];
@@ -22040,7 +18638,6 @@ class ContinuousViewManager extends managers_default {
           });
           promises.push(displayed);
         }
-        visible.push(view);
       } else {
         this.q.enqueue(view.destroy.bind(view));
         // console.log("hidden " + view.section.index, view.displayed);
@@ -22473,12 +19070,12 @@ class Rendition {
     this.hooks.content.register(this.handleLinks.bind(this));
     this.hooks.content.register(this.passEvents.bind(this));
     this.hooks.content.register(this.adjustImages.bind(this));
-    this.book.spine.hooks.content.register(this.injectIdentifier.bind(this));
+    this.book.sections.hooks.content.register(this.injectIdentifier.bind(this));
     if (this.settings.stylesheet) {
-      this.book.spine.hooks.content.register(this.injectStylesheet.bind(this));
+      this.book.sections.hooks.content.register(this.injectStylesheet.bind(this));
     }
     if (this.settings.script) {
-      this.book.spine.hooks.content.register(this.injectScript.bind(this));
+      this.book.sections.hooks.content.register(this.injectScript.bind(this));
     }
     /**
      * @member {Annotations} annotations
@@ -22569,15 +19166,10 @@ class Rendition {
    * Start the rendering
    */
   start() {
-    const metadata = this.book.package.metadata;
-    const prePaginated = metadata.layout === "pre-paginated";
-    if (!this.settings.layout && prePaginated) {
-      this.settings.layout = "pre-paginated";
-    }
-
     // Parse metadata to get layout props
-    const layoutProps = this.determineLayoutProperties(metadata);
-    this.layout = new layout(layoutProps);
+    const props = this.determineLayoutProperties();
+    this.settings.layout = props.name;
+    this.layout = new layout(props);
     this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
       this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
     });
@@ -22673,7 +19265,7 @@ class Rendition {
     if (this.book.locations.length && isFloat(target)) {
       target = this.book.locations.cfiFromPercentage(parseFloat(target));
     }
-    const section = this.book.spine.get(target);
+    const section = this.book.sections.get(target);
     if (!section) {
       displaying.reject(new Error("No Section Found"));
       return displayed;
@@ -22716,14 +19308,13 @@ class Rendition {
           /**
            * Emit that a section has been rendered
            * @event rendered
-           * @param {Section} section
            * @param {View} view
            * @memberof Rendition
            */
-          this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
+          this.emit(EVENTS.RENDITION.RENDERED, view);
         });
       } else {
-        this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
+        this.emit(EVENTS.RENDITION.RENDERED, view);
       }
     });
   }
@@ -22833,22 +19424,23 @@ class Rendition {
     return this.q.enqueue(this.manager.prev.bind(this.manager)).then(this.reportLocation.bind(this));
   }
 
-  //-- http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
   /**
    * Determine the Layout properties from metadata and settings
-   * @private
-   * @param {object} metadata
+   * @link http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
    * @return {object} Layout properties
+   * @private
    */
-  determineLayoutProperties(metadata) {
+  determineLayoutProperties() {
+    const metadata = this.book.packaging.metadata;
+    const direction = this.book.packaging.direction;
     return {
-      name: this.settings.layout || metadata.layout || "reflowable",
-      flow: this.settings.flow || metadata.flow || "paginated",
-      spread: this.settings.spread || metadata.spread || "auto",
-      viewport: metadata.viewport || "",
-      direction: this.settings.direction || metadata.direction || "ltr",
-      orientation: this.settings.orientation || metadata.orientation || "auto",
-      minSpreadWidth: this.settings.minSpreadWidth || metadata.minSpreadWidth || 800
+      name: this.settings.layout || metadata.get("layout") || "reflowable",
+      flow: this.settings.flow || metadata.get("flow") || "paginated",
+      spread: this.settings.spread || metadata.get("spread") || "auto",
+      viewport: metadata.get("viewport") || "",
+      direction: this.settings.direction || direction || "ltr",
+      orientation: this.settings.orientation || metadata.get("orientation") || "auto",
+      minSpreadWidth: this.settings.minSpreadWidth || 800
     };
   }
 
@@ -22941,11 +19533,11 @@ class Rendition {
     };
     const locationStart = this.book.locations.locationFromCfi(start.mapping.start);
     const locationEnd = this.book.locations.locationFromCfi(end.mapping.end);
-    if (locationStart != null) {
+    if (locationStart !== null) {
       located.start.location = locationStart;
       located.start.percentage = this.book.locations.percentageFromLocation(locationStart);
     }
-    if (locationEnd != null) {
+    if (locationEnd !== null) {
       located.end.location = locationEnd;
       located.end.percentage = this.book.locations.percentageFromLocation(locationEnd);
     }
@@ -22957,10 +19549,10 @@ class Rendition {
     if (pageEnd != -1) {
       located.end.page = pageEnd;
     }
-    if (end.index === this.book.spine.last().index && located.end.displayed.page >= located.end.displayed.total) {
+    if (end.index === this.book.sections.last().index && located.end.displayed.page >= located.end.displayed.total) {
       located.atEnd = true;
     }
-    if (start.index === this.book.spine.first().index && located.start.displayed.page === 1) {
+    if (start.index === this.book.sections.first().index && located.start.displayed.page === 1) {
       located.atStart = true;
     }
     return located;
@@ -23177,11 +19769,10 @@ class Rendition {
    * Hook to handle the document identifier before
    * a Section is serialized
    * @param {document} doc
-   * @param {Section} section
    * @private
    */
-  injectIdentifier(doc, section) {
-    const ident = this.book.packaging.metadata.identifier;
+  injectIdentifier(doc) {
+    const ident = this.book.packaging.metadata.get("identifier");
     const meta = doc.createElement("meta");
     meta.setAttribute("name", "dc.relation.ispartof");
     if (ident) meta.setAttribute("content", ident);
@@ -23191,6 +19782,7 @@ class Rendition {
 event_emitter_default()(Rendition.prototype);
 /* harmony default export */ const rendition = (Rendition);
 ;// CONCATENATED MODULE: ./src/utils/request.js
+
 
 
 
@@ -23297,6 +19889,7 @@ var external_JSZip_default = /*#__PURE__*/__webpack_require__.n(external_JSZip_)
 
 
 
+
 /**
  * Handles Unzipping a requesting files from an Epub Archive
  */
@@ -23313,9 +19906,9 @@ class Archive {
    * @private
    */
   checkRequirements() {
-    try {
+    if ((external_JSZip_default())) {
       this.zip = new (external_JSZip_default())();
-    } catch (e) {
+    } else {
       throw new Error("JSZip lib not loaded");
     }
   }
@@ -23517,63 +20110,75 @@ class Archive {
   }
 }
 /* harmony default export */ const archive = (Archive);
-// EXTERNAL MODULE: ./node_modules/localforage/dist/localforage.js
-var localforage = __webpack_require__(3790);
-var localforage_default = /*#__PURE__*/__webpack_require__.n(localforage);
-;// CONCATENATED MODULE: ./src/store.js
+// EXTERNAL MODULE: external "localforage"
+var external_localforage_ = __webpack_require__(6361);
+var external_localforage_default = /*#__PURE__*/__webpack_require__.n(external_localforage_);
+;// CONCATENATED MODULE: ./src/storage.js
 
 
 
 
 
 
+const storage_URL = window.URL || window.webkitURL || window.mozURL;
 
 /**
  * Handles saving and requesting files from local storage
- * @class
- * @param {string} name This should be the name of the application for modals
- * @param {function} [requester]
- * @param {function} [resolver]
  */
-class Store {
-  constructor(name, requester, resolver) {
-    this.urlCache = {};
-    this.storage = undefined;
+class Storage {
+  /**
+   * Constructor
+   * @param {string} name This should be the name of the application for modals
+   * @param {method} request
+   * @param {method} resolve
+   */
+  constructor(name, request, resolve) {
     this.name = name;
-    this.requester = requester || utils_request;
-    this.resolver = resolver;
+    this.request = request;
+    this.resolve = resolve;
+    /**
+     * @member {LocalForage} instance
+     * @memberof Storage
+     * @readonly
+     */
+    this.instance = undefined;
+    /**
+     * @member {object} urlCache
+     * @memberof Storage
+     * @readonly
+     */
+    this.urlCache = {};
+    /**
+     * @member {boolean} online Current status
+     * @memberof Storage
+     * @readonly
+     */
     this.online = true;
     this.checkRequirements();
-    this.addListeners();
+    this.appendListeners();
   }
 
   /**
-   * Checks to see if localForage exists in global namspace,
-   * Requires localForage if it isn't there
+   * Checks to see if LocalForage exists in global namspace
    * @private
    */
   checkRequirements() {
-    try {
-      let store;
-      if (typeof (localforage_default()) === "undefined") {
-        store = (localforage_default());
-      }
-      this.storage = store.createInstance({
+    if ((external_localforage_default())) {
+      this.instance = external_localforage_default().createInstance({
         name: this.name
       });
-    } catch (e) {
-      throw new Error("localForage lib not loaded");
+    } else {
+      throw new TypeError("LocalForage lib not loaded");
     }
   }
 
   /**
-   * Add online and offline event listeners
+   * Append online and offline event listeners
    * @private
    */
-  addListeners() {
-    this._status = this.status.bind(this);
-    window.addEventListener('online', this._status);
-    window.addEventListener('offline', this._status);
+  appendListeners() {
+    window.addEventListener("online", this.status.bind(this));
+    window.addEventListener("offline", this.status.bind(this));
   }
 
   /**
@@ -23581,42 +20186,42 @@ class Store {
    * @private
    */
   removeListeners() {
-    window.removeEventListener('online', this._status);
-    window.removeEventListener('offline', this._status);
-    this._status = undefined;
+    window.removeEventListener("online", this.status.bind(this));
+    window.removeEventListener("offline", this.status.bind(this));
   }
 
   /**
    * Update the online / offline status
+   * @param {Event} event 
    * @private
    */
   status(event) {
-    let online = navigator.onLine;
-    this.online = online;
-    if (online) {
-      this.emit("online", this);
+    this.online = event.type === "online";
+    if (this.online) {
+      this.emit("online");
     } else {
-      this.emit("offline", this);
+      this.emit("offline");
     }
   }
 
   /**
-   * Add all of a book resources to the store
-   * @param  {Resources} resources  book resources
-   * @param  {boolean} [force] force resaving resources
+   * Add all of a book manifest to the storage
+   * @param {Manifest} manifest  book manifest
+   * @param {boolean} [force=false] force resaving manifest
    * @return {Promise<object>} store objects
    */
-  add(resources, force) {
-    let mapped = resources.resources.map(item => {
-      let {
+  add(manifest, force = false) {
+    const items = manifest.values().toArray();
+    const mapped = items.map(async item => {
+      const {
         href
       } = item;
-      let url = this.resolver(href);
-      let encodedUrl = window.encodeURIComponent(url);
-      return this.storage.getItem(encodedUrl).then(item => {
+      const url = this.resolve(href);
+      const encodedUrl = window.encodeURIComponent(url);
+      return await this.instance.getItem(encodedUrl).then(item => {
         if (!item || force) {
-          return this.requester(url, "binary").then(data => {
-            return this.storage.setItem(encodedUrl, data);
+          return this.request(url, "binary").then(data => {
+            return this.instance.setItem(encodedUrl, data);
           });
         } else {
           return item;
@@ -23628,17 +20233,17 @@ class Store {
 
   /**
    * Put binary data from a url to storage
-   * @param  {string} url  a url to request from storage
-   * @param  {boolean} [withCredentials]
-   * @param  {object} [headers]
+   * @param {string} url  a url to request from storage
+   * @param {boolean} [withCredentials]
+   * @param {object} [headers]
    * @return {Promise<Blob>}
    */
-  put(url, withCredentials, headers) {
-    let encodedUrl = window.encodeURIComponent(url);
-    return this.storage.getItem(encodedUrl).then(result => {
+  async put(url, withCredentials, headers) {
+    const encodedUrl = window.encodeURIComponent(url);
+    return await this.instance.getItem(encodedUrl).then(result => {
       if (!result) {
-        return this.requester(url, "binary", withCredentials, headers).then(data => {
-          return this.storage.setItem(encodedUrl, data);
+        return this.request(url, "binary", withCredentials, headers).then(data => {
+          return this.instance.setItem(encodedUrl, data);
         });
       }
       return result;
@@ -23646,52 +20251,50 @@ class Store {
   }
 
   /**
-   * Request a url
-   * @param  {string} url  a url to request from storage
-   * @param  {string} [type] specify the type of the returned result
-   * @param  {boolean} [withCredentials]
-   * @param  {object} [headers]
-   * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
+   * Dispatch request by url
+   * @param {string} url a url to request from storage
+   * @param {string} [type] specify the type of the returned result
+   * @param {boolean} [withCredentials]
+   * @param {Array} [headers]
+   * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
    */
-  request(url, type, withCredentials, headers) {
+  async dispatch(url, type, withCredentials, headers) {
     if (this.online) {
       // From network
-      return this.requester(url, type, withCredentials, headers).then(data => {
+      return this.request(url, type, withCredentials, headers).then(async data => {
         // save to store if not present
-        this.put(url);
+        await this.put(url);
         return data;
       });
     } else {
-      // From store
+      // From storage
       return this.retrieve(url, type);
     }
   }
 
   /**
    * Request a url from storage
-   * @param  {string} url  a url to request from storage
-   * @param  {string} [type] specify the type of the returned result
-   * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
+   * @param {string} url a url to request from storage
+   * @param {string} [type] specify the type of the returned result
+   * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
    */
-  retrieve(url, type) {
-    var deferred = new defer();
-    var response;
-    var path = new utils_path(url);
+  async retrieve(url, type) {
+    const path = new utils_path(url);
 
     // If type isn't set, determine it from the file extension
     if (!type) {
       type = path.extension;
     }
-    if (type == "blob") {
+    let response;
+    if (type === "blob") {
       response = this.getBlob(url);
     } else {
       response = this.getText(url);
     }
     return response.then(r => {
-      var deferred = new defer();
-      var result;
+      const deferred = new defer();
       if (r) {
-        result = this.handleResponse(r, type);
+        const result = this.handleResponse(r, type);
         deferred.resolve(result);
       } else {
         deferred.reject({
@@ -23705,21 +20308,21 @@ class Store {
 
   /**
    * Handle the response from request
-   * @private
-   * @param  {any} response
-   * @param  {string} [type]
+   * @param {any} response
+   * @param {string} [type]
    * @return {any} the parsed result
+   * @private
    */
   handleResponse(response, type) {
-    var r;
-    if (type == "json") {
-      r = JSON.parse(response);
-    } else if (isXml(type)) {
+    let r;
+    if (isXml(type)) {
       r = parse(response, "text/xml");
-    } else if (type == "xhtml") {
+    } else if (type === "xhtml") {
       r = parse(response, "application/xhtml+xml");
-    } else if (type == "html" || type == "htm") {
+    } else if (type === "html" || type === "htm") {
       r = parse(response, "text/html");
+    } else if (type === "json") {
+      r = JSON.parse(response);
     } else {
       r = response;
     }
@@ -23728,15 +20331,15 @@ class Store {
 
   /**
    * Get a Blob from Storage by Url
-   * @param  {string} url
-   * @param  {string} [mimeType]
+   * @param {string} url
+   * @param {string} [mimeType]
    * @return {Blob}
    */
   getBlob(url, mimeType) {
-    let encodedUrl = window.encodeURIComponent(url);
-    return this.storage.getItem(encodedUrl).then(function (uint8array) {
+    const encodedUrl = window.encodeURIComponent(url);
+    mimeType = mimeType || mime.lookup(url);
+    return this.instance.getItem(encodedUrl).then(uint8array => {
       if (!uint8array) return;
-      mimeType = mimeType || mime.lookup(url);
       return new Blob([uint8array], {
         type: mimeType
       });
@@ -23745,24 +20348,23 @@ class Store {
 
   /**
    * Get Text from Storage by Url
-   * @param  {string} url
-   * @param  {string} [mimeType]
+   * @param {string} url
+   * @param {string} [mimeType]
    * @return {string}
    */
   getText(url, mimeType) {
-    let encodedUrl = window.encodeURIComponent(url);
+    const encodedUrl = window.encodeURIComponent(url);
     mimeType = mimeType || mime.lookup(url);
-    return this.storage.getItem(encodedUrl).then(function (uint8array) {
-      var deferred = new defer();
-      var reader = new FileReader();
-      var blob;
+    return this.instance.getItem(encodedUrl).then(function (uint8array) {
       if (!uint8array) return;
-      blob = new Blob([uint8array], {
+      const deferred = new defer();
+      const reader = new FileReader();
+      const blob = new Blob([uint8array], {
         type: mimeType
       });
-      reader.addEventListener("loadend", () => {
+      reader.onloadend = () => {
         deferred.resolve(reader.result);
-      });
+      };
       reader.readAsText(blob, mimeType);
       return deferred.promise;
     });
@@ -23770,24 +20372,23 @@ class Store {
 
   /**
    * Get a base64 encoded result from Storage by Url
-   * @param  {string} url
-   * @param  {string} [mimeType]
+   * @param {string} url
+   * @param {string} [mimeType]
    * @return {string} base64 encoded
    */
   getBase64(url, mimeType) {
     let encodedUrl = window.encodeURIComponent(url);
     mimeType = mimeType || mime.lookup(url);
-    return this.storage.getItem(encodedUrl).then(uint8array => {
-      var deferred = new defer();
-      var reader = new FileReader();
-      var blob;
+    return this.instance.getItem(encodedUrl).then(uint8array => {
       if (!uint8array) return;
-      blob = new Blob([uint8array], {
+      const deferred = new defer();
+      const reader = new FileReader();
+      const blob = new Blob([uint8array], {
         type: mimeType
       });
-      reader.addEventListener("loadend", () => {
+      reader.onloadend = () => {
         deferred.resolve(reader.result);
-      });
+      };
       reader.readAsDataURL(blob, mimeType);
       return deferred.promise;
     });
@@ -23795,36 +20396,33 @@ class Store {
 
   /**
    * Create a Url from a stored item
-   * @param  {string} url
-   * @param  {object} [options.base64] use base64 encoding or blob url
+   * @param {string} url
+   * @param {object} [options.base64] use base64 encoding or blob url
    * @return {Promise} url promise with Url string
    */
   createUrl(url, options) {
-    var deferred = new defer();
-    var _URL = window.URL || window.webkitURL || window.mozURL;
-    var tempUrl;
-    var response;
-    var useBase64 = options && options.base64;
+    const deferred = new defer();
     if (url in this.urlCache) {
       deferred.resolve(this.urlCache[url]);
       return deferred.promise;
     }
-    if (useBase64) {
+    let response;
+    if (options && options.base64) {
       response = this.getBase64(url);
       if (response) {
-        response.then(function (tempUrl) {
+        response.then(tempUrl => {
           this.urlCache[url] = tempUrl;
           deferred.resolve(tempUrl);
-        }.bind(this));
+        });
       }
     } else {
       response = this.getBlob(url);
       if (response) {
-        response.then(function (blob) {
-          tempUrl = _URL.createObjectURL(blob);
+        response.then(blob => {
+          const tempUrl = storage_URL.createObjectURL(blob);
           this.urlCache[url] = tempUrl;
           deferred.resolve(tempUrl);
-        }.bind(this));
+        });
       }
     }
     if (!response) {
@@ -23838,25 +20436,592 @@ class Store {
 
   /**
    * Revoke Temp Url for a archive item
-   * @param  {string} url url of the item in the store
+   * @param {string} url url of the item in the store
    */
   revokeUrl(url) {
-    var _URL = window.URL || window.webkitURL || window.mozURL;
-    var fromCache = this.urlCache[url];
-    if (fromCache) _URL.revokeObjectURL(fromCache);
+    const fromCache = this.urlCache[url];
+    if (fromCache) {
+      storage_URL.revokeObjectURL(fromCache);
+    }
   }
+
+  /**
+   * destroy
+   */
   destroy() {
-    var _URL = window.URL || window.webkitURL || window.mozURL;
-    for (let fromCache in this.urlCache) {
-      _URL.revokeObjectURL(fromCache);
+    for (const fromCache in this.urlCache) {
+      storage_URL.revokeObjectURL(fromCache);
     }
     this.urlCache = {};
     this.removeListeners();
   }
 }
-event_emitter_default()(Store.prototype);
-/* harmony default export */ const store = (Store);
+event_emitter_default()(Storage.prototype);
+/* harmony default export */ const storage = (Storage);
+;// CONCATENATED MODULE: ./src/section.js
+
+
+
+
+
+/**
+ * Represents a Section of the Book
+ * In most books this is equivalent to a Chapter
+ */
+class Section {
+  /**
+   * Constructor
+   * @param {object} item 
+   * @param {object} hooks 
+   */
+  constructor(item, hooks) {
+    /**
+     * @member {string} idref
+     * @memberof Section
+     * @readonly
+     */
+    this.idref = item.idref;
+    /**
+     * @member {boolean} linear
+     * @memberof Section
+     * @readonly
+     */
+    this.linear = item.linear === "yes";
+    /**
+     * @member {number} index
+     * @memberof Section
+     * @readonly
+     */
+    this.index = item.index;
+    /**
+     * @member {string} href
+     * @memberof Section
+     * @readonly
+     */
+    this.href = item.href;
+    /**
+     * @member {string} url
+     * @memberof Section
+     * @readonly
+     */
+    this.url = item.url;
+    /**
+     * @member {string} canonical
+     * @memberof Section
+     * @readonly
+     */
+    this.canonical = item.canonical;
+    /**
+     * @member {string} cfiBase
+     * @memberof Section
+     * @readonly
+     */
+    this.cfiBase = item.cfiBase;
+    /**
+     * @member {function} next
+     * @memberof Section
+     * @readonly
+     */
+    this.next = item.next;
+    /**
+     * @member {function} prev
+     * @memberof Section
+     * @readonly
+     */
+    this.prev = item.prev;
+    /**
+     * @member {object[]} properties
+     * @memberof Section
+     * @readonly
+     */
+    this.properties = item.properties;
+    this.hooks = hooks;
+    this.document = undefined;
+    this.contents = undefined;
+    this.output = undefined;
+  }
+
+  /**
+   * Load the section from its url
+   * @param {function} request a request method to use for loading
+   * @return {Promise} a promise with the xml document
+   */
+  load(request) {
+    const loading = new defer();
+    const loaded = loading.promise;
+    if (this.contents) {
+      loading.resolve(this.contents);
+    } else {
+      request(this.url).then(xml => {
+        this.document = xml;
+        this.contents = xml.documentElement;
+        return this.hooks.content.trigger(this.document, this);
+      }).then(() => {
+        loading.resolve(this.contents);
+      }).catch(error => {
+        loading.reject(error);
+      });
+    }
+    return loaded;
+  }
+
+  /**
+   * Adds a base tag for resolving urls in the section (unused)
+   * @private
+   */
+  base() {
+    return replaceBase(this.document, this);
+  }
+
+  /**
+   * Render the contents of a section
+   * @param {function} request a request method to use for loading
+   * @return {Promise} output a serialized XML Document
+   */
+  render(request) {
+    const rendering = new defer();
+    const rendered = rendering.promise;
+    this.output; // TODO: better way to return this from hooks?
+    this.load(request).then(contents => {
+      const serializer = new XMLSerializer();
+      this.output = serializer.serializeToString(contents);
+      return this.output;
+    }).then(() => {
+      return this.hooks.serialize.trigger(this.output, this);
+    }).then(() => {
+      rendering.resolve(this.output);
+    }).catch(error => {
+      rendering.reject(error);
+    });
+    return rendered;
+  }
+
+  /**
+   * Find a string in a section
+   * @param {string} query The query string to find
+   * @return {object[]} A list of matches, with form {cfi, excerpt}
+   */
+  find(query) {
+    const section = this;
+    const matches = [];
+    const q = query.toLowerCase();
+    const find = node => {
+      const text = node.textContent.toLowerCase();
+      const limit = 150;
+      let pos,
+        last = -1;
+      while (pos !== -1) {
+        // Search for the query
+        pos = text.indexOf(q, last + 1);
+        if (pos !== -1) {
+          // We found it! Generate a CFI
+          const range = section.document.createRange();
+          range.setStart(node, pos);
+          range.setEnd(node, pos + q.length);
+          const cfi = section.cfiFromRange(range);
+          let excerpt;
+          // Generate the excerpt
+          if (node.textContent.length < limit) {
+            excerpt = node.textContent;
+          } else {
+            excerpt = node.textContent.substring(pos - limit / 2, pos + limit / 2);
+            excerpt = "..." + excerpt + "...";
+          }
+
+          // Add the CFI to the matches list
+          matches.push({
+            cfi: cfi,
+            excerpt: excerpt
+          });
+        }
+        last = pos;
+      }
+    };
+    sprint(section.document, node => find(node));
+    return matches;
+  }
+
+  /**
+   * Search a string in multiple sequential Element of the section.
+   * If the document.createTreeWalker api is missed(eg: IE8), use 
+   * `find` as a fallback.
+   * @param {string} query The query string to search
+   * @param {number} [maxSeqEle=5] The maximum number of Element that are combined for search, default value is 5.
+   * @return {object[]} A list of matches, with form {cfi, excerpt}
+   */
+  search(query, maxSeqEle = 5) {
+    if (typeof document.createTreeWalker == "undefined") {
+      return this.find(query);
+    }
+    const matches = [];
+    const excerptLimit = 150;
+    const section = this;
+    const q = query.toLowerCase();
+    const search = nodeList => {
+      const textWithCase = nodeList.reduce((acc, current) => {
+        return acc + current.textContent;
+      }, "");
+      const text = textWithCase.toLowerCase();
+      const pos = text.indexOf(q);
+      if (pos !== -1) {
+        const startNodeIndex = 0,
+          endPos = pos + q.length;
+        let endNodeIndex = 0,
+          len = 0;
+        if (pos < nodeList[startNodeIndex].length) {
+          while (endNodeIndex < nodeList.length - 1) {
+            len += nodeList[endNodeIndex].length;
+            if (endPos <= len) {
+              break;
+            }
+            endNodeIndex += 1;
+          }
+          const startNode = nodeList[startNodeIndex];
+          const endNode = nodeList[endNodeIndex];
+          const range = section.document.createRange();
+          range.setStart(startNode, pos);
+          const beforeEndLengthCount = nodeList.slice(0, endNodeIndex).reduce((acc, current) => {
+            return acc + current.textContent.length;
+          }, 0);
+          range.setEnd(endNode, beforeEndLengthCount > endPos ? endPos : endPos - beforeEndLengthCount);
+          const cfi = section.cfiFromRange(range);
+          let excerpt = nodeList.slice(0, endNodeIndex + 1).reduce((acc, current) => {
+            return acc + current.textContent;
+          }, "");
+          if (excerpt.length > excerptLimit) {
+            excerpt = excerpt.substring(pos - excerptLimit / 2, pos + excerptLimit / 2);
+            excerpt = "..." + excerpt + "...";
+          }
+          matches.push({
+            cfi: cfi,
+            excerpt: excerpt
+          });
+        }
+      }
+    };
+    const treeWalker = document.createTreeWalker(section.document, NodeFilter.SHOW_TEXT, null, false);
+    let node,
+      nodeList = [];
+    while (node = treeWalker.nextNode()) {
+      nodeList.push(node);
+      if (nodeList.length == maxSeqEle) {
+        search(nodeList.slice(0, maxSeqEle));
+        nodeList = nodeList.slice(1, maxSeqEle);
+      }
+    }
+    if (nodeList.length > 0) {
+      search(nodeList);
+    }
+    return matches;
+  }
+
+  /**
+  * Reconciles the current chapters layout properties with
+  * the global layout properties.
+  * @param {object} globalLayout The global layout settings object, chapter properties string
+  * @return {object} layoutProperties Object with layout properties
+  */
+  reconcileLayoutSettings(globalLayout) {
+    //-- Get the global defaults
+    const settings = {
+      layout: globalLayout.layout,
+      spread: globalLayout.spread,
+      orientation: globalLayout.orientation
+    };
+
+    //-- Get the chapter's display type
+    this.properties.forEach(prop => {
+      const rendition = prop.replace("rendition:", "");
+      const split = rendition.indexOf("-");
+      if (split !== -1) {
+        const property = rendition.slice(0, split);
+        const value = rendition.slice(split + 1);
+        settings[property] = value;
+      }
+    });
+    return settings;
+  }
+
+  /**
+   * Get a CFI from a Range in the Section
+   * @param {range} range
+   * @return {string} cfi an EpubCFI string
+   */
+  cfiFromRange(range) {
+    return new src_epubcfi(range, this.cfiBase).toString();
+  }
+
+  /**
+   * Get a CFI from an Element in the Section
+   * @param {element} el
+   * @return {string} cfi an EpubCFI string
+   */
+  cfiFromElement(el) {
+    return new src_epubcfi(el, this.cfiBase).toString();
+  }
+
+  /**
+   * Unload the section document
+   */
+  unload() {
+    this.document = undefined;
+    this.contents = undefined;
+    this.output = undefined;
+  }
+
+  /**
+   * destroy
+   */
+  destroy() {
+    this.unload();
+    this.hooks.serialize.clear();
+    this.hooks.content.clear();
+    this.hooks = undefined;
+    this.idref = undefined;
+    this.linear = undefined;
+    this.properties = undefined;
+    this.index = undefined;
+    this.href = undefined;
+    this.url = undefined;
+    this.next = undefined;
+    this.prev = undefined;
+    this.cfiBase = undefined;
+  }
+}
+/* harmony default export */ const src_section = (Section);
+;// CONCATENATED MODULE: ./src/sections.js
+
+
+
+
+
+/**
+ * Sections class
+ */
+class Sections {
+  constructor() {
+    this.spineItems = [];
+    this.spineByHref = {};
+    this.spineById = {};
+    /**
+     * @member {object} hooks
+     * @property {Hook} content
+     * @property {Hook} serialize
+     * @memberof Spine
+     * @readonly
+     */
+    this.hooks = {
+      content: new hook(),
+      serialize: new hook()
+    };
+    // Register replacements
+    this.hooks.content.register(replaceBase);
+    this.hooks.content.register(replaceMeta);
+    this.hooks.content.register(replaceCanonical);
+    this.epubcfi = new src_epubcfi();
+    /**
+     * @member {boolean} loaded
+     * @memberof Spine
+     * @readonly
+     */
+    this.loaded = false;
+  }
+
+  /**
+   * Get an item from the spine
+   * @param {string|number} [target]
+   * @return {Section|null} section
+   * @example sections.get();
+   * @example sections.get(1);
+   * @example sections.get("chap1.html");
+   * @example sections.get("#id1234");
+   */
+  get(target) {
+    let index = 0;
+    if (typeof target === "undefined") {
+      while (index < this.spineItems.length) {
+        let next = this.spineItems[index];
+        if (next && next.linear) {
+          break;
+        }
+        index += 1;
+      }
+    } else if (this.epubcfi.isCfiString(target)) {
+      let cfi = new src_epubcfi(target);
+      index = cfi.spinePos;
+    } else if (typeof target === "number" || isNaN(target) === false) {
+      index = target;
+    } else if (typeof target === "string" && target.indexOf("#") === 0) {
+      index = this.spineById[target.substring(1)];
+    } else if (typeof target === "string") {
+      // Remove fragments
+      target = target.split("#")[0];
+      index = this.spineByHref[target] || this.spineByHref[encodeURI(target)];
+    }
+    return this.spineItems[index] || null;
+  }
+
+  /**
+   * Find the first Section in the Spine
+   * @return {Section} first section
+   */
+  first() {
+    let index = 0;
+    do {
+      const next = this.get(index);
+      if (next && next.linear) {
+        return next;
+      }
+      index += 1;
+    } while (index < this.spineItems.length);
+  }
+
+  /**
+   * Find the last Section in the Spine
+   * @return {Section} last section
+   */
+  last() {
+    let index = this.spineItems.length - 1;
+    do {
+      const prev = this.get(index);
+      if (prev && prev.linear) {
+        return prev;
+      }
+      index -= 1;
+    } while (index >= 0);
+  }
+
+  /**
+   * Append a Section to the Spine
+   * @param {Section} section
+   * @returns {number} index
+   * @private
+   */
+  append(section) {
+    const index = this.spineItems.length;
+    section.index = index;
+    this.spineItems.push(section);
+
+    // Encode and Decode href lookups
+    // see pr for details: https://github.com/futurepress/epub.js/pull/358
+    this.spineByHref[decodeURI(section.href)] = index;
+    this.spineByHref[encodeURI(section.href)] = index;
+    this.spineByHref[section.href] = index;
+    this.spineById[section.idref] = index;
+    return index;
+  }
+
+  /**
+   * Prepend a Section to the Spine (unused)
+   * @param {Section} section
+   * @returns {number}
+   * @private
+   */
+  prepend(section) {
+    // var index = this.spineItems.unshift(section);
+    this.spineByHref[section.href] = 0;
+    this.spineById[section.idref] = 0;
+
+    // Re-index
+    this.spineItems.forEach((item, index) => {
+      item.index = index;
+    });
+    return 0;
+  }
+
+  /**
+   * Remove a Section from the Spine (unused)
+   * @param {Section} section
+   * @private
+   */
+  remove(section) {
+    const index = this.spineItems.indexOf(section);
+    if (index > -1) {
+      delete this.spineByHref[section.href];
+      delete this.spineById[section.idref];
+      return this.spineItems.splice(index, 1);
+    }
+  }
+
+  /**
+   * Unpack items from a opf into spine items
+   * @param {Packaging} packaging
+   * @param {method} resolve URL resolve
+   * @param {method} canonical Resolve canonical url
+   */
+  unpack(packaging, resolve, canonical) {
+    const manifest = packaging.manifest;
+    const spine = packaging.spine;
+    spine.forEach((item, key) => {
+      const manifestItem = manifest.get(key);
+      item.cfiBase = this.epubcfi.generateChapterComponent(spine.nodeIndex, item.index, item.id);
+      if (manifestItem) {
+        item.href = manifestItem.href;
+        item.url = resolve(item.href, true);
+        item.canonical = canonical(item.href);
+        if (manifestItem.properties.length) {
+          item.properties.push.apply(item.properties, manifestItem.properties);
+        }
+      }
+      if (item.linear === "yes") {
+        item.prev = () => {
+          let prevIndex = item.index;
+          while (prevIndex > 0) {
+            let prev = this.get(prevIndex - 1);
+            if (prev && prev.linear) {
+              return prev;
+            }
+            prevIndex -= 1;
+          }
+          return null;
+        };
+        item.next = () => {
+          let nextIndex = item.index;
+          while (nextIndex < this.spineItems.length - 1) {
+            let next = this.get(nextIndex + 1);
+            if (next && next.linear) {
+              return next;
+            }
+            nextIndex += 1;
+          }
+          return null;
+        };
+      } else {
+        item.prev = () => {
+          return null;
+        };
+        item.next = () => {
+          return null;
+        };
+      }
+      const section = new src_section(item, this.hooks);
+      this.append(section);
+    });
+    this.loaded = true;
+  }
+
+  /**
+   * Loop over the Sections in the Spine
+   * @return {method} forEach
+   */
+  each() {
+    return this.spineItems.forEach.apply(this.spineItems, arguments);
+  }
+  destroy() {
+    this.each(section => section.destroy());
+    this.spineItems = undefined;
+    this.spineByHref = undefined;
+    this.spineById = undefined;
+    this.hooks.serialize.clear();
+    this.hooks.content.clear();
+    this.hooks = undefined;
+    this.epubcfi = undefined;
+    this.loaded = false;
+  }
+}
+/* harmony default export */ const sections = (Sections);
 ;// CONCATENATED MODULE: ./src/book.js
+
 
 
 
@@ -23973,18 +21138,6 @@ class Book {
      */
     this.request = this.settings.request.method || utils_request;
     /**
-     * @member {Spine} spine
-     * @memberof Book
-     * @readonly
-     */
-    this.spine = new spine();
-    /**
-     * @member {Locations} locations
-     * @memberof Book
-     * @readonly
-     */
-    this.locations = new locations(this.spine, this.load.bind(this));
-    /**
      * @member {Navigation} navigation
      * @memberof Book
      * @readonly
@@ -24021,7 +21174,7 @@ class Book {
      */
     this.archive = undefined;
     /**
-     * @member {Store} storage
+     * @member {Storage} storage
      * @memberof Book
      * @readonly
      */
@@ -24049,7 +21202,19 @@ class Book {
      * @memberof Book
      * @readonly
      */
-    this.packaging = undefined;
+    this.packaging = new packaging();
+    /**
+     * @member {Sections} sections
+     * @memberof Book
+     * @readonly
+     */
+    this.sections = new sections();
+    /**
+     * @member {Locations} locations
+     * @memberof Book
+     * @readonly
+     */
+    this.locations = new locations(this.sections, this.load.bind(this));
 
     // this.toc = undefined;
     if (this.settings.store) {
@@ -24145,8 +21310,8 @@ class Book {
   async openPackaging(url) {
     this.path = new utils_path(url);
     return this.load(url).then(xml => {
-      this.packaging = new packaging(xml);
-      return this.unpack(this.packaging);
+      this.packaging.parse(xml);
+      return this.unpack();
     });
   }
 
@@ -24159,9 +21324,8 @@ class Book {
   async openManifest(url) {
     this.path = new utils_path(url);
     return this.load(url).then(json => {
-      this.packaging = new packaging();
       this.packaging.load(json);
-      return this.unpack(this.packaging);
+      return this.unpack();
     });
   }
 
@@ -24207,7 +21371,7 @@ class Book {
    */
   canonical(path) {
     if (!path) return "";
-    let url = path;
+    let url;
     if (this.settings.canonical) {
       url = this.settings.canonical(path);
     } else {
@@ -24251,13 +21415,10 @@ class Book {
 
   /**
    * Unpack the contents of the book packaging
-   * @param {Packaging} packaging object
    * @private
    */
-  async unpack(packaging) {
-    this.package = packaging; //TODO: deprecated this
-
-    this.spine.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
+  async unpack() {
+    this.sections.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
     this.resources = new resources(this.packaging.manifest, {
       archive: this.archive,
       request: this.request.bind(this),
@@ -24274,7 +21435,7 @@ class Book {
     // Resolve promises
     this.loading.manifest.resolve(this.packaging.manifest);
     this.loading.metadata.resolve(this.packaging.metadata);
-    this.loading.spine.resolve(this.spine);
+    this.loading.spine.resolve(this.packaging.spine);
     this.loading.cover.resolve(this.cover);
     this.loading.resources.resolve(this.resources);
     this.loading.pageList.resolve(this.pageList);
@@ -24324,12 +21485,16 @@ class Book {
 
   /**
    * Gets a Section of the Book from the Spine
-   * Alias for `book.spine.get`
-   * @param {string} target
+   * Alias for `book.sections.get`
+   * @param {string|number} [target]
    * @returns {Section|null}
+   * @example book.section()
+   * @example book.section(1)
+   * @example book.section("chapter.html")
+   * @example book.section("#id1234")
    */
   section(target) {
-    return this.spine.get(target);
+    return this.sections.get(target);
   }
 
   /**
@@ -24373,48 +21538,49 @@ class Book {
   }
 
   /**
-   * Store the epubs contents
+   * Storage the epubs contents
    * @param {binary} input epub data
-   * @returns {Store}
+   * @returns {Storage}
    * @private
    */
   store(input) {
-    // Use "blobUrl" or "base64" for replacements
-    const replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
-    // Save original request method
-    const requester = this.settings.request.method || utils_request.bind(this);
-    // Create new Store
-    this.storage = new store(input, requester, this.resolve.bind(this));
+    // Create new Storage
+    this.storage = new storage(input, this.request.bind(this), this.resolve.bind(this));
     // Replace request method to go through store
-    this.request = this.storage.request.bind(this.storage);
+    this.request = this.storage.dispatch.bind(this.storage);
     this.opened.then(() => {
       if (this.archived) {
-        this.storage.requester = this.archive.request.bind(this.archive);
+        this.storage.request = this.archive.request.bind(this.archive);
       }
       // Substitute hook
       const substituteResources = (output, section) => {
         section.output = this.resources.substitute(output, section.url);
       };
 
-      // Set to use replacements
-      this.resources.settings.replacements = replacementsSetting || "blobUrl";
+      // Use "blobUrl" or "base64" for replacements
+      if (this.settings.replacements && this.settings.replacements !== "none") {
+        this.resources.settings.replacements = this.settings.replacements;
+      } else {
+        this.resources.settings.replacements = "blobUrl";
+      }
+
       // Create replacement urls
       this.resources.replacements().then(() => {
         return this.resources.replaceCss();
       });
       let originalUrl = this.url; // Save original url
 
-      this.storage.on("offline", () => {
-        // Remove url to use relative resolving for hrefs
-        this.url = new utils_url("/", "");
-        // Add hook to replace resources in contents
-        this.spine.hooks.serialize.register(substituteResources);
-      });
       this.storage.on("online", () => {
         // Restore original url
         this.url = originalUrl;
         // Remove hook
-        this.spine.hooks.serialize.deregister(substituteResources);
+        this.sections.hooks.serialize.deregister(substituteResources);
+      });
+      this.storage.on("offline", () => {
+        // Remove url to use relative resolving for hrefs
+        this.url = new utils_url("/", "");
+        // Add hook to replace resources in contents
+        this.sections.hooks.serialize.register(substituteResources);
       });
     });
     return this.storage;
@@ -24443,7 +21609,7 @@ class Book {
    * @private
    */
   async replacements() {
-    this.spine.hooks.serialize.register((output, section) => {
+    this.sections.hooks.serialize.register((output, section) => {
       section.output = this.resources.substitute(output, section.url);
     });
     return this.resources.replacements().then(() => {
@@ -24458,11 +21624,11 @@ class Book {
    */
   async getRange(cfiRange) {
     const cfi = new src_epubcfi(cfiRange);
-    const item = this.spine.get(cfi.spinePos);
+    const item = this.sections.get(cfi.spinePos);
     const request = this.load.bind(this);
     if (!item) {
       return new Promise((resolve, reject) => {
-        reject("CFI could not be found");
+        reject(new Error("CFI could not be found"));
       });
     }
     return item.load(request).then(contents => {
@@ -24477,7 +21643,7 @@ class Book {
    * @returns {string} key
    */
   key(identifier) {
-    const ident = identifier || this.packaging.metadata.identifier || this.url.filename;
+    const ident = identifier || this.packaging.metadata.get("identifier") || this.url.filename;
     return `epubjs:${EPUBJS_VERSION}:${ident}`;
   }
 
@@ -24491,7 +21657,6 @@ class Book {
     this.ready = undefined;
     this.isOpen = false;
     this.isRendered = false;
-    this.spine && this.spine.destroy();
     this.locations && this.locations.destroy();
     this.pageList && this.pageList.destroy();
     this.archive && this.archive.destroy();
@@ -24499,7 +21664,6 @@ class Book {
     this.container && this.container.destroy();
     this.packaging && this.packaging.destroy();
     this.rendition && this.rendition.destroy();
-    this.spine = undefined;
     this.locations = undefined;
     this.pageList = undefined;
     this.archive = undefined;
