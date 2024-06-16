@@ -37,7 +37,7 @@ the section content.
         * ["attached"](#Rendition.event_attached)
         * ["displayed" (section)](#Rendition.event_displayed)
         * ["displayError" (err)](#Rendition.event_displayError)
-        * ["rendered" (section, view)](#Rendition.event_rendered)
+        * ["rendered" (view)](#Rendition.event_rendered)
         * ["removed" (section, view)](#Rendition.event_removed)
         * ["resized" (width, height, [epubcfi])](#Rendition.event_resized)
         * ["orientationchange" (orientation)](#Rendition.event_orientationchange)
@@ -297,14 +297,13 @@ Emit that has been an error displaying
 
 <a name="Rendition.event_rendered"></a>
 
-## "rendered" (section, view)
+## "rendered" (view)
 Emit that a section has been rendered
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 
 | Param | Type |
 | --- | --- |
-| section | <code>Section</code> | 
 | view | <code>View</code> | 
 
 <a name="Rendition.event_removed"></a>

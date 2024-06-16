@@ -10,6 +10,7 @@ Handle Package Resources
     * [.process(manifest)](#Resources+process)
     * [.createUrl(url)](#Resources+createUrl) ⇒ <code>Promise.&lt;string&gt;</code>
     * [.replacements()](#Resources+replacements) ⇒ <code>Promise</code>
+    * [.replaceCss([archive], [resolve])](#Resources+replaceCss) ⇒ <code>Promise</code>
     * [.relativeTo(absoluteUri, [resolve])](#Resources+relativeTo) ⇒ <code>Array.&lt;string&gt;</code>
     * [.get(path)](#Resources+get) ⇒ <code>string</code> \| <code>null</code>
     * [.substitute(content, [url])](#Resources+substitute) ⇒ <code>string</code>
@@ -60,6 +61,18 @@ Create blob urls for all the assets
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
 **Returns**: <code>Promise</code> - returns replacement urls  
+<a name="Resources+replaceCss"></a>
+
+## resources.replaceCss([archive], [resolve]) ⇒ <code>Promise</code>
+Replace URLs in CSS resources
+
+**Kind**: instance method of [<code>Resources</code>](#Resources)  
+
+| Param | Type |
+| --- | --- |
+| [archive] | <code>Archive</code> | 
+| [resolve] | <code>method</code> | 
+
 <a name="Resources+relativeTo"></a>
 
 ## resources.relativeTo(absoluteUri, [resolve]) ⇒ <code>Array.&lt;string&gt;</code>

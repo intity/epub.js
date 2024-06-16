@@ -6,30 +6,30 @@ Open Packaging Format Parser
 **Kind**: global class  
 
 * [Packaging](#Packaging)
-    * [new Packaging(packageXml)](#new_Packaging_new)
+    * [new Packaging([packageXml])](#new_Packaging_new)
     * _instance_
         * [.parse(packageXml)](#Packaging+parse) ⇒ <code>object</code>
         * [.load(json)](#Packaging+load) ⇒ <code>object</code>
         * [.destroy()](#Packaging+destroy)
     * _static_
-        * [.manifest](#Packaging.manifest) : <code>object</code>
-        * [.metadata](#Packaging.metadata) : <code>object</code>
+        * [.metadata](#Packaging.metadata) : <code>Metadata</code>
+        * [.manifest](#Packaging.manifest) : <code>Manifest</code>
         * [.navPath](#Packaging.navPath) : <code>string</code>
         * [.ncxPath](#Packaging.ncxPath) : <code>string</code>
         * [.coverPath](#Packaging.coverPath) : <code>string</code>
-        * [.spine](#Packaging.spine) : <code>Array.&lt;object&gt;</code>
-        * [.spineNodeIndex](#Packaging.spineNodeIndex) : <code>number</code>
+        * [.spine](#Packaging.spine) : <code>Spine</code>
         * [.version](#Packaging.version) : <code>string</code>
+        * [.direction](#Packaging.direction) : <code>string</code>
 
 <a name="new_Packaging_new"></a>
 
-## new Packaging(packageXml)
+## new Packaging([packageXml])
 Constructor
 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| packageXml | <code>Document</code> | OPF XML |
+| [packageXml] | <code>Document</code> | OPF XML |
 
 <a name="Packaging+parse"></a>
 
@@ -61,35 +61,16 @@ Load JSON Manifest
 destroy
 
 **Kind**: instance method of [<code>Packaging</code>](#Packaging)  
-<a name="Packaging.manifest"></a>
-
-## Packaging.manifest : <code>object</code>
-**Kind**: static property of [<code>Packaging</code>](#Packaging)  
-**Read only**: true  
 <a name="Packaging.metadata"></a>
 
-## Packaging.metadata : <code>object</code>
+## Packaging.metadata : <code>Metadata</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
-**Properties**
+<a name="Packaging.manifest"></a>
 
-| Name | Type |
-| --- | --- |
-| title | <code>string</code> | 
-| creator | <code>string</code> | 
-| description | <code>string</code> | 
-| publisher | <code>string</code> | 
-| language | <code>string</code> | 
-| rights | <code>string</code> | 
-| date | <code>string</code> | 
-| modified | <code>string</code> | 
-| flow | <code>string</code> | 
-| layout | <code>string</code> | 
-| spread | <code>string</code> | 
-| viewport | <code>string</code> | 
-| orientation | <code>string</code> | 
-| media_active_class | <code>string</code> | 
-
+## Packaging.manifest : <code>Manifest</code>
+**Kind**: static property of [<code>Packaging</code>](#Packaging)  
+**Read only**: true  
 <a name="Packaging.navPath"></a>
 
 ## Packaging.navPath : <code>string</code>
@@ -107,12 +88,7 @@ destroy
 **Read only**: true  
 <a name="Packaging.spine"></a>
 
-## Packaging.spine : <code>Array.&lt;object&gt;</code>
-**Kind**: static property of [<code>Packaging</code>](#Packaging)  
-**Read only**: true  
-<a name="Packaging.spineNodeIndex"></a>
-
-## Packaging.spineNodeIndex : <code>number</code>
+## Packaging.spine : <code>Spine</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
 <a name="Packaging.version"></a>
@@ -120,5 +96,10 @@ destroy
 ## Packaging.version : <code>string</code>
 Package version
 
+**Kind**: static property of [<code>Packaging</code>](#Packaging)  
+**Read only**: true  
+<a name="Packaging.direction"></a>
+
+## Packaging.direction : <code>string</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  

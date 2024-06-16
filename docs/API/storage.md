@@ -6,11 +6,11 @@ Handles saving and requesting files from local storage
 **Kind**: global class  
 
 * [Storage](#Storage)
-    * [new Storage(name, [requester], [resolver])](#new_Storage_new)
+    * [new Storage(name, request, resolve)](#new_Storage_new)
     * _instance_
-        * [.add(resources, [force])](#Storage+add) ⇒ <code>Promise.&lt;object&gt;</code>
+        * [.add(manifest, [force])](#Storage+add) ⇒ <code>Promise.&lt;object&gt;</code>
         * [.put(url, [withCredentials], [headers])](#Storage+put) ⇒ <code>Promise.&lt;Blob&gt;</code>
-        * [.request(url, [type], [withCredentials], [headers])](#Storage+request) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
+        * [.dispatch(url, [type], [withCredentials], [headers])](#Storage+dispatch) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
         * [.retrieve(url, [type])](#Storage+retrieve) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
         * [.getBlob(url, [mimeType])](#Storage+getBlob) ⇒ <code>Blob</code>
         * [.getText(url, [mimeType])](#Storage+getText) ⇒ <code>string</code>
@@ -19,32 +19,34 @@ Handles saving and requesting files from local storage
         * [.revokeUrl(url)](#Storage+revokeUrl)
         * [.destroy()](#Storage+destroy)
     * _static_
+        * [.instance](#Storage.instance) : <code>LocalForage</code>
+        * [.urlCache](#Storage.urlCache) : <code>object</code>
         * [.online](#Storage.online) : <code>boolean</code>
 
 <a name="new_Storage_new"></a>
 
-## new Storage(name, [requester], [resolver])
+## new Storage(name, request, resolve)
 Constructor
 
 
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>string</code> | This should be the name of the application for modals |
-| [requester] | <code>method</code> |  |
-| [resolver] | <code>method</code> |  |
+| request | <code>method</code> |  |
+| resolve | <code>method</code> |  |
 
 <a name="Storage+add"></a>
 
-## storage.add(resources, [force]) ⇒ <code>Promise.&lt;object&gt;</code>
-Add all of a book resources to the store
+## storage.add(manifest, [force]) ⇒ <code>Promise.&lt;object&gt;</code>
+Add all of a book manifest to the storage
 
 **Kind**: instance method of [<code>Storage</code>](#Storage)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - store objects  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| resources | <code>Resources</code> | book resources |
-| [force] | <code>boolean</code> | force resaving resources |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| manifest | <code>Manifest</code> |  | book manifest |
+| [force] | <code>boolean</code> | <code>false</code> | force resaving manifest |
 
 <a name="Storage+put"></a>
 
@@ -59,10 +61,10 @@ Put binary data from a url to storage
 | [withCredentials] | <code>boolean</code> |  |
 | [headers] | <code>object</code> |  |
 
-<a name="Storage+request"></a>
+<a name="Storage+dispatch"></a>
 
-## storage.request(url, [type], [withCredentials], [headers]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
-Request a url
+## storage.dispatch(url, [type], [withCredentials], [headers]) ⇒ <code>Promise.&lt;(Blob\|string\|JSON\|Document\|XMLDocument)&gt;</code>
+Dispatch request by url
 
 **Kind**: instance method of [<code>Storage</code>](#Storage)  
 
@@ -71,7 +73,7 @@ Request a url
 | url | <code>string</code> | a url to request from storage |
 | [type] | <code>string</code> | specify the type of the returned result |
 | [withCredentials] | <code>boolean</code> |  |
-| [headers] | <code>object</code> |  |
+| [headers] | <code>Array</code> |  |
 
 <a name="Storage+retrieve"></a>
 
@@ -152,6 +154,16 @@ Revoke Temp Url for a archive item
 destroy
 
 **Kind**: instance method of [<code>Storage</code>](#Storage)  
+<a name="Storage.instance"></a>
+
+## Storage.instance : <code>LocalForage</code>
+**Kind**: static property of [<code>Storage</code>](#Storage)  
+**Read only**: true  
+<a name="Storage.urlCache"></a>
+
+## Storage.urlCache : <code>object</code>
+**Kind**: static property of [<code>Storage</code>](#Storage)  
+**Read only**: true  
 <a name="Storage.online"></a>
 
 ## Storage.online : <code>boolean</code>
