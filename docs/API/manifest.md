@@ -1,11 +1,12 @@
 <a name="Manifest"></a>
 
-# Manifest
+# Manifest ⇐ <code>Map</code>
 Manifest class
 
 **Kind**: global class  
+**Extends**: <code>Map</code>  
 
-* [Manifest](#Manifest)
+* [Manifest](#Manifest) ⇐ <code>Map</code>
     * [.parse(node)](#Manifest+parse)
     * [.destroy()](#Manifest+destroy)
 

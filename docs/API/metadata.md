@@ -1,11 +1,12 @@
 <a name="Metadata"></a>
 
-# Metadata
+# Metadata ⇐ <code>Map</code>
 Metadata class
 
 **Kind**: global class  
+**Extends**: <code>Map</code>  
 
-* [Metadata](#Metadata)
+* [Metadata](#Metadata) ⇐ <code>Map</code>
     * [.parse(node)](#Metadata+parse)
     * [.destroy()](#Metadata+destroy)
 

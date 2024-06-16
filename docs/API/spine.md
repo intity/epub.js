@@ -1,11 +1,12 @@
 <a name="Spine"></a>
 
-# Spine
+# Spine ⇐ <code>Map</code>
 A collection of Spine Items
 
 **Kind**: global class  
+**Extends**: <code>Map</code>  
 
-* [Spine](#Spine)
+* [Spine](#Spine) ⇐ <code>Map</code>
     * _instance_
         * [.parse(node)](#Spine+parse)
         * [.destroy()](#Spine+destroy)
