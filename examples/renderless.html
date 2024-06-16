@@ -60,7 +60,7 @@
             if (viewer.firstChild) {
                 viewer.removeChild(viewer.firstChild)
             }
-            const section = book.spine.get(target)
+            const section = book.sections.get(target)
             if (section) {
                 section.render(book.request).then((html) => {
 
