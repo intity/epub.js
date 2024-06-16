@@ -63,6 +63,10 @@
 
             const data = e.target.result
             book.open(data, "binary")
+            book.ready.then(() => {
+
+                console.log(book)
+            })
             rendition = book.renderTo("viewer", {
                 width: "100%",
                 height: "100%"
