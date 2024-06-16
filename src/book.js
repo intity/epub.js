@@ -3,7 +3,6 @@ import { extend } from "./utils/core";
 import Defer from "./utils/defer";
 import Url from "./utils/url";
 import Path from "./utils/path";
-import Spine from "./spine";
 import Locations from "./locations";
 import Container from "./container";
 import Packaging from "./packaging";
