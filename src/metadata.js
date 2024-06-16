@@ -1,5 +1,6 @@
 /**
  * Metadata class
+ * @extends {Map}
  */
 class Metadata extends Map {
 
