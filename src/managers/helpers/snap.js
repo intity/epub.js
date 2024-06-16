@@ -1,5 +1,6 @@
 import EventEmitter from "event-emitter";
-import { extend, defer } from "../../utils/core";
+import Defer from "../../utils/defer";
+import { extend } from "../../utils/core";
 import { EVENTS } from "../../utils/constants";
 
 // easing equations from https://github.com/danro/easing-js/blob/master/easing.js
@@ -40,7 +41,7 @@ class Snap {
 			duration: 300,
 			minVelocity: 0.2,
 			minDistance: 10,
-			easing: EASING_EQUATIONS['easeInCubic']
+			easing: EASING_EQUATIONS["easeInCubic"]
 		}, options || {});
 
 		if (this.supportsTouch()) {
@@ -341,7 +342,7 @@ class Snap {
 	 */
 	smoothScrollTo(destination) {
 
-		const deferred = new defer();
+		const deferred = new Defer();
 		const start = this.scrollLeft;
 		const startTime = new Date().getTime();
 		const duration = this.settings.duration;

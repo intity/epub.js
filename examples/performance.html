@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB.JS: Archived - Example</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="stylesheet" type="text/css" href="examples.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../dist/epub.js"></script>
+</head>
+
+<body>
+    <div id="content">
+        <div id="viewer" class="paginated"></div>
+        <a id="prev" href="#prev" class="arrow"></a>
+        <a id="next" href="#next" class="arrow"></a>
+    </div>
+    <script>
+        const prev = document.getElementById("prev")
+        const next = document.getElementById("next")
+        const test = [{ key: "init", dim: 0, len: 0, timeStamp: Date.now() }]
+        const book = ePub("../test/fixtures/alice.epub")
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%",
+            spread: "none"
+        })
+        rendition.display(6)
+        prev.onclick = (e) => {
+
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+
+            rendition.next()
+            e.preventDefault()
+        }
+        const update = (loc) => {
+
+            prev.style.display = loc.atStart ? "none" : "block"
+            next.style.display = loc.atEnd ? "none" : "block"
+        }
+        const keybinding = (e) => {
+
+            switch (e.key) {
+                case "ArrowLeft":
+                    rendition.prev()
+                    break
+                case "ArrowRight":
+                    rendition.next()
+                    break
+            }
+        }
+        const append = (key) => {
+
+            const old = test[test.length - 1].timeStamp
+            const now = Date.now()
+            const dim = now - old
+            const len = now - test[0].timeStamp
+            test.push({ key: key, dim: dim, len: len, timeStamp: now })
+        }
+        book.ready.then(() => {
+
+            document.onkeyup = keybinding
+            rendition.on("keyup", keybinding)
+            console.log(book)
+            append("book.ready")
+        })
+        rendition.on("started", () => {
+
+            append("rendition.started")
+        })
+        rendition.on("attached", () => {
+
+            append("rendition.attached")
+        })
+        rendition.on("displayed", (section) => {
+
+            append("rendition.displayed")
+        })
+        rendition.on("rendered", (view) => {
+
+            append("rendition.rendered")
+            const len = test[test.length - 1].len
+            const gen = () => {
+                const table = {}
+                test.forEach((t) => {
+                    if (t.dim > 0) {
+                        table[t.key] = {
+                            "time (ms)": t.dim,
+                            "percentage": (t.dim / len) * 100
+                        }
+                    }
+                })
+                return table
+            }
+            console.table(gen())
+            console.log(`total time: ${len} ms`)
+        })
+        rendition.on("relocated", (location) => {
+
+            update(location)
+        })
+    </script>
+</body>
+
+</html>

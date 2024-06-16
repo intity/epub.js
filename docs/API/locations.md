@@ -6,7 +6,7 @@ Find Locations for a Book
 **Kind**: global class  
 
 * [Locations](#Locations)
-    * [new Locations([spine], [request], [pause])](#new_Locations_new)
+    * [new Locations([sections], [request], [pause])](#new_Locations_new)
     * _instance_
         * [.generate([chars])](#Locations+generate) ⇒ <code>Promise</code>
         * [.createRange()](#Locations+createRange) ⇒ <code>object</code>
@@ -27,13 +27,13 @@ Find Locations for a Book
 
 <a name="new_Locations_new"></a>
 
-## new Locations([spine], [request], [pause])
+## new Locations([sections], [request], [pause])
 Constructor
 
 
 | Param | Type | Default |
 | --- | --- | --- |
-| [spine] | <code>Spine</code> |  | 
+| [sections] | <code>Sections</code> |  | 
 | [request] | <code>method</code> |  | 
 | [pause] | <code>number</code> | <code>100</code> | 
 

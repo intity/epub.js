@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layout</title>
+    <title>EPUB.JS: Layout - Example</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="stylesheet" type="text/css" href="examples.css">
     <script src="../dist/epub.js"></script>
 </head>
@@ -139,10 +140,10 @@
             }
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
-            console.log(rendition)
         })
-        rendition.on("rendered", (section, view) => {
-            //console.log(view)
+        rendition.on("displayed", (section) => {
+
+            console.log(rendition)
         })
         rendition.on("layout", (props, changed) => {
             update()

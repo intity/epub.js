@@ -8,8 +8,6 @@ import { isNumber, prefixed, borders, defaults } from "./utils/core";
 const hasNavigator = typeof (navigator) !== "undefined";
 const isChrome = hasNavigator && /Chrome/.test(navigator.userAgent);
 const isWebkit = hasNavigator && !isChrome && /AppleWebKit/.test(navigator.userAgent);
-const ELEMENT_NODE = 1;
-const TEXT_NODE = 3;
 
 /**
  * Handles DOM manipulation, queries and events for View contents
@@ -447,7 +445,7 @@ class Contents {
 						const container = range.startContainer;
 						const newRange = new Range();
 						try {
-							if (container.nodeType === ELEMENT_NODE) {
+							if (container.nodeType === Node.ELEMENT_NODE) {
 								position = container.getBoundingClientRect();
 							} else if (range.startOffset + 2 < container.length) {
 								newRange.setStart(container, range.startOffset);
@@ -615,14 +613,14 @@ class Contents {
 						const _rules = Object.keys(item);
 						const result = _rules.map((rule) => {
 							return `${rule}:${item[rule]}`;
-						}).join(';');
+						}).join(";");
 						styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
 					});
 				} else {
 					const _rules = Object.keys(definition);
 					const result = _rules.map((rule) => {
 						return `${rule}:${definition[rule]}`;
-					}).join(';');
+					}).join(";");
 					styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
 				}
 			});
@@ -1145,10 +1143,10 @@ class Contents {
 
 		const body = this.content;
 
-		body.style['transitionProperty'] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
-		body.style['transitionDuration'] = "0.001ms";
-		body.style['transitionTimingFunction'] = "linear";
-		body.style['transitionDelay'] = "0";
+		body.style["transitionProperty"] = "font, font-size, font-size-adjust, font-stretch, font-variation-settings, font-weight, width, height";
+		body.style["transitionDuration"] = "0.001ms";
+		body.style["transitionTimingFunction"] = "linear";
+		body.style["transitionDelay"] = "0";
 
 		//this.document.addEventListener('transitionend', this.resize.bind(this));
 	}

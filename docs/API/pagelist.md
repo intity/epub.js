@@ -7,7 +7,7 @@ Page List Parser
 
 * [PageList](#PageList)
     * [new PageList([xml])](#new_PageList_new)
-    * [.parse(xml)](#PageList+parse)
+    * [.parse(xml)](#PageList+parse) ⇒ <code>Array</code>
     * [.pageFromCfi(cfi)](#PageList+pageFromCfi) ⇒ <code>number</code>
     * [.cfiFromPage(pg)](#PageList+cfiFromPage) ⇒ <code>string</code>
     * [.pageFromPercentage(percent)](#PageList+pageFromPercentage) ⇒ <code>number</code>
@@ -18,21 +18,23 @@ Page List Parser
 <a name="new_PageList_new"></a>
 
 ## new PageList([xml])
+Constructor
+
 
 | Param | Type |
 | --- | --- |
-| [xml] | <code>document</code> | 
+| [xml] | <code>Document</code> | 
 
 <a name="PageList+parse"></a>
 
-## pageList.parse(xml)
+## pageList.parse(xml) ⇒ <code>Array</code>
 Parse PageList Xml
 
 **Kind**: instance method of [<code>PageList</code>](#PageList)  
 
 | Param | Type |
 | --- | --- |
-| xml | <code>document</code> | 
+| xml | <code>Document</code> | 
 
 <a name="PageList+pageFromCfi"></a>
 

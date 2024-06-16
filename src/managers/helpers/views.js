@@ -77,7 +77,6 @@ class Views extends Array {
 		if (this.container) {
 			this.container.removeChild(view.element);
 		}
-		view = null;
 	}
 
 	clear() {

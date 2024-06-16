@@ -1,8 +1,9 @@
 import EventEmitter from "event-emitter";
 import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
+import Defer from "../../utils/defer";
 import { EVENTS } from "../../utils/constants";
-import { extend, borders, uuid, isNumber, bounds, defer, createBlobUrl, revokeBlobUrl } from "../../utils/core";
+import { extend, borders, uuid, isNumber, bounds, createBlobUrl, revokeBlobUrl } from "../../utils/core";
 import Marks from "../../marks-pane/marks";
 import Highlight from "../../marks-pane/highlight";
 import Underline from "../../marks-pane/underline";
@@ -391,7 +392,7 @@ class IframeView {
 	 */
 	load(contents) {
 
-		const loading = new defer();
+		const loading = new Defer();
 		const loaded = loading.promise;
 
 		if (!this.iframe) {
@@ -435,7 +436,7 @@ class IframeView {
 	/**
 	 * onLoad
 	 * @param {Event} event 
-	 * @param {defer} promise 
+	 * @param {Defer} promise 
 	 */
 	onLoad(event, promise) {
 
@@ -532,7 +533,7 @@ class IframeView {
 	 */
 	display(request) {
 
-		const displayed = new defer();
+		const displayed = new Defer();
 
 		if (this.displayed === false) {
 
@@ -603,7 +604,7 @@ class IframeView {
 		return {
 			top: this.element.offsetTop,
 			left: this.element.offsetLeft
-		}
+		};
 	}
 
 	/**
@@ -617,17 +618,17 @@ class IframeView {
 
 	/**
 	 * locationOf
-	 * @param {*} target 
+	 * @param {string|EpubCFI} target 
 	 * @returns {object}
 	 */
 	locationOf(target) {
 
-		const parentPos = this.iframe.getBoundingClientRect();
-		const targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
+		const pos = this.contents.locationOf(
+			target, this.settings.ignoreClass);
 
 		return {
-			"left": targetPos.left,
-			"top": targetPos.top
+			left: pos.left,
+			top: pos.top
 		};
 	}
 

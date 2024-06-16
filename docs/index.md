@@ -26,7 +26,7 @@
     - [Rendition](API/rendition.md)
     - [Resources](API/resources.md)
     - [request](API/utils/request.md) `from ./utils/request`
-    - [Spine](API/spine.md)
+    - [Sections](API/sections.md)
     - [Store](API/store.md)
     - [Url](API/utils/url.md)
 - [Contents](API/contents.md) `from ./contentss`
@@ -65,10 +65,14 @@
         - qs
     - [EpubCFI](API/epubcfi.md)
     - [Queue](API/utils/queue.md)
+- [Manifest](API/manifest.md) `from ./manifest`
+    - [core](API/utils/core.md) `from ./utils/core`
+        - qsa
 - [Mapping](API/mapping.md) `from ./mapping`
     - [core](API/utils/core.md) `from ./utils/core`
         - nodeBounds
     - [EpubCFI](API/epubcfi.md)
+- [Metadata](API/metadata.md) `from ./metadata`
 - [Navigation](API/navigation.md) `from ./navigation`
     - [core](API/utils/core.md) `from ./utils/core`
         - filterChildren
@@ -77,10 +81,11 @@
         - querySelectorByType
 - [Packaging](API/packaging.md) `from ./packaging`
     - [core](API/utils/core.md) `from ./utils/core`
-        - indexOfElementNode
         - qs
-        - qsa
         - qsp
+    - [Manifest](API/manifest.md)
+    - [Metadata](API/metadata.md)
+    - [Spine](API/spine.md)
 - [Pagelist](API/pagelist.md) `from ./pagelist`
     - [core](API/utils/core.md) `from ./utils/core`
         - indexOfSorted
@@ -163,7 +168,7 @@
     - [replacements](API/utils/replacements.md) `from ./utils/replacements`
         - replaceBase
     - [request](API/utils/request.md) `from ./utils/request`
-- [Spine](API/spine.md) `from ./spine`
+- [Sections](API/sections.md) `from ./sections`
     - [EpubCFI](API/epubcfi.md)
     - [Hook](API/utils/hook.md)
     - [replacements](API/utils/replacements.md) `from ./utils/replacements`
@@ -171,6 +176,10 @@
         - replaceCanonical
         - replaceMeta
     - [Section](API/section.md)
+- [Spine](API/spine.md) `from ./spine`
+    - [core](API/utils/core.md) `from ./utils/core`
+        - qsa
+        - indexOfNode
 - [Themes](API/themes.md) `from ./themes`
     - [Url](API/utils/url.md)
 

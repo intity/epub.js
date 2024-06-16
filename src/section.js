@@ -1,5 +1,6 @@
 import EpubCFI from "./epubcfi";
-import { defer, sprint } from "./utils/core";
+import Defer from "./utils/defer";
+import { sprint } from "./utils/core";
 import { replaceBase } from "./utils/replacements";
 
 /**
@@ -86,7 +87,7 @@ class Section {
 	 */
 	load(request) {
 
-		const loading = new defer();
+		const loading = new Defer();
 		const loaded = loading.promise;
 
 		if (this.contents) {
@@ -122,7 +123,7 @@ class Section {
 	 */
 	render(request) {
 
-		const rendering = new defer();
+		const rendering = new Defer();
 		const rendered = rendering.promise;
 		this.output; // TODO: better way to return this from hooks?
 		this.load(request).then((contents) => {

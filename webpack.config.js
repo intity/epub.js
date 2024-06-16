@@ -37,6 +37,7 @@ module.exports = {
 	},
 	externals: {
 		"jszip/dist/jszip": "JSZip",
+		"localforage": "localforage",
 		"xmldom": "xmldom"
 	},
 	plugins: [
