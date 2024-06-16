@@ -2,6 +2,7 @@ import { qsa, indexOfNode } from "./utils/core";
 
 /**
  * A collection of Spine Items
+ * @extends {Map}
  */
 class Spine extends Map {
 
