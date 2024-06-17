@@ -1,7 +1,7 @@
 import Manifest from "./manifest";
 import Metadata from "./metadata";
 import Spine from "./spine";
-import { qs, qsp } from "./utils/core";
+import { qs } from "./utils/core";
 
 /**
  * Open Packaging Format Parser
@@ -31,17 +31,23 @@ class Packaging {
 		 */
 		this.spine = new Spine();
 		/**
-		 * @member {string} version Package version
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.version = "";
-		/**
 		 * @member {string} direction
 		 * @memberof Packaging
 		 * @readonly
 		 */
-		this.direction = "";
+		this.direction = null;
+		/**
+		 * @member {string} version Package version
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.version = null;
+		/**
+		 * @member {string} uniqueIdentifier
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.uniqueIdentifier = null;
 
 		if (packageXml) {
 			this.parse(packageXml);
@@ -77,9 +83,12 @@ class Packaging {
 		this.metadata.parse(metadataNode);
 		this.manifest.parse(manifestNode);
 		this.spine.parse(spineNode);
-		this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
 		this.direction = this.parseDirection(packageXml, spineNode);
 		this.version = this.parseVersion(packageXml);
+		this.uniqueIdentifier = this.metadata.get("identifier");
+		if (typeof this.uniqueIdentifier === "undefined") {
+			this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
+		}
 
 		return {
 			metadata: this.metadata,
@@ -108,6 +117,18 @@ class Packaging {
 	}
 
 	/**
+	 * Parse package version
+	 * @param {Document} packageXml 
+	 * @returns {string}
+	 * @private
+	 */
+	parseVersion(packageXml) {
+
+		const el = packageXml.documentElement;
+		return el.getAttribute("version") || "";
+	}
+
+	/**
 	 * Find Unique Identifier
 	 * @param {Document} packageXml
 	 * @return {string} Unique Identifier text
@@ -132,18 +153,6 @@ class Packaging {
 		}
 
 		return "";
-	}
-
-	/**
-	 * Parse package version
-	 * @param {Document} packageXml 
-	 * @returns {string}
-	 * @private
-	 */
-	parseVersion(packageXml) {
-
-		const pkg = qs(packageXml, "package");
-		return pkg.getAttribute("version") || "";
 	}
 
 	/**
@@ -199,6 +208,7 @@ class Packaging {
 		this.spine = undefined;
 		this.direction = undefined;
 		this.version = undefined;
+		this.uniqueIdentifier = undefined;
 	}
 }
 
