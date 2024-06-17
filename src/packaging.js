@@ -25,12 +25,6 @@ class Packaging {
 		 */
 		this.manifest = new Manifest();
 		/**
-		 * @member {string} coverPath
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.coverPath = "";
-		/**
 		 * @member {Spine} spine
 		 * @memberof Packaging
 		 * @readonly
@@ -83,7 +77,6 @@ class Packaging {
 		this.metadata.parse(metadataNode);
 		this.manifest.parse(manifestNode);
 		this.spine.parse(spineNode);
-		this.coverPath = this.findCoverPath(packageXml);
 		this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
 		this.direction = this.parseDirection(packageXml, spineNode);
 		this.version = this.parseVersion(packageXml);
@@ -92,7 +85,6 @@ class Packaging {
 			metadata: this.metadata,
 			manifest: this.manifest,
 			spine: this.spine,
-			coverPath: this.coverPath,
 			direction: this.direction,
 			version: this.version
 		}
@@ -143,33 +135,6 @@ class Packaging {
 	}
 
 	/**
-	 * Find the Cover Path
-	 * - `<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml"/>`
-	 * 
-	 * Fallback for Epub 2.0
-	 * @param {Document} packageXml
-	 * @return {string} href
-	 * @private
-	 */
-	findCoverPath(packageXml) {
-
-		// Try parsing cover with epub 3.
-		const node = qsp(packageXml, "item", { properties: "cover-image" });
-		if (node) return node.getAttribute("href");
-
-		// Fallback to epub 2.
-		const metaCover = qsp(packageXml, "meta", { name: "cover" });
-		if (metaCover) {
-			const coverId = metaCover.getAttribute("content");
-			const cover = packageXml.getElementById(coverId);
-			return cover ? cover.getAttribute("href") : "";
-		}
-		else {
-			return null;
-		}
-	}
-
-	/**
 	 * Parse package version
 	 * @param {Document} packageXml 
 	 * @returns {string}
@@ -203,7 +168,7 @@ class Packaging {
 		json.resources.forEach((item, index) => {
 			this.manifest.set(index, item);
 			if (item.rel && item.rel[0] === "cover") {
-				this.coverPath = item.href;
+				this.manifest.coverPath = item.href;
 			}
 		});
 
@@ -216,7 +181,6 @@ class Packaging {
 			metadata: this.metadata,
 			manifest: this.manifest,
 			spine: this.spine,
-			coverPath: this.coverPath,
 			toc: this.toc
 		}
 	}
@@ -233,7 +197,6 @@ class Packaging {
 		this.metadata = undefined;
 		this.manifest = undefined;
 		this.spine = undefined;
-		this.coverPath = undefined;
 		this.direction = undefined;
 		this.version = undefined;
 	}

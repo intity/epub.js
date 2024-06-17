@@ -465,8 +465,8 @@ class Book {
 			this.loading.navigation.resolve(this.navigation);
 		});
 
-		if (this.packaging.coverPath) {
-			this.cover = this.resolve(this.packaging.coverPath);
+		if (this.packaging.manifest.coverPath) {
+			this.cover = this.resolve(this.packaging.manifest.coverPath);
 		}
 		// Resolve promises
 		this.loading.manifest.resolve(this.packaging.manifest);
