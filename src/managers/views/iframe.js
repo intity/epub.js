@@ -419,14 +419,7 @@ class IframeView {
 			}
 
 			this.iframe.contentDocument.open();
-			if (window.MSApp && MSApp.execUnsafeLocalFunction) {
-				// For Cordova windows platform
-				MSApp.execUnsafeLocalFunction(() => {
-					this.iframe.contentDocument.write(contents);
-				});
-			} else {
-				this.iframe.contentDocument.write(contents);
-			}
+			this.iframe.contentDocument.write(contents);
 			this.iframe.contentDocument.close();
 		}
 
