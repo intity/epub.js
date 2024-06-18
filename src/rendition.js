@@ -384,6 +384,8 @@ class Rendition {
 	/**
 	 * Report resize events and display the last seen location
 	 * @param {object} size 
+	 * @param {number} size.width
+	 * @param {number} size.height
 	 * @param {string} [epubcfi]
 	 * @private
 	 */
@@ -391,15 +393,13 @@ class Rendition {
 		/**
 		 * Emit that the rendition has been resized
 		 * @event resized
-		 * @param {number} width
-		 * @param {height} height
+		 * @param {object} size
+		 * @param {number} size.width
+		 * @param {number} size.height
 		 * @param {string} [epubcfi]
 		 * @memberof Rendition
 		 */
-		this.emit(EVENTS.RENDITION.RESIZED, {
-			width: size.width,
-			height: size.height
-		}, epubcfi);
+		this.emit(EVENTS.RENDITION.RESIZED, size, epubcfi);
 
 		if (this.location && this.location.start) {
 			this.display(epubcfi || this.location.start.cfi);
