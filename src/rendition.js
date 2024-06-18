@@ -374,11 +374,10 @@ class Rendition {
 			/**
 			 * Emit that a section has been removed
 			 * @event removed
-			 * @param {Section} section
 			 * @param {View} view
 			 * @memberof Rendition
 			 */
-			this.emit(EVENTS.RENDITION.REMOVED, view.section, view);
+			this.emit(EVENTS.RENDITION.REMOVED, view);
 		})
 	}
 
