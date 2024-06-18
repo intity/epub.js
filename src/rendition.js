@@ -203,6 +203,13 @@ class Rendition {
 
 		this.layout = new Layout(props);
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+			/**
+			 * Emit of updated the Layout state
+			 * @event layout
+			 * @param {Layout} props
+			 * @param {object} changed
+			 * @memberof Rendition
+			 */
 			this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
 		});
 
