@@ -203,6 +203,13 @@ class Rendition {
 
 		this.layout = new Layout(props);
 		this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+			/**
+			 * Emit of updated the Layout state
+			 * @event layout
+			 * @param {Layout} props
+			 * @param {object} changed
+			 * @memberof Rendition
+			 */
 			this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
 		});
 
@@ -374,17 +381,18 @@ class Rendition {
 			/**
 			 * Emit that a section has been removed
 			 * @event removed
-			 * @param {Section} section
 			 * @param {View} view
 			 * @memberof Rendition
 			 */
-			this.emit(EVENTS.RENDITION.REMOVED, view.section, view);
+			this.emit(EVENTS.RENDITION.REMOVED, view);
 		})
 	}
 
 	/**
 	 * Report resize events and display the last seen location
 	 * @param {object} size 
+	 * @param {number} size.width
+	 * @param {number} size.height
 	 * @param {string} [epubcfi]
 	 * @private
 	 */
@@ -392,15 +400,13 @@ class Rendition {
 		/**
 		 * Emit that the rendition has been resized
 		 * @event resized
-		 * @param {number} width
-		 * @param {height} height
+		 * @param {object} size
+		 * @param {number} size.width
+		 * @param {number} size.height
 		 * @param {string} [epubcfi]
 		 * @memberof Rendition
 		 */
-		this.emit(EVENTS.RENDITION.RESIZED, {
-			width: size.width,
-			height: size.height
-		}, epubcfi);
+		this.emit(EVENTS.RENDITION.RESIZED, size, epubcfi);
 
 		if (this.location && this.location.start) {
 			this.display(epubcfi || this.location.start.cfi);

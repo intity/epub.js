@@ -17,10 +17,11 @@
         <a id="prev" href="#prev" class="arrow"></a>
         <a id="next" href="#next" class="arrow"></a>
     </div>
-    <script>
+    <script type="module">
+        import { put, gen } from "./performance.js"
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
-        const test = [{ key: "init", dim: 0, len: 0, timeStamp: Date.now() }]
+        put("init", 0, false)
         const book = ePub("../test/fixtures/alice.epub")
         const rendition = book.renderTo("viewer", {
             width: "100%",
@@ -30,11 +31,13 @@
         rendition.display(6)
         prev.onclick = (e) => {
 
+            put("book.rendition.relocated", 0)
             rendition.prev()
             e.preventDefault()
         }
         next.onclick = (e) => {
 
+            put("book.rendition.relocated", 0)
             rendition.next()
             e.preventDefault()
         }
@@ -47,61 +50,45 @@
 
             switch (e.key) {
                 case "ArrowLeft":
+                    put("book.rendition.relocated", 0)
                     rendition.prev()
                     break
                 case "ArrowRight":
+                    put("book.rendition.relocated", 0)
                     rendition.next()
                     break
             }
-        }
-        const append = (key) => {
-
-            const old = test[test.length - 1].timeStamp
-            const now = Date.now()
-            const dim = now - old
-            const len = now - test[0].timeStamp
-            test.push({ key: key, dim: dim, len: len, timeStamp: now })
         }
         book.ready.then(() => {
 
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
-            console.log(book)
-            append("book.ready")
+            put("book.ready")
         })
         rendition.on("started", () => {
 
-            append("rendition.started")
+            put("book.rendition.started")
         })
         rendition.on("attached", () => {
 
-            append("rendition.attached")
+            put("book.rendition.attached")
         })
         rendition.on("displayed", (section) => {
 
-            append("rendition.displayed")
+            put("book.rendition.displayed")
         })
         rendition.on("rendered", (view) => {
 
-            append("rendition.rendered")
-            const len = test[test.length - 1].len
-            const gen = () => {
-                const table = {}
-                test.forEach((t) => {
-                    if (t.dim > 0) {
-                        table[t.key] = {
-                            "time (ms)": t.dim,
-                            "percentage": (t.dim / len) * 100
-                        }
-                    }
-                })
-                return table
-            }
-            console.table(gen())
-            console.log(`total time: ${len} ms`)
+            put("book.rendition.rendered")
         })
         rendition.on("relocated", (location) => {
 
+            console.clear()
+            put("book.rendition.relocated")
+            const { table, total } = gen()
+            console.table(table)
+            console.log(`total time: ${total} ms`)
+            console.log(book)
             update(location)
         })
     </script>

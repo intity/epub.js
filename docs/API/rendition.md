@@ -33,13 +33,14 @@ the section content.
         * [.annotations](#Rendition.annotations) : <code>Annotations</code>
         * [.themes](#Rendition.themes) : <code>Themes</code>
         * [.started](#Rendition.started) : <code>Promise</code>
+        * ["layout" (props, changed)](#Rendition.event_layout)
         * ["started"](#Rendition.event_started)
         * ["attached"](#Rendition.event_attached)
         * ["displayed" (section)](#Rendition.event_displayed)
         * ["displayError" (err)](#Rendition.event_displayError)
         * ["rendered" (view)](#Rendition.event_rendered)
-        * ["removed" (section, view)](#Rendition.event_removed)
-        * ["resized" (width, height, [epubcfi])](#Rendition.event_resized)
+        * ["removed" (view)](#Rendition.event_removed)
+        * ["resized" (size, [epubcfi])](#Rendition.event_resized)
         * ["orientationchange" (orientation)](#Rendition.event_orientationchange)
         * ["relocated"](#Rendition.event_relocated)
         * ["selected" (cfirange, contents)](#Rendition.event_selected)
@@ -261,6 +262,18 @@ Adds Hook methods to the Rendition prototype
 returns after the rendition has started
 
 **Kind**: static property of [<code>Rendition</code>](#Rendition)  
+<a name="Rendition.event_layout"></a>
+
+## "layout" (props, changed)
+Emit of updated the Layout state
+
+**Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
+
+| Param | Type |
+| --- | --- |
+| props | <code>Layout</code> | 
+| changed | <code>object</code> | 
+
 <a name="Rendition.event_started"></a>
 
 ## "started"
@@ -308,27 +321,27 @@ Emit that a section has been rendered
 
 <a name="Rendition.event_removed"></a>
 
-## "removed" (section, view)
+## "removed" (view)
 Emit that a section has been removed
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 
 | Param | Type |
 | --- | --- |
-| section | <code>Section</code> | 
 | view | <code>View</code> | 
 
 <a name="Rendition.event_resized"></a>
 
-## "resized" (width, height, [epubcfi])
+## "resized" (size, [epubcfi])
 Emit that the rendition has been resized
 
 **Kind**: event emitted by [<code>Rendition</code>](#Rendition)  
 
 | Param | Type |
 | --- | --- |
-| width | <code>number</code> | 
-| height | <code>height</code> | 
+| size | <code>object</code> | 
+| size.width | <code>number</code> | 
+| size.height | <code>number</code> | 
 | [epubcfi] | <code>string</code> | 
 
 <a name="Rendition.event_orientationchange"></a>

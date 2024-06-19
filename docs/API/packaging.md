@@ -14,12 +14,10 @@ Open Packaging Format Parser
     * _static_
         * [.metadata](#Packaging.metadata) : <code>Metadata</code>
         * [.manifest](#Packaging.manifest) : <code>Manifest</code>
-        * [.navPath](#Packaging.navPath) : <code>string</code>
-        * [.ncxPath](#Packaging.ncxPath) : <code>string</code>
-        * [.coverPath](#Packaging.coverPath) : <code>string</code>
         * [.spine](#Packaging.spine) : <code>Spine</code>
-        * [.version](#Packaging.version) : <code>string</code>
         * [.direction](#Packaging.direction) : <code>string</code>
+        * [.version](#Packaging.version) : <code>string</code>
+        * [.uniqueIdentifier](#Packaging.uniqueIdentifier) : <code>string</code>
 
 <a name="new_Packaging_new"></a>
 
@@ -71,24 +69,14 @@ destroy
 ## Packaging.manifest : <code>Manifest</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
-<a name="Packaging.navPath"></a>
-
-## Packaging.navPath : <code>string</code>
-**Kind**: static property of [<code>Packaging</code>](#Packaging)  
-**Read only**: true  
-<a name="Packaging.ncxPath"></a>
-
-## Packaging.ncxPath : <code>string</code>
-**Kind**: static property of [<code>Packaging</code>](#Packaging)  
-**Read only**: true  
-<a name="Packaging.coverPath"></a>
-
-## Packaging.coverPath : <code>string</code>
-**Kind**: static property of [<code>Packaging</code>](#Packaging)  
-**Read only**: true  
 <a name="Packaging.spine"></a>
 
 ## Packaging.spine : <code>Spine</code>
+**Kind**: static property of [<code>Packaging</code>](#Packaging)  
+**Read only**: true  
+<a name="Packaging.direction"></a>
+
+## Packaging.direction : <code>string</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
 <a name="Packaging.version"></a>
@@ -98,8 +86,8 @@ Package version
 
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  
-<a name="Packaging.direction"></a>
+<a name="Packaging.uniqueIdentifier"></a>
 
-## Packaging.direction : <code>string</code>
+## Packaging.uniqueIdentifier : <code>string</code>
 **Kind**: static property of [<code>Packaging</code>](#Packaging)  
 **Read only**: true  

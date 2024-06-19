@@ -1,7 +1,7 @@
 import Manifest from "./manifest";
 import Metadata from "./metadata";
 import Spine from "./spine";
-import { qs, qsp } from "./utils/core";
+import { qs } from "./utils/core";
 
 /**
  * Open Packaging Format Parser
@@ -25,41 +25,29 @@ class Packaging {
 		 */
 		this.manifest = new Manifest();
 		/**
-		 * @member {string} navPath
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.navPath = "";
-		/**
-		 * @member {string} ncxPath
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.ncxPath = "";
-		/**
-		 * @member {string} coverPath
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.coverPath = "";
-		/**
 		 * @member {Spine} spine
 		 * @memberof Packaging
 		 * @readonly
 		 */
 		this.spine = new Spine();
 		/**
-		 * @member {string} version Package version
-		 * @memberof Packaging
-		 * @readonly
-		 */
-		this.version = "";
-		/**
 		 * @member {string} direction
 		 * @memberof Packaging
 		 * @readonly
 		 */
-		this.direction = "";
+		this.direction = null;
+		/**
+		 * @member {string} version Package version
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.version = null;
+		/**
+		 * @member {string} uniqueIdentifier
+		 * @memberof Packaging
+		 * @readonly
+		 */
+		this.uniqueIdentifier = null;
 
 		if (packageXml) {
 			this.parse(packageXml);
@@ -95,20 +83,17 @@ class Packaging {
 		this.metadata.parse(metadataNode);
 		this.manifest.parse(manifestNode);
 		this.spine.parse(spineNode);
-		this.navPath = this.findNavPath(manifestNode);
-		this.ncxPath = this.findNcxPath(manifestNode, spineNode);
-		this.coverPath = this.findCoverPath(packageXml);
-		this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
 		this.direction = this.parseDirection(packageXml, spineNode);
 		this.version = this.parseVersion(packageXml);
+		this.uniqueIdentifier = this.metadata.get("identifier");
+		if (typeof this.uniqueIdentifier === "undefined") {
+			this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
+		}
 
 		return {
 			metadata: this.metadata,
 			manifest: this.manifest,
 			spine: this.spine,
-			navPath: this.navPath,
-			ncxPath: this.ncxPath,
-			coverPath: this.coverPath,
 			direction: this.direction,
 			version: this.version
 		}
@@ -129,6 +114,18 @@ class Packaging {
 			dir = node.getAttribute("page-progression-direction");
 		}
 		return dir || "";
+	}
+
+	/**
+	 * Parse package version
+	 * @param {Document} packageXml 
+	 * @returns {string}
+	 * @private
+	 */
+	parseVersion(packageXml) {
+
+		const el = packageXml.documentElement;
+		return el.getAttribute("version") || "";
 	}
 
 	/**
@@ -159,86 +156,6 @@ class Packaging {
 	}
 
 	/**
-	 * Find TOC NAV
-	 * @param {Node} manifestNode
-	 * @return {string}
-	 * @private
-	 */
-	findNavPath(manifestNode) {
-		// Find item with property "nav"
-		// Should catch nav regardless of order
-		const node = qsp(manifestNode, "item", {
-			properties: "nav"
-		});
-		return node ? node.getAttribute("href") : false;
-	}
-
-	/**
-	 * Find TOC NCX
-	 * - `media-type="application/x-dtbncx+xml" href="toc.ncx"`
-	 * @param {Node} manifestNode
-	 * @param {Node} spineNode
-	 * @return {string}
-	 * @private
-	 */
-	findNcxPath(manifestNode, spineNode) {
-
-		let node = qsp(manifestNode, "item", {
-			"media-type": "application/x-dtbncx+xml"
-		});
-		// If we can't find the toc by media-type then try to look for id of the item in the spine attributes as
-		// according to http://www.idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#Section2.4.1.2,
-		// "The item that describes the NCX must be referenced by the spine toc attribute."
-		if (!node) {
-			const tocId = spineNode.getAttribute("toc");
-			if (tocId) {
-				node = manifestNode.querySelector(`#${tocId}`);
-			}
-		}
-
-		return node ? node.getAttribute("href") : false;
-	}
-
-	/**
-	 * Find the Cover Path
-	 * - `<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml"/>`
-	 * 
-	 * Fallback for Epub 2.0
-	 * @param {Document} packageXml
-	 * @return {string} href
-	 * @private
-	 */
-	findCoverPath(packageXml) {
-
-		// Try parsing cover with epub 3.
-		const node = qsp(packageXml, "item", { properties: "cover-image" });
-		if (node) return node.getAttribute("href");
-
-		// Fallback to epub 2.
-		const metaCover = qsp(packageXml, "meta", { name: "cover" });
-		if (metaCover) {
-			const coverId = metaCover.getAttribute("content");
-			const cover = packageXml.getElementById(coverId);
-			return cover ? cover.getAttribute("href") : "";
-		}
-		else {
-			return null;
-		}
-	}
-
-	/**
-	 * Parse package version
-	 * @param {Document} packageXml 
-	 * @returns {string}
-	 * @private
-	 */
-	parseVersion(packageXml) {
-
-		const pkg = qs(packageXml, "package");
-		return pkg.getAttribute("version") || "";
-	}
-
-	/**
 	 * Load JSON Manifest
 	 * @param {json} json 
 	 * @return {object} parsed package parts
@@ -260,7 +177,7 @@ class Packaging {
 		json.resources.forEach((item, index) => {
 			this.manifest.set(index, item);
 			if (item.rel && item.rel[0] === "cover") {
-				this.coverPath = item.href;
+				this.manifest.coverPath = item.href;
 			}
 		});
 
@@ -273,9 +190,6 @@ class Packaging {
 			metadata: this.metadata,
 			manifest: this.manifest,
 			spine: this.spine,
-			navPath: this.navPath,
-			ncxPath: this.ncxPath,
-			coverPath: this.coverPath,
 			toc: this.toc
 		}
 	}
@@ -292,11 +206,9 @@ class Packaging {
 		this.metadata = undefined;
 		this.manifest = undefined;
 		this.spine = undefined;
-		this.navPath = undefined;
-		this.ncxPath = undefined;
-		this.coverPath = undefined;
 		this.direction = undefined;
 		this.version = undefined;
+		this.uniqueIdentifier = undefined;
 	}
 }
 
