@@ -11,19 +11,30 @@
 </head>
 
 <body>
-    <div id="content">
+    <div id="toolbar">
+        <div class="box">
+            <label for="spread">Spread:</label>
+            <select name="spread" id="spread">
+                <option value="auto">auto</option>
+                <option value="none">none</option>
+            </select>
+        </div>
+    </div>
+    <div id="content" dir="ltr">
         <div id="viewer" class="paginated">
             <div id="divider"></div>
         </div>
         <a id="prev" href="#prev" class="arrow"></a>
         <a id="next" href="#next" class="arrow"></a>
     </div>
-    <script>
-        const content = document.getElementById("content")
+    <script type="module">
+        import { put, gen } from "./performance.js"
+        const spread = document.getElementById("spread")
         const divider = document.getElementById("divider")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
-        const book = ePub("../test/fixtures/alice/OPS/package.opf")
+        put("init", 0, false)
+        const book = ePub("../test/fixtures/alice/")
         const rendition = book.renderTo("viewer", {
             width: "100%",
             height: "100%"
@@ -31,49 +42,74 @@
         rendition.display()
         prev.onclick = (e) => {
 
+            put("book.rendition.relocated", 0)
             rendition.prev()
             e.preventDefault()
         }
         next.onclick = (e) => {
 
+            put("book.rendition.relocated", 0)
             rendition.next()
             e.preventDefault()
         }
-        const update = (location) => {
+        const update = (loc) => {
 
-            const dir = rendition.layout.direction
             const div = rendition.layout.divisor
-            const loc = location || rendition.currentLocation()
             prev.style.display = loc.atStart ? "none" : "block"
             next.style.display = loc.atEnd ? "none" : "block"
             divider.style.display = div === 1 ? "none" : "block"
-            content.dir = dir
         }
         const keybinding = (e) => {
 
-            const dir = rendition.layout.direction
             switch (e.key) {
                 case "ArrowLeft":
-                    dir === "ltr" ? rendition.prev() : rendition.next()
+                    put("book.rendition.relocated", 0)
+                    rendition.prev()
                     break
                 case "ArrowRight":
-                    dir === "ltr" ? rendition.next() : rendition.prev()
+                    put("book.rendition.relocated", 0)
+                    rendition.next()
                     break
             }
+        }
+        spread.onchange = (e) => {
+
+            put("book.rendition.relocated", 0)
+            rendition.updateLayout({
+                spread: e.target.value
+            })
         }
         book.ready.then(() => {
 
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
+            put("book.ready")
+        })
+        rendition.on("started", () => {
+
+            put("book.rendition.started")
+        })
+        rendition.on("attached", () => {
+
+            put("book.rendition.attached")
         })
         rendition.on("displayed", (section) => {
 
-            console.log(rendition)
+            put("book.rendition.displayed")
+        })
+        rendition.on("rendered", (view) => {
+
+            put("book.rendition.rendered")
         })
         rendition.on("relocated", (location) => {
 
+            console.clear()
+            put("book.rendition.relocated")
+            const { table, total } = gen()
+            console.table(table)
+            console.log(`total time: ${total} ms`)
+            console.log(book)
             update(location)
-            console.log(location)
         })
     </script>
 </body>
