@@ -734,8 +734,9 @@ class Contents {
 	 * Size the contents to a given width and height
 	 * @param {number} [width]
 	 * @param {number} [height]
+	 * @param {string} [dir]
 	 */
-	size(width, height) {
+	size(width, height, dir) {
 
 		const viewport = { scale: 1.0, scalable: "no" };
 
@@ -755,6 +756,7 @@ class Contents {
 		this.css("margin", "0");
 		this.css("box-sizing", "border-box");
 		this.viewport(viewport);
+		this.direction(dir);
 	}
 
 	/**
@@ -763,6 +765,7 @@ class Contents {
 	 * @param {number} height
 	 * @param {number} columnWidth
 	 * @param {number} gap
+	 * @param {string} dir
 	 */
 	columns(width, height, columnWidth, gap, dir) {
 

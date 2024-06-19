@@ -249,11 +249,17 @@ class Layout {
 		if (this.name === "pre-paginated") {
 			formating = contents.fit(this.columnWidth, this.height, section);
 		} else if (this.flow === "paginated") {
-			formating = contents.columns(this.width, this.height, this.columnWidth, this.gap, this.direction);
+			formating = contents.columns(
+				this.width,
+				this.height,
+				this.columnWidth,
+				this.gap,
+				this.direction
+			);
 		} else if (axis && axis === "horizontal") {
-			formating = contents.size(null, this.height);
+			formating = contents.size(null, this.height, this.direction);
 		} else {
-			formating = contents.size(this.width, null);
+			formating = contents.size(this.width, null, this.direction);
 		}
 
 		return formating; // might be a promise in some View Managers

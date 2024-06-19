@@ -64,13 +64,61 @@
         const divider = document.getElementById("divider")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
-        const book = ePub("../test/fixtures/alice/OPS/package.opf")
+        const book = ePub("../test/fixtures/alice/")
         const rendition = book.renderTo("viewer", {
             width: "100%",
             height: "100%"
         })
         rendition.display()
+        layout.onchange = (e) => {
+
+            rendition.updateLayout({
+                name: e.target.value
+            })
+        }
+        flow.onchange = (e) => {
+
+            const value = e.target.value
+            if (value === "paginated") {
+                spread.disabled = false
+            } else {
+                spread.value = "none"
+                spread.disabled = true
+            }
+            rendition.updateLayout({
+                flow: value
+            })
+        }
+        spread.onchange = (e) => {
+
+            rendition.updateLayout({
+                spread: e.target.value
+            })
+        }
+        minSpreadWidth.onchange = (e) => {
+
+            rendition.updateLayout({
+                minSpreadWidth: parseInt(e.target.value)
+            })
+        }
+        direction.onchange = (e) => {
+
+            rendition.updateLayout({
+                direction: e.target.value
+            })
+        }
+        prev.onclick = (e) => {
+
+            rendition.prev()
+            e.preventDefault()
+        }
+        next.onclick = (e) => {
+
+            rendition.next()
+            e.preventDefault()
+        }
         const update = (location) => {
+
             const dir = rendition.layout.direction
             const div = rendition.layout.divisor
             const loc = location || rendition.currentLocation()
@@ -87,6 +135,7 @@
             viewer.className = rendition.layout.flow
         }
         const keybinding = (e) => {
+
             const dir = rendition.layout.direction
             switch (e.key) {
                 case "ArrowLeft":
@@ -98,46 +147,7 @@
             }
         }
         book.ready.then(() => {
-            prev.onclick = (e) => {
-                rendition.prev()
-                e.preventDefault()
-            }
-            next.onclick = (e) => {
-                rendition.next()
-                e.preventDefault()
-            }
-            layout.onchange = (e) => {
-                rendition.updateLayout({
-                    name: e.target.value
-                })
-            }
-            flow.onchange = (e) => {
-                const value = e.target.value
-                if (value === "paginated") {
-                    spread.disabled = false
-                } else {
-                    spread.value = "none"
-                    spread.disabled = true
-                }
-                rendition.updateLayout({
-                    flow: value
-                })
-            }
-            spread.onchange = (e) => {
-                rendition.updateLayout({
-                    spread: e.target.value
-                })
-            }
-            minSpreadWidth.onchange = (e) => {
-                rendition.updateLayout({
-                    minSpreadWidth: parseInt(e.target.value)
-                })
-            }
-            direction.onchange = (e) => {
-                rendition.updateLayout({
-                    direction: e.target.value
-                })
-            }
+
             document.onkeyup = keybinding
             rendition.on("keyup", keybinding)
         })
@@ -146,12 +156,13 @@
             console.log(rendition)
         })
         rendition.on("layout", (props, changed) => {
+
             update()
             console.log(changed)
         })
         rendition.on("relocated", (location) => {
+
             update(location)
-            console.log(location)
         })
     </script>
 </body>

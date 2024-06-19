@@ -465,8 +465,8 @@ class Book {
 			this.loading.navigation.resolve(this.navigation);
 		});
 
-		if (this.packaging.coverPath) {
-			this.cover = this.resolve(this.packaging.coverPath);
+		if (this.packaging.manifest.coverPath) {
+			this.cover = this.resolve(this.packaging.manifest.coverPath);
 		}
 		// Resolve promises
 		this.loading.manifest.resolve(this.packaging.manifest);
@@ -497,7 +497,7 @@ class Book {
 	 */
 	async loadNavigation(packaging) {
 
-		const navPath = packaging.navPath || packaging.ncxPath;
+		const navPath = packaging.manifest.navPath;
 		const toc = packaging.toc;
 
 		// From json manifest
