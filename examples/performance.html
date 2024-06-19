@@ -50,9 +50,11 @@
 
             switch (e.key) {
                 case "ArrowLeft":
+                    put("book.rendition.relocated", 0)
                     rendition.prev()
                     break
                 case "ArrowRight":
+                    put("book.rendition.relocated", 0)
                     rendition.next()
                     break
             }

@@ -1,4 +1,4 @@
-let map = new Map()
+const map = new Map()
 
 export const put = (key, usage = 1, print = true) => {
 
