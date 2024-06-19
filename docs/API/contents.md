@@ -31,8 +31,8 @@ Handles DOM manipulation, queries and events for View contents
         * [.range(cfi, [ignoreClass])](#Contents+range) ⇒ <code>Range</code>
         * [.cfiFromRange(range, [ignoreClass])](#Contents+cfiFromRange) ⇒ <code>EpubCFI</code>
         * [.cfiFromNode(node, [ignoreClass])](#Contents+cfiFromNode) ⇒ <code>EpubCFI</code>
-        * [.size([width], [height])](#Contents+size)
-        * [.columns(width, height, columnWidth, gap)](#Contents+columns)
+        * [.size([width], [height], [dir])](#Contents+size)
+        * [.columns(width, height, columnWidth, gap, dir)](#Contents+columns)
         * [.scaler(scale, offsetX, offsetY)](#Contents+scaler)
         * [.fit(width, height)](#Contents+fit)
         * [.direction([dir])](#Contents+direction)
@@ -321,7 +321,7 @@ Get an EpubCFI from a Dom node
 
 <a name="Contents+size"></a>
 
-## contents.size([width], [height])
+## contents.size([width], [height], [dir])
 Size the contents to a given width and height
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -330,10 +330,11 @@ Size the contents to a given width and height
 | --- | --- |
 | [width] | <code>number</code> | 
 | [height] | <code>number</code> | 
+| [dir] | <code>string</code> | 
 
 <a name="Contents+columns"></a>
 
-## contents.columns(width, height, columnWidth, gap)
+## contents.columns(width, height, columnWidth, gap, dir)
 Apply columns to the contents for pagination
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -344,6 +345,7 @@ Apply columns to the contents for pagination
 | height | <code>number</code> | 
 | columnWidth | <code>number</code> | 
 | gap | <code>number</code> | 
+| dir | <code>string</code> | 
 
 <a name="Contents+scaler"></a>
 
