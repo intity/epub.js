@@ -12179,6 +12179,18 @@ class Container {
 class Manifest extends Map {
   constructor() {
     super();
+    /**
+     * @member {string} navPath
+     * @memberof Manifest
+     * @readonly
+     */
+    this.navPath = null;
+    /**
+     * @member {string} coverPath
+     * @memberof Manifest
+     * @readonly
+     */
+    this.coverPath = null;
   }
 
   /**
@@ -12190,15 +12202,44 @@ class Manifest extends Map {
     const items = qsa(node, "item");
     //-- Create an object with the id as key
     items.forEach(item => {
-      const id = item.getAttribute("id");
       const props = item.getAttribute("properties") || "";
-      this.set(id, {
+      const entry = {
+        id: item.getAttribute("id"),
         href: item.getAttribute("href") || "",
         type: item.getAttribute("media-type") || "",
         overlay: item.getAttribute("media-overlay") || "",
         properties: props.length ? props.split(" ") : []
-      });
+      };
+      this.set(entry.id, entry);
+      if (this.navPath === null && (props === "nav" || entry.type === "application/x-dtbncx+xml")) {
+        this.navPath = entry.href;
+      }
+      if (this.coverPath === null && props === "cover-image") {
+        this.coverPath = entry.href;
+      }
     });
+    if (this.coverPath === null) {
+      this.coverPath = this.findCoverPath(node);
+    }
+  }
+
+  /**
+   * Find the Cover Path for Epub 2.0
+   * @param {Node} node manifest node
+   * @return {string} href
+   * @private
+   */
+  findCoverPath(node) {
+    const doc = node.ownerDocument;
+    const meta = qsp(doc, "meta", {
+      name: "cover"
+    });
+    if (meta) {
+      const id = meta.getAttribute("content");
+      const item = doc.getElementById(id);
+      return item ? item.getAttribute("href") : null;
+    }
+    return null;
   }
 
   /**
@@ -12206,6 +12247,8 @@ class Manifest extends Map {
    */
   destroy() {
     this.clear();
+    this.navPath = undefined;
+    this.coverPath = undefined;
   }
 }
 /* harmony default export */ const manifest = (Manifest);
@@ -12359,41 +12402,29 @@ class Packaging {
      */
     this.manifest = new manifest();
     /**
-     * @member {string} navPath
-     * @memberof Packaging
-     * @readonly
-     */
-    this.navPath = "";
-    /**
-     * @member {string} ncxPath
-     * @memberof Packaging
-     * @readonly
-     */
-    this.ncxPath = "";
-    /**
-     * @member {string} coverPath
-     * @memberof Packaging
-     * @readonly
-     */
-    this.coverPath = "";
-    /**
      * @member {Spine} spine
      * @memberof Packaging
      * @readonly
      */
     this.spine = new spine();
     /**
-     * @member {string} version Package version
-     * @memberof Packaging
-     * @readonly
-     */
-    this.version = "";
-    /**
      * @member {string} direction
      * @memberof Packaging
      * @readonly
      */
-    this.direction = "";
+    this.direction = null;
+    /**
+     * @member {string} version Package version
+     * @memberof Packaging
+     * @readonly
+     */
+    this.version = null;
+    /**
+     * @member {string} uniqueIdentifier
+     * @memberof Packaging
+     * @readonly
+     */
+    this.uniqueIdentifier = null;
     if (packageXml) {
       this.parse(packageXml);
     }
@@ -12423,19 +12454,16 @@ class Packaging {
     this.metadata.parse(metadataNode);
     this.manifest.parse(manifestNode);
     this.spine.parse(spineNode);
-    this.navPath = this.findNavPath(manifestNode);
-    this.ncxPath = this.findNcxPath(manifestNode, spineNode);
-    this.coverPath = this.findCoverPath(packageXml);
-    this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
     this.direction = this.parseDirection(packageXml, spineNode);
     this.version = this.parseVersion(packageXml);
+    this.uniqueIdentifier = this.metadata.get("identifier");
+    if (typeof this.uniqueIdentifier === "undefined") {
+      this.uniqueIdentifier = this.findUniqueIdentifier(packageXml);
+    }
     return {
       metadata: this.metadata,
       manifest: this.manifest,
       spine: this.spine,
-      navPath: this.navPath,
-      ncxPath: this.ncxPath,
-      coverPath: this.coverPath,
       direction: this.direction,
       version: this.version
     };
@@ -12455,6 +12483,17 @@ class Packaging {
       dir = node.getAttribute("page-progression-direction");
     }
     return dir || "";
+  }
+
+  /**
+   * Parse package version
+   * @param {Document} packageXml 
+   * @returns {string}
+   * @private
+   */
+  parseVersion(packageXml) {
+    const el = packageXml.documentElement;
+    return el.getAttribute("version") || "";
   }
 
   /**
@@ -12480,85 +12519,6 @@ class Packaging {
   }
 
   /**
-   * Find TOC NAV
-   * @param {Node} manifestNode
-   * @return {string}
-   * @private
-   */
-  findNavPath(manifestNode) {
-    // Find item with property "nav"
-    // Should catch nav regardless of order
-    const node = qsp(manifestNode, "item", {
-      properties: "nav"
-    });
-    return node ? node.getAttribute("href") : false;
-  }
-
-  /**
-   * Find TOC NCX
-   * - `media-type="application/x-dtbncx+xml" href="toc.ncx"`
-   * @param {Node} manifestNode
-   * @param {Node} spineNode
-   * @return {string}
-   * @private
-   */
-  findNcxPath(manifestNode, spineNode) {
-    let node = qsp(manifestNode, "item", {
-      "media-type": "application/x-dtbncx+xml"
-    });
-    // If we can't find the toc by media-type then try to look for id of the item in the spine attributes as
-    // according to http://www.idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#Section2.4.1.2,
-    // "The item that describes the NCX must be referenced by the spine toc attribute."
-    if (!node) {
-      const tocId = spineNode.getAttribute("toc");
-      if (tocId) {
-        node = manifestNode.querySelector(`#${tocId}`);
-      }
-    }
-    return node ? node.getAttribute("href") : false;
-  }
-
-  /**
-   * Find the Cover Path
-   * - `<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml"/>`
-   * 
-   * Fallback for Epub 2.0
-   * @param {Document} packageXml
-   * @return {string} href
-   * @private
-   */
-  findCoverPath(packageXml) {
-    // Try parsing cover with epub 3.
-    const node = qsp(packageXml, "item", {
-      properties: "cover-image"
-    });
-    if (node) return node.getAttribute("href");
-
-    // Fallback to epub 2.
-    const metaCover = qsp(packageXml, "meta", {
-      name: "cover"
-    });
-    if (metaCover) {
-      const coverId = metaCover.getAttribute("content");
-      const cover = packageXml.getElementById(coverId);
-      return cover ? cover.getAttribute("href") : "";
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Parse package version
-   * @param {Document} packageXml 
-   * @returns {string}
-   * @private
-   */
-  parseVersion(packageXml) {
-    const pkg = qs(packageXml, "package");
-    return pkg.getAttribute("version") || "";
-  }
-
-  /**
    * Load JSON Manifest
    * @param {json} json 
    * @return {object} parsed package parts
@@ -12577,7 +12537,7 @@ class Packaging {
     json.resources.forEach((item, index) => {
       this.manifest.set(index, item);
       if (item.rel && item.rel[0] === "cover") {
-        this.coverPath = item.href;
+        this.manifest.coverPath = item.href;
       }
     });
     this.toc = json.toc.map((item, index) => {
@@ -12588,9 +12548,6 @@ class Packaging {
       metadata: this.metadata,
       manifest: this.manifest,
       spine: this.spine,
-      navPath: this.navPath,
-      ncxPath: this.ncxPath,
-      coverPath: this.coverPath,
       toc: this.toc
     };
   }
@@ -12605,11 +12562,9 @@ class Packaging {
     this.metadata = undefined;
     this.manifest = undefined;
     this.spine = undefined;
-    this.navPath = undefined;
-    this.ncxPath = undefined;
-    this.coverPath = undefined;
     this.direction = undefined;
     this.version = undefined;
+    this.uniqueIdentifier = undefined;
   }
 }
 /* harmony default export */ const packaging = (Packaging);
@@ -14188,9 +14143,9 @@ class Layout {
     } else if (this.flow === "paginated") {
       formating = contents.columns(this.width, this.height, this.columnWidth, this.gap, this.direction);
     } else if (axis && axis === "horizontal") {
-      formating = contents.size(null, this.height);
+      formating = contents.size(null, this.height, this.direction);
     } else {
-      formating = contents.size(this.width, null);
+      formating = contents.size(this.width, null, this.direction);
     }
     return formating; // might be a promise in some View Managers
   }
@@ -16080,8 +16035,9 @@ class Contents {
    * Size the contents to a given width and height
    * @param {number} [width]
    * @param {number} [height]
+   * @param {string} [dir]
    */
-  size(width, height) {
+  size(width, height, dir) {
     const viewport = {
       scale: 1.0,
       scalable: "no"
@@ -16099,6 +16055,7 @@ class Contents {
     this.css("margin", "0");
     this.css("box-sizing", "border-box");
     this.viewport(viewport);
+    this.direction(dir);
   }
 
   /**
@@ -16107,6 +16064,7 @@ class Contents {
    * @param {number} height
    * @param {number} columnWidth
    * @param {number} gap
+   * @param {string} dir
    */
   columns(width, height, columnWidth, gap, dir) {
     const COLUMN_AXIS = prefixed("column-axis");
@@ -17256,14 +17214,7 @@ class IframeView {
         return loaded;
       }
       this.iframe.contentDocument.open();
-      if (window.MSApp && MSApp.execUnsafeLocalFunction) {
-        // For Cordova windows platform
-        MSApp.execUnsafeLocalFunction(() => {
-          this.iframe.contentDocument.write(contents);
-        });
-      } else {
-        this.iframe.contentDocument.write(contents);
-      }
+      this.iframe.contentDocument.write(contents);
       this.iframe.contentDocument.close();
     }
     return loaded;
@@ -19864,6 +19815,13 @@ class Rendition {
     this.settings.layout = props.name;
     this.layout = new layout(props);
     this.layout.on(EVENTS.LAYOUT.UPDATED, (props, changed) => {
+      /**
+       * Emit of updated the Layout state
+       * @event layout
+       * @param {Layout} props
+       * @param {object} changed
+       * @memberof Rendition
+       */
       this.emit(EVENTS.RENDITION.LAYOUT, props, changed);
     });
     if (this.manager === undefined) {
@@ -20022,17 +19980,18 @@ class Rendition {
       /**
        * Emit that a section has been removed
        * @event removed
-       * @param {Section} section
        * @param {View} view
        * @memberof Rendition
        */
-      this.emit(EVENTS.RENDITION.REMOVED, view.section, view);
+      this.emit(EVENTS.RENDITION.REMOVED, view);
     });
   }
 
   /**
    * Report resize events and display the last seen location
    * @param {object} size 
+   * @param {number} size.width
+   * @param {number} size.height
    * @param {string} [epubcfi]
    * @private
    */
@@ -20040,15 +19999,13 @@ class Rendition {
     /**
      * Emit that the rendition has been resized
      * @event resized
-     * @param {number} width
-     * @param {height} height
+     * @param {object} size
+     * @param {number} size.width
+     * @param {number} size.height
      * @param {string} [epubcfi]
      * @memberof Rendition
      */
-    this.emit(EVENTS.RENDITION.RESIZED, {
-      width: size.width,
-      height: size.height
-    }, epubcfi);
+    this.emit(EVENTS.RENDITION.RESIZED, size, epubcfi);
     if (this.location && this.location.start) {
       this.display(epubcfi || this.location.start.cfi);
     }
@@ -22136,8 +22093,8 @@ class Book {
       // this.toc = this.navigation.toc;
       this.loading.navigation.resolve(this.navigation);
     });
-    if (this.packaging.coverPath) {
-      this.cover = this.resolve(this.packaging.coverPath);
+    if (this.packaging.manifest.coverPath) {
+      this.cover = this.resolve(this.packaging.manifest.coverPath);
     }
     // Resolve promises
     this.loading.manifest.resolve(this.packaging.manifest);
@@ -22163,7 +22120,7 @@ class Book {
    * @private
    */
   async loadNavigation(packaging) {
-    const navPath = packaging.navPath || packaging.ncxPath;
+    const navPath = packaging.manifest.navPath;
     const toc = packaging.toc;
 
     // From json manifest
