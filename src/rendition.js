@@ -25,6 +25,7 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {string} [options.ignoreClass] class for the cfi parser to ignore
  * @param {string|function|object} [options.manager='default'] string values: default / continuous
  * @param {string|function} [options.view='iframe']
+ * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
  * @param {string} [options.layout] layout to force
  * @param {string} [options.spread] force spread value
  * @param {string} [options.direction] direction `"ltr"` OR `"rtl"`
@@ -50,6 +51,7 @@ class Rendition {
 			manager: "default",
 			view: "iframe",
 			flow: null,
+			method: null,
 			layout: null,
 			spread: null,
 			minSpreadWidth: 800,
@@ -218,6 +220,7 @@ class Rendition {
 			const options = {
 				snap: this.settings.snap,
 				view: this.settings.view,
+				method: this.settings.method,
 				fullsize: this.settings.fullsize,
 				ignoreClass: this.settings.ignoreClass,
 				allowPopups: this.settings.allowPopups,
