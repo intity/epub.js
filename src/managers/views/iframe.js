@@ -418,9 +418,10 @@ class IframeView {
 				return loaded;
 			}
 
-			this.iframe.contentDocument.open();
-			this.iframe.contentDocument.write(contents);
-			this.iframe.contentDocument.close();
+			this.document.open();
+			this.document.write("<!DOCTYPE html>"); // required in Firefox
+			this.document.write(contents);
+			this.document.close();
 		}
 
 		return loaded;
