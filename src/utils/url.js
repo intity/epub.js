@@ -5,7 +5,7 @@ import Path from "./path";
  */
 class Url {
 	/**
-	 * 
+	 * Constructor
 	 * @param {string} url a url string (relative or absolute)
 	 * @param {string} [base] optional base for the url, default to window.location.href
 	 */
@@ -54,6 +54,10 @@ class Url {
 					pathname = basePath.resolve(pathname);
 				}
 				console.error(e);
+			}
+			// override URL.origin property for Firefox browser
+			if (this.origin === "null" && this.protocol === "file:") {
+				this.origin = "file://";
 			}
 		}
 		/**
