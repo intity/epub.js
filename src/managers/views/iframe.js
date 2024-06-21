@@ -21,7 +21,7 @@ class IframeView {
 	 * @param {Section} section
 	 * @param {object} [options]
 	 * @param {string} [options.axis] values: `"horizontal"` OR `"vertical"`
-	 * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
+	 * @param {string} [options.method='write'] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
 	 * @param {string} [options.ignoreClass='']
 	 * @param {boolean} [options.allowPopups=false]
 	 * @param {boolean} [options.allowScriptedContent=false]
@@ -81,6 +81,13 @@ class IframeView {
 		 * @readonly
 		 */
 		this.marks = null;
+		/**
+		 * Load method
+		 * @member {string} method
+		 * @memberof IframeView
+		 * @readonly
+		 */
+		this.method = this.settings.method || "write";
 		this.setAxis(this.settings.axis);
 	}
 
@@ -127,8 +134,8 @@ class IframeView {
 		this.element.setAttribute("ref", this.section.index);
 		this.elementBounds = bounds(this.element);
 
-		if (this.settings.method === null) {
-			this.settings.method = ("srcdoc" in this.iframe) ? "srcdoc" : "write";
+		if (this.method === "srcdoc" && ("srcdoc" in this.iframe)) {
+			this.method = "srcdoc";
 		}
 
 		this.added = true;
@@ -400,11 +407,11 @@ class IframeView {
 			return loaded;
 		}
 
-		if (this.settings.method === "blobUrl") {
+		if (this.method === "blobUrl") {
 			this.blobUrl = createBlobUrl(contents, "application/xhtml+xml");
 			this.iframe.src = this.blobUrl;
 			this.element.appendChild(this.iframe);
-		} else if (this.settings.method === "srcdoc") {
+		} else if (this.method === "srcdoc") {
 			this.iframe.srcdoc = contents;
 			this.element.appendChild(this.iframe);
 		} else {
