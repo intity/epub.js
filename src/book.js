@@ -38,7 +38,7 @@ const INPUT_TYPE = {
  * @param {boolean} [options.request.withCredentials=false] send the xhr request withCredentials
  * @param {object} [options.request.headers=[]] send the xhr request headers
  * @param {string} [options.encoding='binary'] optional to pass 'binary' or 'base64' for archived Epubs
- * @param {string} [options.replacements='none'] use base64, blobUrl, or none for replacing assets in archived Epubs
+ * @param {string} [options.replacements=null] use base64, blobUrl, or none for replacing assets in archived Epubs
  * @param {method} [options.canonical] optional function to determine canonical urls for a path
  * @param {string} [options.openAs] optional string to determine the input type
  * @param {string} [options.store] cache the contents in local storage, value should be the name of the reader
@@ -64,7 +64,7 @@ class Book {
 				headers: []
 			},
 			encoding: undefined,
-			replacements: undefined,
+			replacements: null,
 			canonical: undefined,
 			openAs: undefined,
 			store: undefined
@@ -457,7 +457,7 @@ class Book {
 			archive: this.archive,
 			request: this.request.bind(this),
 			resolve: this.resolve.bind(this),
-			replacements: this.settings.replacements || (this.archived ? "blobUrl" : "base64")
+			replacements: this.get_replacements_cfg()
 		});
 
 		this.loadNavigation(this.packaging).then(() => {
@@ -480,7 +480,7 @@ class Book {
 
 		if (this.archived ||
 			this.settings.replacements &&
-			this.settings.replacements !== "none") {
+			this.settings.replacements !== null) {
 			this.replacements().then(() => {
 				this.opening.resolve(this);
 			}).catch((err) => console.error(err.message));
@@ -552,6 +552,11 @@ class Book {
 	 */
 	renderTo(element, options) {
 
+		const method = "blobUrl";
+
+		if (this.settings.replacements === method) {
+			options = extend({ method }, options || {})
+		}
 		this.rendition = new Rendition(this, options);
 		this.rendition.attachTo(element);
 
@@ -616,11 +621,7 @@ class Book {
 			};
 
 			// Use "blobUrl" or "base64" for replacements
-			if (this.settings.replacements && this.settings.replacements !== "none") {
-				this.resources.settings.replacements = this.settings.replacements;
-			} else {
-				this.resources.settings.replacements = "blobUrl";
-			}
+			this.resources.settings.replacements = this.get_replacements_cfg();
 
 			// Create replacement urls
 			this.resources.replacements().then(() => {
@@ -681,6 +682,22 @@ class Book {
 		return this.resources.replacements().then(() => {
 			return this.resources.replaceCss();
 		});
+	}
+
+	/**
+	 * Get replacements setting
+	 * @returns {string}
+	 * @private
+	 */
+	get_replacements_cfg() {
+
+		let replacements = this.settings.replacements;
+		if (replacements === null) {
+			replacements = this.archived ? "blobUrl" : "base64";
+		} else if (replacements === "base64") {
+			replacements = this.archived ? "base64" : null;
+		}
+		return replacements;
 	}
 
 	/**

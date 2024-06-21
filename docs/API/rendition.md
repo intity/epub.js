@@ -60,6 +60,7 @@ the section content.
 | [options.ignoreClass] | <code>string</code> |  | class for the cfi parser to ignore |
 | [options.manager] | <code>string</code> \| <code>function</code> \| <code>object</code> | <code>&quot;&#x27;default&#x27;&quot;</code> | string values: default / continuous |
 | [options.view] | <code>string</code> \| <code>function</code> | <code>&quot;&#x27;iframe&#x27;&quot;</code> |  |
+| [options.method] | <code>string</code> | <code>&quot;&#x27;write&#x27;&quot;</code> | values: `"write"` OR `"srcdoc"` |
 | [options.layout] | <code>string</code> |  | layout to force |
 | [options.spread] | <code>string</code> |  | force spread value |
 | [options.direction] | <code>string</code> |  | direction `"ltr"` OR `"rtl"` |

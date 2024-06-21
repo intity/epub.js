@@ -88,7 +88,6 @@ body {
 
 #prev, #next {
     top: calc(50vh - 37px);
-    position: fixed;
 }
 
 #prev::before {
@@ -157,7 +156,7 @@ body {
 }
 
 .arrow {
-    position: absolute;
+    position: fixed;
     margin: 0 20px;
     font-size: 64px;
     color: #E2E2E2;
