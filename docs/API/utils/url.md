@@ -17,6 +17,8 @@ Creates a Url object for parsing and manipulation of a url string
 <a name="new_Url_new"></a>
 
 ## new Url(url, [base])
+Constructor
+
 
 | Param | Type | Description |
 | --- | --- | --- |

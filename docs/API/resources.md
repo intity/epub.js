@@ -8,7 +8,7 @@ Handle Package Resources
 * [Resources](#Resources)
     * [new Resources(manifest, [options])](#new_Resources_new)
     * [.process(manifest)](#Resources+process)
-    * [.createUrl(url)](#Resources+createUrl) ⇒ <code>Promise.&lt;string&gt;</code>
+    * [.createUrl(uri)](#Resources+createUrl) ⇒ <code>Promise.&lt;string&gt;</code>
     * [.replacements()](#Resources+replacements) ⇒ <code>Promise</code>
     * [.replaceCss([archive], [resolve])](#Resources+replaceCss) ⇒ <code>Promise</code>
     * [.relativeTo(absoluteUri, [resolve])](#Resources+relativeTo) ⇒ <code>Array.&lt;string&gt;</code>
@@ -22,14 +22,14 @@ Handle Package Resources
 Constructor
 
 
-| Param | Type | Default |
-| --- | --- | --- |
-| manifest | <code>Manifest</code> |  | 
-| [options] | <code>object</code> |  | 
-| [options.archive] | <code>Archive</code> |  | 
-| [options.request] | <code>method</code> |  | 
-| [options.resolve] | <code>method</code> |  | 
-| [options.replacements] | <code>string</code> | <code>&quot;&#x27;base64&#x27;&quot;</code> | 
+| Param | Type |
+| --- | --- |
+| manifest | <code>Manifest</code> | 
+| [options] | <code>object</code> | 
+| [options.archive] | <code>Archive</code> | 
+| [options.request] | <code>method</code> | 
+| [options.resolve] | <code>method</code> | 
+| [options.replacements] | <code>string</code> | 
 
 <a name="Resources+process"></a>
 
@@ -44,7 +44,7 @@ Process resources
 
 <a name="Resources+createUrl"></a>
 
-## resources.createUrl(url) ⇒ <code>Promise.&lt;string&gt;</code>
+## resources.createUrl(uri) ⇒ <code>Promise.&lt;string&gt;</code>
 Create a url to a resource
 
 **Kind**: instance method of [<code>Resources</code>](#Resources)  
@@ -52,7 +52,7 @@ Create a url to a resource
 
 | Param | Type |
 | --- | --- |
-| url | <code>string</code> | 
+| uri | <code>string</code> | 
 
 <a name="Resources+replacements"></a>
 

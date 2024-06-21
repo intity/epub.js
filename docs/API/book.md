@@ -54,7 +54,7 @@ of its contents.
 | [options.request.withCredentials] | <code>boolean</code> | <code>false</code> | send the xhr request withCredentials |
 | [options.request.headers] | <code>object</code> | <code>[]</code> | send the xhr request headers |
 | [options.encoding] | <code>string</code> | <code>&quot;&#x27;binary&#x27;&quot;</code> | optional to pass 'binary' or 'base64' for archived Epubs |
-| [options.replacements] | <code>string</code> | <code>&quot;&#x27;none&#x27;&quot;</code> | use base64, blobUrl, or none for replacing assets in archived Epubs |
+| [options.replacements] | <code>string</code> | <code>null</code> | use base64, blobUrl, or none for replacing assets in archived Epubs |
 | [options.canonical] | <code>method</code> |  | optional function to determine canonical urls for a path |
 | [options.openAs] | <code>string</code> |  | optional string to determine the input type |
 | [options.store] | <code>string</code> |  | cache the contents in local storage, value should be the name of the reader |

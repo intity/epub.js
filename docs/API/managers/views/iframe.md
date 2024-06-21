@@ -38,6 +38,7 @@ IframeView class
         * [.epubcfi](#IframeView.epubcfi) : <code>EpubCFI</code>
         * [.layout](#IframeView.layout) : <code>Layout</code>
         * [.marks](#IframeView.marks) : <code>Marks</code>
+        * [.method](#IframeView.method) : <code>string</code>
         * ["loaderror" (err)](#IframeView.event_loaderror)
         * ["rendered" (section)](#IframeView.event_rendered)
         * ["resized" (size)](#IframeView.event_resized)
@@ -59,7 +60,7 @@ Constructor
 | section | <code>Section</code> |  |  |
 | [options] | <code>object</code> |  |  |
 | [options.axis] | <code>string</code> |  | values: `"horizontal"` OR `"vertical"` |
-| [options.method] | <code>string</code> |  | values: `"blobUrl"` OR `"srcdoc"` OR `"write"` |
+| [options.method] | <code>string</code> | <code>&quot;&#x27;write&#x27;&quot;</code> | values: `"blobUrl"` OR `"srcdoc"` OR `"write"` |
 | [options.ignoreClass] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> |  |
 | [options.allowPopups] | <code>boolean</code> | <code>false</code> |  |
 | [options.allowScriptedContent] | <code>boolean</code> | <code>false</code> |  |
@@ -328,6 +329,13 @@ Blank Cfi for Parsing
 <a name="IframeView.marks"></a>
 
 ## IframeView.marks : <code>Marks</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.method"></a>
+
+## IframeView.method : <code>string</code>
+Load method
+
 **Kind**: static property of [<code>IframeView</code>](#IframeView)  
 **Read only**: true  
 <a name="IframeView.event_loaderror"></a>

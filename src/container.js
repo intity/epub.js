@@ -62,7 +62,7 @@ class Container {
 
 		this.fullPath = rootfile.getAttribute("full-path");
 		this.directory = Path.prototype.dirname(this.fullPath);
-		this.encoding = containerDocument.xmlEncoding;
+		this.encoding = containerDocument.characterSet;
 		this.mediaType = rootfile.getAttribute("media-type");
 	}
 

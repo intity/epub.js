@@ -37,7 +37,8 @@ module.exports = (config) => {
         autoWatch: true,
         browsers: [
             "ChromiumHeadless",
-            "ChromeHeadlessNoSandbox"
+            "ChromeHeadlessNoSandbox",
+            "Firefox"
         ],
         singleRun: false,
         concurrency: Infinity,
@@ -48,6 +49,10 @@ module.exports = (config) => {
             ChromeHeadlessNoSandbox: {
                 base: "ChromiumHeadless",
                 flags: ["--no-sandbox"]
+            },
+            FirefoxHeadless: {
+                base: "Firefox",
+                flags: ["-headless"]
             }
         },
         webpack: webpackConfig

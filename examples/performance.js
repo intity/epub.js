@@ -14,19 +14,18 @@ export const put = (key, usage = 1, print = true) => {
 export const gen = () => {
 
     const table = {}
-    const arr = [...map.values()]
     let total = 0
-    arr.forEach((i) => {
+    map.forEach((i) => {
         if (i.print) {
             total += i.dim
         }
     })
-    map.forEach((t, k) => {
-        if (t.print) {
+    map.forEach((i, k) => {
+        if (i.print) {
             table[k] = {
-                "time (ms)": t.dim,
-                "percentage": (t.dim / total) * 100,
-                "usage": t.use
+                "time (ms)": i.dim,
+                "percentage": (i.dim / total) * 100,
+                "usage": i.use
             }
         }
     })

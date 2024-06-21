@@ -15,12 +15,12 @@ class Resources {
 	 * @param {Archive} [options.archive]
 	 * @param {method} [options.request]
 	 * @param {method} [options.resolve]
-	 * @param {string} [options.replacements='base64']
+	 * @param {string} [options.replacements]
 	 */
 	constructor(manifest, { archive, request, resolve, replacements }) {
 
 		this.settings = {
-			replacements: replacements || "base64",
+			replacements: replacements,
 		};
 
 		this.archive = archive;
@@ -57,27 +57,27 @@ class Resources {
 
 	/**
 	 * Create a url to a resource
-	 * @param {string} url
+	 * @param {string} uri
 	 * @return {Promise<string>} Promise resolves with url string
 	 */
-	async createUrl(url) {
+	async createUrl(uri) {
 
-		const parsedUrl = new Url(url);
-		const mimeType = mime.lookup(parsedUrl.filename);
+		const url = new Url(uri);
+		const mimeType = mime.lookup(url.filename);
 		const base64 = this.settings.replacements === "base64";
 
 		if (this.archive) {
-			return this.archive.createUrl(url, {
+			return this.archive.createUrl(uri, {
 				base64: base64
 			});
 		} else if (base64) {
-			return this.request(url, "blob").then((blob) => {
+			return this.request(uri, "blob").then((blob) => {
 				return blob2base64(blob);
 			}).then((blob) => {
 				return createBase64Url(blob, mimeType);
 			});
 		} else {
-			return this.request(url, "blob").then((blob) => {
+			return this.request(uri, "blob").then((blob) => {
 				return createBlobUrl(blob, mimeType);
 			});
 		}
@@ -89,15 +89,13 @@ class Resources {
 	 */
 	async replacements() {
 
-		if (this.settings.replacements === "none") {
+		if (this.settings.replacements === null) {
 			return new Promise((resolve) => {
 				resolve(this.urls);
 			});
 		}
 
-		const replacements = this.replaceUrls();
-
-		return Promise.all(replacements).then((urls) => {
+		return Promise.all(this.replaceUrls()).then((urls) => {
 			this.replacementUrls = urls.filter((url) => {
 				return (typeof (url) === "string");
 			});
@@ -255,7 +253,7 @@ class Resources {
 	substitute(content, url) {
 
 		let relUrls;
-		if (url) {
+		if (url && this.settings.replacements === null) {
 			relUrls = this.relativeTo(url);
 		} else {
 			relUrls = this.urls;
