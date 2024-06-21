@@ -25,7 +25,7 @@ import ContinuousViewManager from "./managers/continuous/index";
  * @param {string} [options.ignoreClass] class for the cfi parser to ignore
  * @param {string|function|object} [options.manager='default'] string values: default / continuous
  * @param {string|function} [options.view='iframe']
- * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
+ * @param {string} [options.method='write'] values: `"write"` OR `"srcdoc"`
  * @param {string} [options.layout] layout to force
  * @param {string} [options.spread] force spread value
  * @param {string} [options.direction] direction `"ltr"` OR `"rtl"`
@@ -51,7 +51,7 @@ class Rendition {
 			manager: "default",
 			view: "iframe",
 			flow: null,
-			method: null,
+			method: "write", // the 'baseUrl' value is set from the 'book.settings.replacements' property
 			layout: null,
 			spread: null,
 			minSpreadWidth: 800,
