@@ -400,8 +400,6 @@ class IframeView {
 			return loaded;
 		}
 
-		this.iframe.onload = (e) => this.onLoad(e, loading);
-
 		if (this.settings.method === "blobUrl") {
 			this.blobUrl = createBlobUrl(contents, "application/xhtml+xml");
 			this.iframe.src = this.blobUrl;
@@ -424,6 +422,7 @@ class IframeView {
 			this.document.close();
 		}
 
+		this.iframe.onload = (e) => this.onLoad(e, loading);
 		return loaded;
 	}
 
