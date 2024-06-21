@@ -9634,7 +9634,7 @@ class Path {
  */
 class Url {
   /**
-   * 
+   * Constructor
    * @param {string} url a url string (relative or absolute)
    * @param {string} [base] optional base for the url, default to window.location.href
    */
@@ -9676,6 +9676,10 @@ class Url {
           pathname = basePath.resolve(pathname);
         }
         console.error(e);
+      }
+      // override URL.origin property for Firefox browser
+      if (this.origin === "null" && this.protocol === "file:") {
+        this.origin = "file://";
       }
     }
     /**
@@ -11472,7 +11476,7 @@ class Container {
     }
     this.fullPath = rootfile.getAttribute("full-path");
     this.directory = utils_path.prototype.dirname(this.fullPath);
-    this.encoding = containerDocument.xmlEncoding;
+    this.encoding = containerDocument.characterSet;
     this.mediaType = rootfile.getAttribute("media-type");
   }
 
@@ -12517,7 +12521,7 @@ class Resources {
    * @param {Archive} [options.archive]
    * @param {method} [options.request]
    * @param {method} [options.resolve]
-   * @param {string} [options.replacements='base64']
+   * @param {string} [options.replacements]
    */
   constructor(manifest, {
     archive,
@@ -12526,7 +12530,7 @@ class Resources {
     replacements
   }) {
     this.settings = {
-      replacements: replacements || "base64"
+      replacements: replacements
     };
     this.archive = archive;
     this.request = request;
@@ -12559,25 +12563,25 @@ class Resources {
 
   /**
    * Create a url to a resource
-   * @param {string} url
+   * @param {string} uri
    * @return {Promise<string>} Promise resolves with url string
    */
-  async createUrl(url) {
-    const parsedUrl = new utils_url(url);
-    const mimeType = mime.lookup(parsedUrl.filename);
+  async createUrl(uri) {
+    const url = new utils_url(uri);
+    const mimeType = mime.lookup(url.filename);
     const base64 = this.settings.replacements === "base64";
     if (this.archive) {
-      return this.archive.createUrl(url, {
+      return this.archive.createUrl(uri, {
         base64: base64
       });
     } else if (base64) {
-      return this.request(url, "blob").then(blob => {
+      return this.request(uri, "blob").then(blob => {
         return blob2base64(blob);
       }).then(blob => {
         return createBase64Url(blob, mimeType);
       });
     } else {
-      return this.request(url, "blob").then(blob => {
+      return this.request(uri, "blob").then(blob => {
         return createBlobUrl(blob, mimeType);
       });
     }
@@ -12588,13 +12592,12 @@ class Resources {
    * @return {Promise} returns replacement urls
    */
   async replacements() {
-    if (this.settings.replacements === "none") {
+    if (this.settings.replacements === null) {
       return new Promise(resolve => {
         resolve(this.urls);
       });
     }
-    const replacements = this.replaceUrls();
-    return Promise.all(replacements).then(urls => {
+    return Promise.all(this.replaceUrls()).then(urls => {
       this.replacementUrls = urls.filter(url => {
         return typeof url === "string";
       });
@@ -12735,7 +12738,7 @@ class Resources {
    */
   substitute(content, url) {
     let relUrls;
-    if (url) {
+    if (url && this.settings.replacements === null) {
       relUrls = this.relativeTo(url);
     } else {
       relUrls = this.urls;
@@ -16169,7 +16172,7 @@ class IframeView {
    * @param {Section} section
    * @param {object} [options]
    * @param {string} [options.axis] values: `"horizontal"` OR `"vertical"`
-   * @param {string} [options.method] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
+   * @param {string} [options.method='write'] values: `"blobUrl"` OR `"srcdoc"` OR `"write"`
    * @param {string} [options.ignoreClass='']
    * @param {boolean} [options.allowPopups=false]
    * @param {boolean} [options.allowScriptedContent=false]
@@ -16229,6 +16232,13 @@ class IframeView {
      * @readonly
      */
     this.marks = null;
+    /**
+     * Load method
+     * @member {string} method
+     * @memberof IframeView
+     * @readonly
+     */
+    this.method = this.settings.method || "write";
     this.setAxis(this.settings.axis);
   }
 
@@ -16271,8 +16281,8 @@ class IframeView {
     this.iframe.setAttribute("enable-annotation", "true");
     this.element.setAttribute("ref", this.section.index);
     this.elementBounds = bounds(this.element);
-    if (this.settings.method === null) {
-      this.settings.method = "srcdoc" in this.iframe ? "srcdoc" : "write";
+    if (this.method === "srcdoc" && "srcdoc" in this.iframe) {
+      this.method = "srcdoc";
     }
     this.added = true;
     this.resizing = true;
@@ -16507,12 +16517,11 @@ class IframeView {
       loading.reject(new Error("No Iframe Available"));
       return loaded;
     }
-    this.iframe.onload = e => this.onLoad(e, loading);
-    if (this.settings.method === "blobUrl") {
+    if (this.method === "blobUrl") {
       this.blobUrl = createBlobUrl(contents, "application/xhtml+xml");
       this.iframe.src = this.blobUrl;
       this.element.appendChild(this.iframe);
-    } else if (this.settings.method === "srcdoc") {
+    } else if (this.method === "srcdoc") {
       this.iframe.srcdoc = contents;
       this.element.appendChild(this.iframe);
     } else {
@@ -16522,10 +16531,12 @@ class IframeView {
         loading.reject(new Error("No Document Available"));
         return loaded;
       }
-      this.iframe.contentDocument.open();
-      this.iframe.contentDocument.write(contents);
-      this.iframe.contentDocument.close();
+      this.document.open();
+      this.document.write("<!DOCTYPE html>"); // required in Firefox
+      this.document.write(contents);
+      this.document.close();
     }
+    this.iframe.onload = e => this.onLoad(e, loading);
     return loaded;
   }
 
@@ -18956,6 +18967,7 @@ class ContinuousViewManager extends managers_default {
  * @param {string} [options.ignoreClass] class for the cfi parser to ignore
  * @param {string|function|object} [options.manager='default'] string values: default / continuous
  * @param {string|function} [options.view='iframe']
+ * @param {string} [options.method='write'] values: `"write"` OR `"srcdoc"`
  * @param {string} [options.layout] layout to force
  * @param {string} [options.spread] force spread value
  * @param {string} [options.direction] direction `"ltr"` OR `"rtl"`
@@ -18981,6 +18993,8 @@ class Rendition {
       manager: "default",
       view: "iframe",
       flow: null,
+      method: "write",
+      // the 'baseUrl' value is set from the 'book.settings.replacements' property
       layout: null,
       spread: null,
       minSpreadWidth: 800,
@@ -19136,6 +19150,7 @@ class Rendition {
       const options = {
         snap: this.settings.snap,
         view: this.settings.view,
+        method: this.settings.method,
         fullsize: this.settings.fullsize,
         ignoreClass: this.settings.ignoreClass,
         allowPopups: this.settings.allowPopups,
@@ -21017,7 +21032,7 @@ const INPUT_TYPE = {
  * @param {boolean} [options.request.withCredentials=false] send the xhr request withCredentials
  * @param {object} [options.request.headers=[]] send the xhr request headers
  * @param {string} [options.encoding='binary'] optional to pass 'binary' or 'base64' for archived Epubs
- * @param {string} [options.replacements='none'] use base64, blobUrl, or none for replacing assets in archived Epubs
+ * @param {string} [options.replacements=null] use base64, blobUrl, or none for replacing assets in archived Epubs
  * @param {method} [options.canonical] optional function to determine canonical urls for a path
  * @param {string} [options.openAs] optional string to determine the input type
  * @param {string} [options.store] cache the contents in local storage, value should be the name of the reader
@@ -21039,7 +21054,7 @@ class Book {
         headers: []
       },
       encoding: undefined,
-      replacements: undefined,
+      replacements: null,
       canonical: undefined,
       openAs: undefined,
       store: undefined
@@ -21380,7 +21395,7 @@ class Book {
       archive: this.archive,
       request: this.request.bind(this),
       resolve: this.resolve.bind(this),
-      replacements: this.settings.replacements || (this.archived ? "blobUrl" : "base64")
+      replacements: this.get_replacements_cfg()
     });
     this.loadNavigation(this.packaging).then(() => {
       // this.toc = this.navigation.toc;
@@ -21397,7 +21412,7 @@ class Book {
     this.loading.resources.resolve(this.resources);
     this.loading.pageList.resolve(this.pageList);
     this.isOpen = true;
-    if (this.archived || this.settings.replacements && this.settings.replacements !== "none") {
+    if (this.archived || this.settings.replacements && this.settings.replacements !== null) {
       this.replacements().then(() => {
         this.opening.resolve(this);
       }).catch(err => console.error(err.message));
@@ -21461,6 +21476,12 @@ class Book {
    * @returns {Rendition}
    */
   renderTo(element, options) {
+    const method = "blobUrl";
+    if (this.settings.replacements === method) {
+      options = extend({
+        method
+      }, options || {});
+    }
     this.rendition = new rendition(this, options);
     this.rendition.attachTo(element);
     return this.rendition;
@@ -21515,11 +21536,7 @@ class Book {
       };
 
       // Use "blobUrl" or "base64" for replacements
-      if (this.settings.replacements && this.settings.replacements !== "none") {
-        this.resources.settings.replacements = this.settings.replacements;
-      } else {
-        this.resources.settings.replacements = "blobUrl";
-      }
+      this.resources.settings.replacements = this.get_replacements_cfg();
 
       // Create replacement urls
       this.resources.replacements().then(() => {
@@ -21572,6 +21589,21 @@ class Book {
     return this.resources.replacements().then(() => {
       return this.resources.replaceCss();
     });
+  }
+
+  /**
+   * Get replacements setting
+   * @returns {string}
+   * @private
+   */
+  get_replacements_cfg() {
+    let replacements = this.settings.replacements;
+    if (replacements === null) {
+      replacements = this.archived ? "blobUrl" : "base64";
+    } else if (replacements === "base64") {
+      replacements = this.archived ? "base64" : null;
+    }
+    return replacements;
   }
 
   /**
