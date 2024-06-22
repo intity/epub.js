@@ -21,7 +21,7 @@ module.exports = (config) => {
                 watched: false
             },
             {
-                pattern: "test/fixtures/**/*",
+                pattern: "assets/**/*",
                 watched: false,
                 included: false,
                 served: true
@@ -43,7 +43,7 @@ module.exports = (config) => {
         singleRun: false,
         concurrency: Infinity,
         proxies: {
-            "/fixtures/": "/base/test/fixtures/"
+            "/assets/": "/base/assets/"
         },
         customLaunchers: {
             ChromeHeadlessNoSandbox: {
