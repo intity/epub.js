@@ -2,7 +2,7 @@ import assert from "assert"
 import ePub from "../src/epub"
 import request from "../src/utils/request"
 
-const bookPath = "./fixtures/alice/"
+const bookPath = "/assets/alice/"
 const settings = { width: 400, height: 400 }
 
 describe("Section", () => {

@@ -4,7 +4,7 @@ import ePub from "../src/epub"
 describe("Themes", () => {
     let book, rendition
     before(async () => {
-        book = ePub("./fixtures/alice/")
+        book = ePub("/assets/alice/")
         rendition = book.renderTo("viewer", {
             width: "100%",
             height: "100%"

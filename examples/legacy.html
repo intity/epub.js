@@ -24,7 +24,7 @@
         var divider = document.getElementById("divider");
         var prev = document.getElementById("prev");
         var next = document.getElementById("next");
-        var book = ePub("../test/fixtures/alice/OPS/package.opf");
+        var book = ePub("../assets/alice/");
         var rendition = book.renderTo("viewer", {
             manager: swipe ? "continuous" : "default",
             snap: swipe ? {} : null,

@@ -3,7 +3,7 @@ import Book from "../src/book"
 
 describe("Book(archived)", () => {
 	describe("open book from epub file of local server", () => {
-		const book = new Book("/fixtures/alice.epub")
+		const book = new Book("/assets/alice.epub")
 		it("should open a archived epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
@@ -22,7 +22,7 @@ describe("Book(archived)", () => {
 		})
 	})
 	describe("open book from epub file of external server", () => {
-		const book = new Book("https://intity.github.io/epub-js/test/fixtures/alice.epub")
+		const book = new Book("https://intity.github.io/epub-js/assets/alice.epub")
 		it("should open a archived epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
@@ -43,7 +43,7 @@ describe("Book(archived)", () => {
 	describe("open book from array buffer without options", () => {
 		let book
 		before(async () => {
-			const response = await fetch("/fixtures/alice.epub")
+			const response = await fetch("/assets/alice.epub")
 			const buffer = await response.arrayBuffer()
 			book = new Book(buffer)
 		})
@@ -58,7 +58,7 @@ describe("Book(archived)", () => {
 		})
 	})
 	describe("open book from epub file without cover", () => {
-		const book = new Book("/fixtures/alice_without_cover.epub")
+		const book = new Book("/assets/alice_without_cover.epub")
 		it("should open a archived epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
@@ -72,12 +72,12 @@ describe("Book(archived)", () => {
 })
 describe("Book(unarchived)", () => {
 	describe("open book from directory of local server", () => {
-		const book = new Book("/fixtures/alice/")
+		const book = new Book("/assets/alice/")
 		it("should open a epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
 			assert.equal(book.archived, false)
-			assert.equal(book.url.toString(), "http://localhost:9876/fixtures/alice/")
+			assert.equal(book.url.toString(), "http://localhost:9876/assets/alice/")
 		})
 		it("book.container assertion", async () => {
 			await book.opened
@@ -88,12 +88,12 @@ describe("Book(unarchived)", () => {
 		})
 	})
 	describe("open book from directory of external server", () => {
-		const book = new Book("https://intity.github.io/epub-js/test/fixtures/alice/")
+		const book = new Book("https://intity.github.io/epub-js/assets/alice/")
 		it("should open a epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
 			assert.equal(book.archived, false)
-			assert.equal(book.url.toString(), "https://intity.github.io/epub-js/test/fixtures/alice/")
+			assert.equal(book.url.toString(), "https://intity.github.io/epub-js/assets/alice/")
 		})
 		it("book.container assertion", async () => {
 			await book.opened
@@ -104,29 +104,29 @@ describe("Book(unarchived)", () => {
 		})
 	})
 	describe("open book from package.opf of local server", () => {
-		const book = new Book("/fixtures/alice/OPS/package.opf")
+		const book = new Book("/assets/alice/OPS/package.opf")
 		it("should open a epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
 			assert.equal(book.archived, false)
-			assert.equal(book.url.toString(), "http://localhost:9876/fixtures/alice/OPS/package.opf")
+			assert.equal(book.url.toString(), "http://localhost:9876/assets/alice/OPS/package.opf")
 		})
 		it("should have a local coverUrl", async () => {
 			const coverUrl = await book.coverUrl()
-			assert.equal(coverUrl, "http://localhost:9876/fixtures/alice/OPS/images/cover_th.jpg")
+			assert.equal(coverUrl, "http://localhost:9876/assets/alice/OPS/images/cover_th.jpg")
 		})
 	})
 	describe("open book from package.opf of external server", () => {
-		const book = new Book("https://intity.github.io/epub-js/test/fixtures/alice/OPS/package.opf")
+		const book = new Book("https://intity.github.io/epub-js/assets/alice/OPS/package.opf")
 		it("should open a epub", async () => {
 			await book.opened
 			assert.equal(book.isOpen, true)
 			assert.equal(book.archived, false)
-			assert.equal(book.url.toString(), "https://intity.github.io/epub-js/test/fixtures/alice/OPS/package.opf")
+			assert.equal(book.url.toString(), "https://intity.github.io/epub-js/assets/alice/OPS/package.opf")
 		})
 		it("should have a local coverUrl", async () => {
 			const coverUrl = await book.coverUrl()
-			assert.equal(coverUrl, "https://intity.github.io/epub-js/test/fixtures/alice/OPS/images/cover_th.jpg")
+			assert.equal(coverUrl, "https://intity.github.io/epub-js/assets/alice/OPS/images/cover_th.jpg")
 		})
 	})
 })

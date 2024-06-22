@@ -2,9 +2,9 @@ import assert from "assert"
 import Book from "../src/book"
 import Locations from "../src/locations"
 import * as core from "../src/utils/core"
-import chapter from "./fixtures/locations.xhtml"
+import chapter from "../assets/locations.xhtml"
 
-const book = new Book("/fixtures/alice/OPS/package.opf")
+const book = new Book("/assets/alice/OPS/package.opf")
 
 describe("Locations", () => {
 	describe("#parse()", () => {

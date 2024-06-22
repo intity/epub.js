@@ -4,7 +4,7 @@ import Packaging from "../src/packaging"
 describe("Packaging", () => {
     let packageXML, packaging
     before(async () => {
-        packageXML = await fetch("/fixtures/alice/OPS/package.opf")
+        packageXML = await fetch("/assets/alice/OPS/package.opf")
             .then(r => r.text())
             .then(t => {
                 return new window.DOMParser()
