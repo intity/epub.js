@@ -1,8 +1,8 @@
 import assert from "assert"
 import EpubCFI from "../src/epubcfi"
-import content1 from "./fixtures/chapter1.xhtml"
-import content2 from "./fixtures/chapter1-highlights.xhtml"
-import content3 from "./fixtures/highlight.xhtml"
+import content1 from "../assets/chapter1.xhtml"
+import content2 from "../assets/chapter1-highlights.xhtml"
+import content3 from "../assets/highlight.xhtml"
 
 const parser = new DOMParser();
 const doc1 = parser.parseFromString(content1, "application/xhtml+xml")
