@@ -35,6 +35,13 @@ class Locations extends Array {
 			index: -1,
 			percentage: 0
 		};
+		this.opening = new Defer();
+		/**
+		 * @member {Promise} generated
+		 * @memberof Locations
+		 * @readonly
+		 */
+		this.generated = this.opening.promise;
 		this.processingTimeout = undefined;
 		this.q = new Queue(this);
 	}
@@ -67,6 +74,7 @@ class Locations extends Array {
 				this.current.cfi = [0];
 				this.current.index = 0;
 				this.current.percentage = 0;
+				this.opening.resolve(this);
 			}
 			return this;
 		});
@@ -386,6 +394,7 @@ class Locations extends Array {
 		this.q.stop();
 		this.q = undefined;
 		this.splice(0);
+		this.generated = undefined;
 		clearTimeout(this.processingTimeout);
 	}
 }
