@@ -74,8 +74,8 @@ class Locations extends Array {
 				this.current.cfi = [0];
 				this.current.index = 0;
 				this.current.percentage = 0;
-				this.opening.resolve(this);
 			}
+			this.opening.resolve(this);
 			return this;
 		});
 	}
@@ -380,6 +380,17 @@ class Locations extends Array {
 	}
 
 	/**
+	 * clear locations
+	 */
+	clear() {
+
+		this.current.cfi = null;
+		this.current.index = -1;
+		this.current.percentage = 0;
+		this.splice(0);
+	}
+
+	/**
 	 * destroy
 	 */
 	destroy() {
@@ -388,12 +399,10 @@ class Locations extends Array {
 		this.pause = undefined;
 		this.break = undefined;
 		this.request = undefined;
-		this.current.cfi = null;
-		this.current.index = -1;
-		this.current.percentage = 0;
 		this.q.stop();
 		this.q = undefined;
-		this.splice(0);
+		this.clear();
+		this.current = undefined;
 		this.generated = undefined;
 		clearTimeout(this.processingTimeout);
 	}
