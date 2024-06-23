@@ -2,15 +2,17 @@ import assert from "assert"
 import Url from "../src/utils/url"
 
 describe("Url", () => {
-    it("Url()", () => {
-        const url = new Url("http://example.com/fred/chasen/derf.html")
-        assert.equal(url.href, "http://example.com/fred/chasen/derf.html")
-        assert.equal(url.directory, "/fred/chasen/")
-        assert.equal(url.extension, "html")
-        assert.equal(url.filename, "derf.html")
-        assert.equal(url.origin, "http://example.com")
-        assert.equal(url.protocol, "http:")
-        assert.equal(url.search, "")
+    describe("#constructor()", () => {
+        it("should init object properties from url", () => {
+            const url = new Url("http://example.com/fred/chasen/derf.html")
+            assert.equal(url.href, "http://example.com/fred/chasen/derf.html")
+            assert.equal(url.directory, "/fred/chasen/")
+            assert.equal(url.extension, "html")
+            assert.equal(url.filename, "derf.html")
+            assert.equal(url.origin, "http://example.com")
+            assert.equal(url.protocol, "http:")
+            assert.equal(url.search, "")
+        })
     })
     describe("#resolve()", () => {
         it("should join subfolders", () => {
