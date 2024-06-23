@@ -34,7 +34,8 @@ describe("Locations", () => {
 	describe("#set()", () => {
 		it("checking set method to change current location", async () => {
 			await book.opened
-			await book.locations.on("changed", (current, changed) => {
+			await book.locations.generated
+			book.locations.on("changed", (current, changed) => {
 				assert.equal(current.cfi, book.locations[changed.index])
 			})
 			const current = book.locations.current
@@ -110,6 +111,50 @@ describe("Locations", () => {
 			assert.equal(current.percentage, 0.98)
 			book.locations.set({ index: 100 })
 			assert.equal(current.percentage, 1)
+		})
+	})
+	describe("#locationFromCfi()", () => {
+        it("should get location from cfi", async () => {
+			await book.opened
+			await book.locations.generated
+            book.locations.forEach((cfi, ind) => {
+                const index = book.locations.locationFromCfi(cfi)
+                assert.equal(index, ind)
+            })
+        })
+    })
+	describe("#percentageFromLocation()", () => {
+		it("should get percentage from location", async () => {
+			await book.opened
+			await book.locations.generated
+			const locations = book.locations
+			assert.equal(locations.percentageFromLocation(-1), 0)
+			assert.equal(locations.percentageFromLocation(14), 0.14)
+			assert.equal(locations.percentageFromLocation(25), 0.25)
+			assert.equal(locations.percentageFromLocation(36), 0.36)
+			assert.equal(locations.percentageFromLocation(50), 0.50)
+			assert.equal(locations.percentageFromLocation(61), 0.61)
+			assert.equal(locations.percentageFromLocation(71), 0.71)
+			assert.equal(locations.percentageFromLocation(77), 0.77)
+			assert.equal(locations.percentageFromLocation(89), 0.89)
+			assert.equal(locations.percentageFromLocation(95), 0.95)
+		})
+	})
+	describe("#cfiFromPercentage()", () => {
+		it("should get cfi from percentage", async () => {
+			await book.opened
+			await book.locations.generated
+			const locations = book.locations
+			assert.equal(locations.cfiFromPercentage(0.01), locations[1])
+			assert.equal(locations.cfiFromPercentage(0.14), locations[14])
+			assert.equal(locations.cfiFromPercentage(0.25), locations[25])
+			assert.equal(locations.cfiFromPercentage(0.36), locations[36])
+			assert.equal(locations.cfiFromPercentage(0.50), locations[50])
+			assert.equal(locations.cfiFromPercentage(0.61), locations[61])
+			assert.equal(locations.cfiFromPercentage(0.71), locations[71])
+			assert.equal(locations.cfiFromPercentage(0.77), locations[77])
+			assert.equal(locations.cfiFromPercentage(0.89), locations[89])
+			assert.equal(locations.cfiFromPercentage(0.95), locations[95])
 		})
 	})
 })
