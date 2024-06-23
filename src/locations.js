@@ -277,7 +277,7 @@ class Locations extends Array {
 			return cfi.toString();
 		}
 
-		const loc = Math.ceil((this.length - 1) * percentage);
+		const loc = Math.floor((this.length - 1) * percentage);
 		return this.cfiFromLocation(loc);
 	}
 
