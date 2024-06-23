@@ -35,13 +35,13 @@ class Locations extends Array {
 			index: -1,
 			percentage: 0
 		};
-		this.opening = new Defer();
+		this.processing = new Defer();
 		/**
 		 * @member {Promise} generated
 		 * @memberof Locations
 		 * @readonly
 		 */
-		this.generated = this.opening.promise;
+		this.generated = this.processing.promise;
 		this.processingTimeout = undefined;
 		this.q = new Queue(this);
 	}
@@ -75,7 +75,7 @@ class Locations extends Array {
 				this.current.index = 0;
 				this.current.percentage = 0;
 			}
-			this.opening.resolve(this);
+			this.processing.resolve(this);
 			return this;
 		});
 	}
