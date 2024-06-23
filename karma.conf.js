@@ -31,7 +31,10 @@ module.exports = (config) => {
         preprocessors: {
             "test/*.js": ["webpack", "sourcemap"],
         },
-        reporters: ["mocha"],
+        reporters: ["spec"],
+        specReporter: {
+            showSpecTiming: true
+        },
         port: 9876,
         logLevel: config.LOG_INFO,
         autoWatch: true,
