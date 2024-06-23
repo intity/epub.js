@@ -78,13 +78,16 @@
 					break;
 			}
 		}
+		let stored, timeStamp
 		book.ready.then(() => {
 			// Load in stored locations from json or local storage
 			const key = book.key() + '-locations'
-			const stored = localStorage.getItem(key)
+			stored = localStorage.getItem(key)
 			if (stored) {
+				timeStamp = Date.now()
 				return book.locations.load(stored)
 			} else {
+				timeStamp = Date.now()
 				// Or generate the locations on the fly
 				// Can pass an option number of chars to break sections by
 				// default is 150 chars
@@ -107,6 +110,11 @@
 			// Save out the generated locations to JSON
 			localStorage.setItem(book.key() + '-locations', book.locations.save())
 			console.log("locations.length: " + locations.length)
+			if (stored) {
+				console.log(`locations.load: ${Date.now() - timeStamp} ms`)
+			} else {
+				console.log(`locations.generate: ${Date.now() - timeStamp} ms`)
+			}
 			console.log(book)
 
 			document.onkeyup = keybinding
