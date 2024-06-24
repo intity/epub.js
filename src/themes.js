@@ -21,11 +21,12 @@ class Themes extends Map {
 		 */
 		this.current = undefined;
 		/**
-		 * @member {object} overrides
+		 * Injected css rules
+		 * @member {object} rules
 		 * @memberof Themes
 		 * @readonly
 		 */
-		this.overrides = {};
+		this.rules = {};
 		this.rendition.hooks.content.register(this.inject.bind(this));
 		this.rendition.hooks.content.register(this.update.bind(this));
 	}
@@ -173,7 +174,7 @@ class Themes extends Map {
 	 */
 	update(contents) {
 
-		const rules = this.overrides;
+		const rules = this.rules;
 
 		for (const rule in rules) {
 			if (rules.hasOwnProperty(rule)) {
@@ -206,7 +207,7 @@ class Themes extends Map {
 				);
 			}
 		});
-		this.overrides[name] = rule;
+		this.rules[name] = rule;
 	}
 
 	/**
@@ -215,7 +216,7 @@ class Themes extends Map {
 	 */
 	removeRule(name) {
 
-		delete this.overrides[name];
+		delete this.rules[name];
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
 			if (content) {
@@ -229,7 +230,7 @@ class Themes extends Map {
 	 */
 	removeRules() {
 
-		Object.keys(this.overrides).forEach((key) => {
+		Object.keys(this.rules).forEach((key) => {
 			this.removeRule(key);
 		});
 	}
@@ -260,7 +261,7 @@ class Themes extends Map {
 		this.clear();
 		this.removeRules();
 		this.current = undefined;
-		this.overrides = undefined;
+		this.rules = undefined;
 	}
 }
 
