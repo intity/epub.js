@@ -13,15 +13,19 @@ Themes to apply to displayed content
         * [.registerUrl(name, input)](#Themes+registerUrl)
         * [.registerRules(name, rules)](#Themes+registerRules)
         * [.select(name)](#Themes+select)
+        * [.clear()](#Themes+clear)
         * [.appendRule(name, value, [priority])](#Themes+appendRule)
         * [.removeRule(name)](#Themes+removeRule)
+        * [.removeRules()](#Themes+removeRules)
         * [.fontSize(size)](#Themes+fontSize)
         * [.font(f)](#Themes+font)
         * [.destroy()](#Themes+destroy)
     * _static_
         * [.current](#Themes.current) : <code>string</code>
-        * [.overrides](#Themes.overrides) : <code>object</code>
+        * [.rules](#Themes.rules) : <code>object</code>
         * ["selected" (name, theme)](#Themes.event_selected)
+        * ["injected" (key, theme, contents)](#Themes.event_injected)
+        * ["rejected" (key, theme, contents)](#Themes.event_rejected)
 
 <a name="new_Themes_new"></a>
 
@@ -46,15 +50,15 @@ Add themes to be used by a rendition
 
 **Example**  
 ```js
-themes.register("light", "http://example.com/light.css")
+register("light", "http://example.com/light.css")
 ```
 **Example**  
 ```js
-themes.register("light", { body: { color: "purple"}})
+register("light", { body: { color: "purple"}})
 ```
 **Example**  
 ```js
-themes.register({ light: {...}, dark: {...}})
+register({ light: {...}, dark: {...}})
 ```
 <a name="Themes+registerThemes"></a>
 
@@ -81,11 +85,11 @@ Register a url
 
 **Example**  
 ```js
-themes.registerUrl("light", "light.css")
+registerUrl("light", "light.css")
 ```
 **Example**  
 ```js
-themes.registerUrl("light", "http://example.com/light.css")
+registerUrl("light", "http://example.com/light.css")
 ```
 <a name="Themes+registerRules"></a>
 
@@ -101,12 +105,12 @@ Register rule
 
 **Example**  
 ```js
-themes.registerRules("light", { body: { color: "purple"}})
+registerRules("light", { body: { color: "purple"}})
 ```
 <a name="Themes+select"></a>
 
 ## themes.select(name)
-Select a theme
+Use null to reject the current selected theme
 
 **Kind**: instance method of [<code>Themes</code>](#Themes)  
 
@@ -114,6 +118,12 @@ Select a theme
 | --- | --- | --- |
 | name | <code>string</code> | Theme name |
 
+<a name="Themes+clear"></a>
+
+## themes.clear()
+Clear all themes
+
+**Kind**: instance method of [<code>Themes</code>](#Themes)  
 <a name="Themes+appendRule"></a>
 
 ## themes.appendRule(name, value, [priority])
@@ -138,6 +148,12 @@ Remove rule
 | --- | --- |
 | name | <code>string</code> | 
 
+<a name="Themes+removeRules"></a>
+
+## themes.removeRules()
+Remove all rules
+
+**Kind**: instance method of [<code>Themes</code>](#Themes)  
 <a name="Themes+fontSize"></a>
 
 ## themes.fontSize(size)
@@ -171,9 +187,11 @@ destroy
 ## Themes.current : <code>string</code>
 **Kind**: static property of [<code>Themes</code>](#Themes)  
 **Read only**: true  
-<a name="Themes.overrides"></a>
+<a name="Themes.rules"></a>
 
-## Themes.overrides : <code>object</code>
+## Themes.rules : <code>object</code>
+Injected css rules
+
 **Kind**: static property of [<code>Themes</code>](#Themes)  
 **Read only**: true  
 <a name="Themes.event_selected"></a>
@@ -187,4 +205,30 @@ Emit which occurs when theme is selected
 | --- | --- | --- |
 | name | <code>string</code> | Theme key |
 | theme | <code>object</code> | Theme value |
+
+<a name="Themes.event_injected"></a>
+
+## "injected" (key, theme, contents)
+Emit of injected a stylesheet into contents
+
+**Kind**: event emitted by [<code>Themes</code>](#Themes)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | Theme key |
+| theme | <code>object</code> | Theme value |
+| contents | <code>Contents</code> |  |
+
+<a name="Themes.event_rejected"></a>
+
+## "rejected" (key, theme, contents)
+Emit of rejected a stylesheet into contents
+
+**Kind**: event emitted by [<code>Themes</code>](#Themes)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | Theme key |
+| theme | <code>object</code> | Theme value |
+| contents | <code>Contents</code> |  |
 
