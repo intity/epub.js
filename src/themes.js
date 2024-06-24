@@ -199,6 +199,15 @@ class Themes extends Map {
 	}
 
 	/**
+	 * Clear all themes
+	 */
+	clearThemes() {
+
+		this.select(null);
+		this.clear();
+	}
+
+	/**
 	 * Inject all themes into contents
 	 * @param {Contents} contents
 	 * @private
@@ -306,7 +315,7 @@ class Themes extends Map {
 	 */
 	destroy() {
 
-		this.clear();
+		this.clearThemes();
 		this.removeRules();
 		this.current = undefined;
 		this.rules = undefined;
