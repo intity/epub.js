@@ -104,21 +104,35 @@ class Themes extends Map {
 	/**
 	 * Select a theme
 	 * @param {string} name Theme name
+	 * @description Use null to reject the current selected theme
 	 */
 	select(name) {
 
-		const theme = this.get(name);
-		if (this.current === name || !theme) return;
-
 		const prev = this.current;
+
+		let theme;
+		if (name && prev === null) {
+			theme = this.get(name);
+		} else if (prev && name === null) {
+			theme = this.get(prev);
+		}
+		if (this.current === name || !theme) {
+			return;
+		}
+
 		this.current = name;
 
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
-			if (content) {
+			if (!content) {
+				return;
+			} else if (name) {
 				content.removeClass(prev);
 				content.appendClass(name);
 				this.append(name, theme, content);
+			} else if (prev) {
+				content.removeClass(prev);
+				this.remove(prev, theme, content);
 			}
 		});
 		/**
@@ -132,32 +146,55 @@ class Themes extends Map {
 	}
 
 	/**
-	 * Add Theme to contents
+	 * Append theme to contents
 	 * @param {string} key
-	 * @param {object} value 
+	 * @param {object} theme 
 	 * @param {Contents} contents
 	 * @private
 	 */
-	append(key, value, contents) {
+	append(key, theme, contents) {
 
-		if (value.url) {
-			contents.appendStylesheet(value.url, key);
-			value.injected = true;
+		if (theme.url) {
+			contents.appendStylesheet(theme.url, key);
+			theme.injected = true;
 		}
-		if (value.rules) {
-			contents.appendStylesheetRules(value.rules, key);
-			value.injected = true;
+		if (theme.rules) {
+			contents.appendStylesheetRules(theme.rules, key);
+			theme.injected = true;
 		}
-		if (value.injected) {
+		if (theme.injected) {
 			/**
 			 * Emit of injected a stylesheet into contents
 			 * @event injected
 			 * @param {string} key Theme key
-			 * @param {object} value Theme value
+			 * @param {object} theme Theme value
 			 * @param {Contents} contents
 			 * @memberof Themes
 			 */
-			this.emit(EVENTS.THEMES.INJECTED, key, value, contents);
+			this.emit(EVENTS.THEMES.INJECTED, key, theme, contents);
+		}
+	}
+
+	/**
+	 * Remove theme from contents
+	 * @param {string} key 
+	 * @param {object} theme 
+	 * @param {Contents} contents 
+	 * @private
+	 */
+	remove(key, theme, contents) {
+
+		if (contents.removeStylesheet(key)) {
+			theme.injected = false;
+			/**
+			 * Emit of rejected a stylesheet into contents
+			 * @event rejected
+			 * @param {string} key Theme key
+			 * @param {object} theme Theme value
+			 * @param {Contents} contents
+			 * @memberof Themes
+			 */
+			this.emit(EVENTS.THEMES.REJECTED, key, theme, contents);
 		}
 	}
 
@@ -167,11 +204,11 @@ class Themes extends Map {
 	 * @private
 	 */
 	inject(contents) {
-		
-		this.forEach((value, key) => {
+
+		this.forEach((theme, key) => {
 
 			if (this.current === key) {
-				this.append(key, value, contents);
+				this.append(key, theme, contents);
 			}
 		});
 

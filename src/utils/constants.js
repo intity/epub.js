@@ -64,6 +64,7 @@ export const EVENTS = {
     },
     THEMES: {
         SELECTED: "selected",
-        INJECTED: "injected"
+        INJECTED: "injected",
+        REJECTED: "rejected"
     }
 }
