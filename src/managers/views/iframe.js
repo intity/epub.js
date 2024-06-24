@@ -54,6 +54,12 @@ class IframeView {
 		 * @readonly
 		 */
 		this.section = section;
+		/**
+		 * @member {Contents} contents
+		 * @memberof IframeView
+		 * @readonly
+		 */
+		this.contents = null;
 		this.element = this.container();
 		this.added = false;
 		this.displayed = false;
