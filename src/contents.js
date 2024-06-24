@@ -703,7 +703,7 @@ class Contents {
 
 	/**
 	 * Remove a class from the contents container
-	 * @param {string} removeClass
+	 * @param {string} className
 	 */
 	removeClass(className) {
 
