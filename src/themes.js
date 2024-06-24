@@ -225,6 +225,16 @@ class Themes extends Map {
 	}
 
 	/**
+	 * Remove all rules
+	 */
+	removeRules() {
+
+		Object.keys(this.overrides).forEach((key) => {
+			this.removeRule(key);
+		});
+	}
+
+	/**
 	 * Adjust the font size of a rendition
 	 * @param {number} size
 	 */
@@ -248,8 +258,9 @@ class Themes extends Map {
 	destroy() {
 
 		this.clear();
+		this.removeRules();
 		this.current = undefined;
-		this.overrides = {};
+		this.overrides = undefined;
 	}
 }
 
