@@ -111,7 +111,7 @@ class Themes extends Map {
 		const prev = this.current;
 
 		let theme;
-		if (name && prev === null) {
+		if (name) {
 			theme = this.get(name);
 		} else if (prev && name === null) {
 			theme = this.get(prev);
