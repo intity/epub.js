@@ -59,6 +59,10 @@
             console.log(`theme: ${key}`)
             console.log(value)
         })
+        rendition.themes.on("injected", (key, value, contents) => {
+
+            console.log(contents)
+        })
     </script>
 </body>
 
