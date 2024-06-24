@@ -72,13 +72,19 @@ describe("Themes", () => {
     })
     describe("#select()", () => {
         it ("switching theme using select method", () => {
-            rendition.themes.on("selected", (key, value) => {
-                assert.equal(value.injected, true)
+            rendition.themes.on("selected", (key, theme) => {
+                if (key === null) {
+                    assert.equal(theme.injected, false)
+                } else {
+                    assert.equal(theme.injected, true)
+                }
             })
             rendition.themes.select("light")
             assert.equal(rendition.themes.current, "light")
             rendition.themes.select("dark")
             assert.equal(rendition.themes.current, "dark")
+            rendition.themes.select(null)
+            assert.equal(rendition.themes.current, null)
         })
     })
     describe("#appendRule()", () => {
