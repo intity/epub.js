@@ -1,32 +1,29 @@
 import assert from "assert"
-import ePub from "../src/epub"
+import Book from "../src/book"
 
 describe("Themes", () => {
-    let book, rendition
+    let rendition, theme
     before(async () => {
-        book = ePub("/assets/alice/")
-        rendition = book.renderTo("viewer", {
+        const book = new Book("/assets/alice/")
+        rendition = book.renderTo(document.body, {
             width: "100%",
             height: "100%"
         })
-        rendition.display()
+        await book.opened
+        await rendition.display()
     })
     describe("#register()", () => {
-        it("register a theme by url", async () => {
-            await book.opened
-            let theme
-            rendition.themes.register("light", "../examples/themes.css")
+        it("should register a theme by url", () => {
+            rendition.themes.register("light", "/examples/themes.css")
             theme = rendition.themes.get("light")
             assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
-            rendition.themes.register("dark", "../examples/themes.css")
+            rendition.themes.register("dark", "/examples/themes.css")
             theme = rendition.themes.get("dark")
             assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
-            rendition.themes.destroy()
+            rendition.themes.clear()
             assert.equal(rendition.themes.size, 0)
         })
-        it("register a theme by rules", async () => {
-            await book.opened
-            let theme
+        it("should register a theme by rules", () => {
             rendition.themes.register("light", { background: "#fff", color: "#000" })
             theme = rendition.themes.get("light")
             assert.equal(theme.rules.background, "#fff")
@@ -35,12 +32,10 @@ describe("Themes", () => {
             theme = rendition.themes.get("dark")
             assert.equal(theme.rules.background, "#000")
             assert.equal(theme.rules.color, "#fff")
-            rendition.themes.destroy()
+            rendition.themes.clear()
             assert.equal(rendition.themes.size, 0)
         })
-        it("register a themes from object", async () => {
-            await book.opened
-            let theme
+        it("should register a themes from object with rules", () => {
             rendition.themes.register({
                 light: {
                     body: {
@@ -61,28 +56,43 @@ describe("Themes", () => {
             theme = rendition.themes.get("dark")
             assert.equal(theme.rules.body.background, "#000")
             assert.equal(theme.rules.body.color, "#fff")
-            rendition.themes.destroy()
+            rendition.themes.clear()
             assert.equal(rendition.themes.size, 0)
         })
-    })
-    describe("#select()", () => {
-        it ("switching theme using select method", async () => {
-            await book.opened
-            let theme
+        it("should register a themes from object with urls", () => {
             rendition.themes.register({
-                light: "../examples/themes.css",
-                dark: "../examples/themes.css"
+                light: "/examples/themes.css",
+                dark: "/examples/themes.css"
             })
             theme = rendition.themes.get("light")
             assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
             theme = rendition.themes.get("dark")
             assert.equal(theme.url, "http://localhost:9876/examples/themes.css")
+        })
+    })
+    describe("#select()", () => {
+        it ("switching theme using select method", () => {
+            rendition.themes.on("selected", (key, value) => {
+                assert.equal(value.injected, true)
+            })
             rendition.themes.select("light")
             assert.equal(rendition.themes.current, "light")
             rendition.themes.select("dark")
             assert.equal(rendition.themes.current, "dark")
-            rendition.themes.destroy()
-            assert.equal(rendition.themes.size, 0)
+        })
+    })
+    describe("#appendRule()", () => {
+        it("should inject css rule into contents", () => {
+            rendition.themes.appendRule("font-size", "100%")
+            const rule = rendition.themes.rules["font-size"]
+            assert.equal(rule.value, "100%")
+        })
+    })
+    describe("#removeRule()", () => {
+        it("should reject css rule into contents", () => {
+            rendition.themes.removeRule("font-size")
+            const rule = rendition.themes.rules["font-size"]
+            assert.equal(rule, undefined)
         })
     })
 })
