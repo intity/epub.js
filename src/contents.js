@@ -676,6 +676,17 @@ class Contents {
 	}
 
 	/**
+	 * Clear all injected scripts
+	 */
+	clearScripts() {
+
+		this.scripts.forEach((node) => {
+			this.document.removeChild(node);
+		})
+		this.scripts.clear();
+	}
+
+	/**
 	 * Append a class to the contents container
 	 * @param {string} className
 	 */
@@ -1206,10 +1217,7 @@ class Contents {
 		this.removeListeners();
 		this.clearStylesheets();
 		this.styles = undefined;
-		this.scripts.forEach((node) => {
-			this.document.removeChild(node);
-		})
-		this.scripts.clear();
+		this.clearScripts();
 		this.scripts = undefined;
 	}
 }
