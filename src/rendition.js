@@ -781,7 +781,7 @@ class Rendition {
 				"page-break-inside": "avoid",
 				"break-inside": "avoid"
 			}
-		});
+		}, "images");
 
 		return new Promise((resolve, reject) => {
 			// Wait to apply
