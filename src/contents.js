@@ -569,6 +569,17 @@ class Contents {
 	}
 
 	/**
+	 * Clear all injected stylesheets
+	 */
+	clearStylesheets() {
+
+		this.styles.forEach((node) => {
+			this.document.removeChild(node);
+		});
+		this.styles.clear();
+	}
+
+	/**
 	 * Append serialized stylesheet
 	 * @param {string} css
 	 * @param {string} key
@@ -1193,10 +1204,7 @@ class Contents {
 	destroy() {
 
 		this.removeListeners();
-		this.styles.forEach((node) => {
-			this.document.removeChild(node);
-		});
-		this.styles.clear();
+		this.clearStylesheets();
 		this.styles = undefined;
 		this.scripts.forEach((node) => {
 			this.document.removeChild(node);
