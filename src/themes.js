@@ -148,6 +148,17 @@ class Themes extends Map {
 			contents.addStylesheetRules(value.rules, key);
 			value.injected = true;
 		}
+		if (value.injected) {
+			/**
+			 * Emit of injected a stylesheet into contents
+			 * @event injected
+			 * @param {string} key Theme key
+			 * @param {object} value Theme value
+			 * @param {Contents} contents
+			 * @memberof Themes
+			 */
+			this.emit(EVENTS.THEMES.INJECTED, key, value, contents);
+		}
 	}
 
 	/**
@@ -196,7 +207,7 @@ class Themes extends Map {
 
 		const rule = {
 			value: value,
-			priority: priority === true
+			priority: priority
 		};
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
