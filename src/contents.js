@@ -1193,6 +1193,16 @@ class Contents {
 	destroy() {
 
 		this.removeListeners();
+		this.styles.forEach((node) => {
+			this.document.removeChild(node);
+		});
+		this.styles.clear();
+		this.styles = undefined;
+		this.scripts.forEach((node) => {
+			this.document.removeChild(node);
+		})
+		this.scripts.clear();
+		this.scripts = undefined;
 	}
 }
 
