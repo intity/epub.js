@@ -574,7 +574,7 @@ class Contents {
 	clearStylesheets() {
 
 		this.styles.forEach((node) => {
-			this.document.removeChild(node);
+			this.document.head.removeChild(node);
 		});
 		this.styles.clear();
 	}
@@ -681,7 +681,7 @@ class Contents {
 	clearScripts() {
 
 		this.scripts.forEach((node) => {
-			this.document.removeChild(node);
+			this.document.head.removeChild(node);
 		})
 		this.scripts.clear();
 	}
