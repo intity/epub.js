@@ -201,10 +201,10 @@ class Themes extends Map {
 	/**
 	 * Clear all themes
 	 */
-	clearThemes() {
+	clear() {
 
 		this.select(null);
-		this.clear();
+		super.clear();
 	}
 
 	/**
@@ -315,7 +315,7 @@ class Themes extends Map {
 	 */
 	destroy() {
 
-		this.clearThemes();
+		this.clear();
 		this.removeRules();
 		this.current = undefined;
 		this.rules = undefined;
