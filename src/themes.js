@@ -117,7 +117,7 @@ class Themes extends Map {
 		contents.forEach((content) => {
 			if (content) {
 				content.removeClass(prev);
-				content.addClass(name);
+				content.appendClass(name);
 				this.add(name, theme, content);
 			}
 		});
@@ -141,11 +141,11 @@ class Themes extends Map {
 	add(key, value, contents) {
 
 		if (value.url) {
-			contents.addStylesheet(value.url);
+			contents.appendStylesheet(value.url, key);
 			value.injected = true;
 		}
 		if (value.rules) {
-			contents.addStylesheetRules(value.rules, key);
+			contents.appendStylesheetRules(value.rules, key);
 			value.injected = true;
 		}
 		if (value.injected) {
@@ -175,7 +175,7 @@ class Themes extends Map {
 			}
 		});
 
-		contents.addClass(this.current);
+		contents.appendClass(this.current);
 	}
 
 	/**

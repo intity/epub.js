@@ -766,7 +766,7 @@ class Rendition {
 		const hPadding = padding.left + padding.right;
 		const maxWidth = (this.layout.columnWidth ? (this.layout.columnWidth - hPadding) + "px" : "100%") + "!important";
 
-		contents.addStylesheetRules({
+		contents.appendStylesheetRules({
 			"img": {
 				"max-width": maxWidth,
 				"max-height": `${height}px !important`,
