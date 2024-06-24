@@ -46,7 +46,8 @@ module.exports = (config) => {
         singleRun: false,
         concurrency: Infinity,
         proxies: {
-            "/assets/": "/base/assets/"
+            "/assets/": "/base/assets/",
+            "/examples/": "../examples/"
         },
         customLaunchers: {
             ChromeHeadlessNoSandbox: {
