@@ -17,6 +17,7 @@
             <select name="theme" id="theme">
                 <option value="light">light</option>
                 <option value="dark">dark</option>
+                <option value="none">none</option>
             </select>
         </div>
         <div class="box">
@@ -40,7 +41,12 @@
         rendition.display()
         theme.onchange = (e) => {
 
-            rendition.themes.select(e.target.value)
+            let name = e.target.value
+            if (name === "none") {
+                rendition.themes.select(null)
+            } else {
+                rendition.themes.select(name)
+            }
         }
         fontSize.onchange = (e) => {
 
@@ -60,6 +66,10 @@
             console.log(value)
         })
         rendition.themes.on("injected", (key, value, contents) => {
+
+            console.log(contents)
+        })
+        rendition.themes.on("rejected", (key, value, contents) => {
 
             console.log(contents)
         })
