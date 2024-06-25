@@ -47,7 +47,8 @@ describe("Locations", () => {
     describe("#set()", () => {
 		it("checking set method to change current location", async () => {
 			await book.opened
-			await book.locations.on("changed", (current, changed) => {
+			await book.locations.generated
+			book.locations.on("changed", (current, changed) => {
 				expect(current.cfi).to.equal(book.locations[changed.index])
 			})
 			const current = book.locations.current
@@ -123,6 +124,50 @@ describe("Locations", () => {
 			expect(current.percentage).to.equal(0.98)
 			book.locations.set({ index: 100 })
 			expect(current.percentage).to.equal(1)
+		})
+	})
+	describe("#locationFromCfi()", () => {
+        it("should get location from cfi", async () => {
+			await book.opened
+			await book.locations.generated
+            book.locations.forEach((cfi, ind) => {
+                const index = book.locations.locationFromCfi(cfi)
+                expect(index).to.equal(ind)
+            })
+        })
+    })
+	describe("#percentageFromLocation()", () => {
+		it("should get percentage from location", async () => {
+			await book.opened
+			await book.locations.generated
+			const locations = book.locations
+			expect(locations.percentageFromLocation(-1)).to.equal(0)
+			expect(locations.percentageFromLocation(14)).to.equal(0.14)
+			expect(locations.percentageFromLocation(25)).to.equal(0.25)
+			expect(locations.percentageFromLocation(36)).to.equal(0.36)
+			expect(locations.percentageFromLocation(50)).to.equal(0.50)
+			expect(locations.percentageFromLocation(61)).to.equal(0.61)
+			expect(locations.percentageFromLocation(71)).to.equal(0.71)
+			expect(locations.percentageFromLocation(77)).to.equal(0.77)
+			expect(locations.percentageFromLocation(89)).to.equal(0.89)
+			expect(locations.percentageFromLocation(95)).to.equal(0.95)
+		})
+	})
+	describe("#cfiFromPercentage()", () => {
+		it("should get cfi from percentage", async () => {
+			await book.opened
+			await book.locations.generated
+			const locations = book.locations
+			expect(locations.cfiFromPercentage(0.01)).to.equal(locations[1])
+			expect(locations.cfiFromPercentage(0.14)).to.equal(locations[14])
+			expect(locations.cfiFromPercentage(0.25)).to.equal(locations[25])
+			expect(locations.cfiFromPercentage(0.36)).to.equal(locations[36])
+			expect(locations.cfiFromPercentage(0.50)).to.equal(locations[50])
+			expect(locations.cfiFromPercentage(0.61)).to.equal(locations[61])
+			expect(locations.cfiFromPercentage(0.71)).to.equal(locations[71])
+			expect(locations.cfiFromPercentage(0.77)).to.equal(locations[77])
+			expect(locations.cfiFromPercentage(0.89)).to.equal(locations[89])
+			expect(locations.cfiFromPercentage(0.95)).to.equal(locations[95])
 		})
 	})
 })
