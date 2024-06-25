@@ -20,9 +20,11 @@ Find Locations for a Book
         * [.load(locations)](#Locations+load)
         * [.save()](#Locations+save) ⇒ <code>json</code>
         * [.set(options)](#Locations+set)
+        * [.clear()](#Locations+clear)
         * [.destroy()](#Locations+destroy)
     * _static_
         * [.current](#Locations.current) : <code>object</code>
+        * [.generated](#Locations.generated) : <code>Promise</code>
         * ["changed" (current, changed)](#Locations.event_changed)
 
 <a name="new_Locations_new"></a>
@@ -170,6 +172,12 @@ Set current location
 | [options.index] | <code>number</code> | Location index |
 | [options.percentage] | <code>number</code> | Percentage |
 
+<a name="Locations+clear"></a>
+
+## locations.clear()
+clear locations
+
+**Kind**: instance method of [<code>Locations</code>](#Locations)  
 <a name="Locations+destroy"></a>
 
 ## locations.destroy()
@@ -191,6 +199,11 @@ Current Location
 | current.index | <code>number</code> | 
 | current.percentage | <code>number</code> | 
 
+<a name="Locations.generated"></a>
+
+## Locations.generated : <code>Promise</code>
+**Kind**: static property of [<code>Locations</code>](#Locations)  
+**Read only**: true  
 <a name="Locations.event_changed"></a>
 
 ## "changed" (current, changed)

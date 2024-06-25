@@ -31,7 +31,10 @@ module.exports = (config) => {
         preprocessors: {
             "test/*.js": ["webpack", "sourcemap"],
         },
-        reporters: ["mocha"],
+        reporters: ["spec"],
+        specReporter: {
+            showSpecTiming: true
+        },
         port: 9876,
         logLevel: config.LOG_INFO,
         autoWatch: true,
@@ -43,7 +46,8 @@ module.exports = (config) => {
         singleRun: false,
         concurrency: Infinity,
         proxies: {
-            "/assets/": "/base/assets/"
+            "/assets/": "/base/assets/",
+            "/examples/": "../examples/"
         },
         customLaunchers: {
             ChromeHeadlessNoSandbox: {

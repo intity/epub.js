@@ -63,6 +63,8 @@ export const EVENTS = {
         DETACH: "detach"
     },
     THEMES: {
-        SELECTED: "selected"
+        SELECTED: "selected",
+        INJECTED: "injected",
+        REJECTED: "rejected"
     }
 }

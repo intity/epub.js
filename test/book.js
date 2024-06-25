@@ -13,7 +13,7 @@ describe("Book(archived)", () => {
 			const coverUrl = await book.coverUrl()
 			assert(/^blob:http:\/\/localhost:9876\/[^\/]+$/.test(coverUrl))
 		})
-		it("book.container assertion", async () => {
+		it("should book.container assertion", async () => {
 			await book.opened
 			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")
@@ -32,7 +32,7 @@ describe("Book(archived)", () => {
 			const coverUrl = await book.coverUrl()
 			assert(/^blob:http:\/\/localhost:9876\/[^\/]+$/.test(coverUrl))
 		})
-		it("book.container assertion", async () => {
+		it("should book.container assertion", async () => {
 			await book.opened
 			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")
@@ -52,7 +52,7 @@ describe("Book(archived)", () => {
 			assert.equal(book.isOpen, true)
 			assert.equal(book.archived, true)
 		})
-		it('should have a blob coverUrl', async () => {
+		it("should have a blob coverUrl", async () => {
 			const coverUrl = await book.coverUrl()
 			assert(/^blob:http:\/\/localhost:9876\/[^\/]+$/.test(coverUrl))
 		})
@@ -79,7 +79,7 @@ describe("Book(unarchived)", () => {
 			assert.equal(book.archived, false)
 			assert.equal(book.url.toString(), "http://localhost:9876/assets/alice/")
 		})
-		it("book.container assertion", async () => {
+		it("should book.container assertion", async () => {
 			await book.opened
 			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")
@@ -95,7 +95,7 @@ describe("Book(unarchived)", () => {
 			assert.equal(book.archived, false)
 			assert.equal(book.url.toString(), "https://intity.github.io/epub-js/assets/alice/")
 		})
-		it("book.container assertion", async () => {
+		it("should book.container assertion", async () => {
 			await book.opened
 			assert.equal(book.container.directory, "OPS/")
 			assert.equal(book.container.fullPath, "OPS/package.opf")

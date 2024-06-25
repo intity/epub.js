@@ -11,25 +11,22 @@
 </head>
 
 <body>
-	<div id="content">
+	<div id="content" dir="ltr">
 		<div id="viewer" class="paginated">
-			<div id="divider"></div>
+			<div id="divider" style="display: block;"></div>
 		</div>
 		<a id="prev" href="#prev" class="arrow"></a>
 		<a id="next" href="#next" class="arrow"></a>
 	</div>
 	<div id="controls">
 		<div class="box">
-			<input type="range" min="0" max="100" value="0" id="slider" />
-			<label id="current-percent" for="slider"></label>
+			<input type="range" min="0" max="100" value="0" id="range" />
+			<label id="current-percent" for="range"></label>
 		</div>
 	</div>
 	<script>
-		const content = document.getElementById("content")
-		const divider = document.getElementById("divider")
-		const controls = document.getElementById("controls")
 		const label = document.getElementById("current-percent")
-		const slider = document.getElementById("slider")
+		const range = document.getElementById("range")
 		const prev = document.getElementById("prev")
 		const next = document.getElementById("next")
 		const book = ePub("../assets/alice/")
@@ -39,7 +36,7 @@
 		})
 		rendition.display()
 		let percentage
-		slider.onchange = (e) => {
+		range.onchange = (e) => {
 
 			percentage = parseInt(e.target.value) / 100
 			book.locations.set({ percentage: percentage })
@@ -55,46 +52,42 @@
 			rendition.next()
 			e.preventDefault()
 		}
-		let atStart = false, atEnd = false
-		const update = (location) => {
+		const update = (loc) => {
 
-			const dir = rendition.layout.direction
-			const div = rendition.layout.divisor
-			const loc = location || rendition.currentLocation()
 			prev.style.display = loc.atStart ? "none" : "block"
 			next.style.display = loc.atEnd ? "none" : "block"
-			divider.style.display = div === 1 ? "none" : "block"
-			content.dir = dir
 
 			if (typeof percentage === "undefined") {
-				book.locations.set({ cfi: location.start.cfi })
+				book.locations.set({ cfi: loc.start.cfi })
 				percentage = book.locations.current.percentage || 0
 			}
 
 			const value = Math.floor(percentage * 100)
-			slider.value = value
+			range.value = value
 			label.textContent = value + " %"
 			percentage = undefined
 		}
 		const keybinding = (e) => {
 
-			const dir = rendition.layout.direction
 			switch (e.key) {
 				case "ArrowLeft":
-					dir === "ltr" ? rendition.prev() : rendition.next()
+					rendition.prev()
 					break;
 				case "ArrowRight":
-					dir === "ltr" ? rendition.next() : rendition.prev()
+					rendition.next()
 					break;
 			}
 		}
+		let stored, timeStamp
 		book.ready.then(() => {
 			// Load in stored locations from json or local storage
 			const key = book.key() + '-locations'
-			const stored = localStorage.getItem(key)
+			stored = localStorage.getItem(key)
 			if (stored) {
+				timeStamp = Date.now()
 				return book.locations.load(stored)
 			} else {
+				timeStamp = Date.now()
 				// Or generate the locations on the fly
 				// Can pass an option number of chars to break sections by
 				// default is 150 chars
@@ -117,20 +110,23 @@
 			// Save out the generated locations to JSON
 			localStorage.setItem(book.key() + '-locations', book.locations.save())
 			console.log("locations.length: " + locations.length)
+			if (stored) {
+				console.log(`locations.load: ${Date.now() - timeStamp} ms`)
+			} else {
+				console.log(`locations.generate: ${Date.now() - timeStamp} ms`)
+			}
+			console.log(book)
+
+			document.onkeyup = keybinding
+			rendition.on("keyup", keybinding)
 		})
 		book.locations.on("changed", (current, changed) => {
 
 			console.log(current, changed)
 		})
-		rendition.on("displayed", (section) => {
-
-			document.onkeyup = keybinding
-			rendition.on("keyup", keybinding)
-		})
 		rendition.on("relocated", (location) => {
 
 			update(location)
-			console.log(location)
 		})
 	</script>
 </body>
