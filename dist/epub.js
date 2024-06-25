@@ -11053,7 +11053,9 @@ const EVENTS = {
     DETACH: "detach"
   },
   THEMES: {
-    SELECTED: "selected"
+    SELECTED: "selected",
+    INJECTED: "injected",
+    REJECTED: "rejected"
   }
 };
 ;// CONCATENATED MODULE: ./src/locations.js
@@ -11093,6 +11095,13 @@ class Locations extends Array {
       index: -1,
       percentage: 0
     };
+    this.processing = new defer();
+    /**
+     * @member {Promise} generated
+     * @memberof Locations
+     * @readonly
+     */
+    this.generated = this.processing.promise;
     this.processingTimeout = undefined;
     this.q = new queue(this);
   }
@@ -11121,6 +11130,7 @@ class Locations extends Array {
         this.current.index = 0;
         this.current.percentage = 0;
       }
+      this.processing.resolve(this);
       return this;
     });
   }
@@ -11302,7 +11312,7 @@ class Locations extends Array {
       cfi.collapse();
       return cfi.toString();
     }
-    const loc = Math.ceil((this.length - 1) * percentage);
+    const loc = Math.floor((this.length - 1) * percentage);
     return this.cfiFromLocation(loc);
   }
 
@@ -11397,6 +11407,16 @@ class Locations extends Array {
   }
 
   /**
+   * clear locations
+   */
+  clear() {
+    this.current.cfi = null;
+    this.current.index = -1;
+    this.current.percentage = 0;
+    this.splice(0);
+  }
+
+  /**
    * destroy
    */
   destroy() {
@@ -11404,12 +11424,11 @@ class Locations extends Array {
     this.pause = undefined;
     this.break = undefined;
     this.request = undefined;
-    this.current.cfi = null;
-    this.current.index = -1;
-    this.current.percentage = 0;
     this.q.stop();
     this.q = undefined;
-    this.splice(0);
+    this.clear();
+    this.current = undefined;
+    this.generated = undefined;
     clearTimeout(this.processingTimeout);
   }
 }
@@ -13518,13 +13537,14 @@ class Themes extends Map {
      * @memberof Themes
      * @readonly
      */
-    this.current = undefined;
+    this.current = null;
     /**
-     * @member {object} overrides
+     * Injected css rules
+     * @member {object} rules
      * @memberof Themes
      * @readonly
      */
-    this.overrides = {};
+    this.rules = {};
     this.rendition.hooks.content.register(this.inject.bind(this));
     this.rendition.hooks.content.register(this.update.bind(this));
   }
@@ -13532,9 +13552,9 @@ class Themes extends Map {
   /**
    * Add themes to be used by a rendition
    * @param {object|Array<object>|string} args
-   * @example themes.register("light", "http://example.com/light.css")
-   * @example themes.register("light", { body: { color: "purple"}})
-   * @example themes.register({ light: {...}, dark: {...}})
+   * @example register("light", "http://example.com/light.css")
+   * @example register("light", { body: { color: "purple"}})
+   * @example register({ light: {...}, dark: {...}})
    */
   register() {
     if (arguments.length === 0) {
@@ -13571,8 +13591,8 @@ class Themes extends Map {
    * Register a url
    * @param {string} name Theme name
    * @param {string} input URL string
-   * @example themes.registerUrl("light", "light.css")
-   * @example themes.registerUrl("light", "http://example.com/light.css")
+   * @example registerUrl("light", "light.css")
+   * @example registerUrl("light", "http://example.com/light.css")
    */
   registerUrl(name, input) {
     const url = new utils_url(input);
@@ -13586,7 +13606,7 @@ class Themes extends Map {
    * Register rule
    * @param {string} name
    * @param {object} rules
-   * @example themes.registerRules("light", { body: { color: "purple"}})
+   * @example registerRules("light", { body: { color: "purple"}})
    */
   registerRules(name, rules) {
     this.set(name, {
@@ -13598,18 +13618,31 @@ class Themes extends Map {
   /**
    * Select a theme
    * @param {string} name Theme name
+   * @description Use null to reject the current selected theme
    */
   select(name) {
-    const theme = this.get(name);
-    if (this.current === name || !theme) return;
     const prev = this.current;
+    let theme;
+    if (name) {
+      theme = this.get(name);
+    } else if (prev && name === null) {
+      theme = this.get(prev);
+    }
+    if (this.current === name || !theme) {
+      return;
+    }
     this.current = name;
     const contents = this.rendition.getContents();
     contents.forEach(content => {
-      if (content) {
+      if (!content) {
+        return;
+      } else if (name) {
         content.removeClass(prev);
-        content.addClass(name);
-        this.add(name, theme, content);
+        content.appendClass(name);
+        this.append(name, theme, content);
+      } else if (prev) {
+        content.removeClass(prev);
+        this.remove(prev, theme, content);
       }
     });
     /**
@@ -13623,21 +13656,62 @@ class Themes extends Map {
   }
 
   /**
-   * Add Theme to contents
+   * Append theme to contents
    * @param {string} key
-   * @param {object} value 
+   * @param {object} theme 
    * @param {Contents} contents
    * @private
    */
-  add(key, value, contents) {
-    if (value.url) {
-      contents.addStylesheet(value.url);
-      value.injected = true;
+  append(key, theme, contents) {
+    if (theme.url) {
+      contents.appendStylesheet(theme.url, key);
+      theme.injected = true;
     }
-    if (value.rules) {
-      contents.addStylesheetRules(value.rules, key);
-      value.injected = true;
+    if (theme.rules) {
+      contents.appendStylesheetRules(theme.rules, key);
+      theme.injected = true;
     }
+    if (theme.injected) {
+      /**
+       * Emit of injected a stylesheet into contents
+       * @event injected
+       * @param {string} key Theme key
+       * @param {object} theme Theme value
+       * @param {Contents} contents
+       * @memberof Themes
+       */
+      this.emit(EVENTS.THEMES.INJECTED, key, theme, contents);
+    }
+  }
+
+  /**
+   * Remove theme from contents
+   * @param {string} key 
+   * @param {object} theme 
+   * @param {Contents} contents 
+   * @private
+   */
+  remove(key, theme, contents) {
+    if (contents.removeStylesheet(key)) {
+      theme.injected = false;
+      /**
+       * Emit of rejected a stylesheet into contents
+       * @event rejected
+       * @param {string} key Theme key
+       * @param {object} theme Theme value
+       * @param {Contents} contents
+       * @memberof Themes
+       */
+      this.emit(EVENTS.THEMES.REJECTED, key, theme, contents);
+    }
+  }
+
+  /**
+   * Clear all themes
+   */
+  clear() {
+    this.select(null);
+    super.clear();
   }
 
   /**
@@ -13646,12 +13720,12 @@ class Themes extends Map {
    * @private
    */
   inject(contents) {
-    this.forEach((value, key) => {
+    this.forEach((theme, key) => {
       if (this.current === key) {
-        this.add(key, value, contents);
+        this.append(key, theme, contents);
       }
     });
-    contents.addClass(this.current);
+    contents.appendClass(this.current);
   }
 
   /**
@@ -13660,7 +13734,7 @@ class Themes extends Map {
    * @private
    */
   update(contents) {
-    const rules = this.overrides;
+    const rules = this.rules;
     for (const rule in rules) {
       if (rules.hasOwnProperty(rule)) {
         contents.css(rule, rules[rule].value, rules[rule].priority);
@@ -13677,7 +13751,7 @@ class Themes extends Map {
   appendRule(name, value, priority = false) {
     const rule = {
       value: value,
-      priority: priority === true
+      priority: priority
     };
     const contents = this.rendition.getContents();
     contents.forEach(content => {
@@ -13685,7 +13759,7 @@ class Themes extends Map {
         content.css(name, rule.value, rule.priority);
       }
     });
-    this.overrides[name] = rule;
+    this.rules[name] = rule;
   }
 
   /**
@@ -13693,12 +13767,21 @@ class Themes extends Map {
    * @param {string} name
    */
   removeRule(name) {
-    delete this.overrides[name];
+    delete this.rules[name];
     const contents = this.rendition.getContents();
     contents.forEach(content => {
       if (content) {
         content.css(name);
       }
+    });
+  }
+
+  /**
+   * Remove all rules
+   */
+  removeRules() {
+    Object.keys(this.rules).forEach(key => {
+      this.removeRule(key);
     });
   }
 
@@ -13723,8 +13806,9 @@ class Themes extends Map {
    */
   destroy() {
     this.clear();
+    this.removeRules();
     this.current = undefined;
-    this.overrides = {};
+    this.rules = undefined;
   }
 }
 event_emitter_default()(Themes.prototype);
@@ -14749,8 +14833,10 @@ class Contents {
      * @readonly
      */
     this.section = section;
-    this.window = this.document.defaultView;
+    this.scripts = new Map();
+    this.styles = new Map();
     this.active = true;
+    this.window = this.document.defaultView;
     this.epubReadingSystem("epub.js", EPUBJS_VERSION);
     this.listeners();
   }
@@ -15131,163 +15217,185 @@ class Contents {
   }
 
   /**
+   * Get injected stylesheet node
+   * @param {string} key 
+   * @returns {Node}
+   * @private
+   */
+  getStylesheetNode(key) {
+    if (!this.document) return null;
+    const id = `epubjs-injected-css-${key}`;
+    let node = this.styles.get(id);
+    if (typeof node === "undefined") {
+      node = this.document.createElement("style");
+      node.id = id;
+      this.document.head.appendChild(node);
+    }
+    return node;
+  }
+
+  /**
    * Append a stylesheet link to the document head
    * @param {string} src url
+   * @param {string} key 
+   * @example appendStylesheet("/pach/to/stylesheet.css", "common")
+   * @example appendStylesheet("https://example.com/to/stylesheet.css", "common")
    * @returns {Promise}
    */
-  addStylesheet(src) {
+  appendStylesheet(src, key) {
     return new Promise((resolve, reject) => {
-      let ready = false;
       if (!this.document) {
-        resolve(false);
+        reject(new Error("Document cannot be null"));
         return;
       }
-
-      // Check if link already exists
-      let stylesheet = this.document.querySelector("link[href='" + src + "']");
-      if (stylesheet) {
-        resolve(true);
-        return; // already present
+      const id = `epubjs-injected-css-${key}`;
+      let node = this.styles.get(id);
+      if (typeof node === "undefined") {
+        node = this.document.createElement("link");
+        node.rel = "stylesheet";
+        node.type = "text/css";
+        node.href = src;
+        node.onload = () => {
+          resolve(node);
+        };
+        node.onerror = () => {
+          reject(new Error(`Failed to load source: ${src}`));
+        };
+        this.document.head.appendChild(node);
       }
-      stylesheet = this.document.createElement("link");
-      stylesheet.type = "text/css";
-      stylesheet.rel = "stylesheet";
-      stylesheet.href = src;
-      stylesheet.onload = stylesheet.onreadystatechange = () => {
-        if (!ready && (!this.readyState || this.readyState == "complete")) {
-          ready = true;
-          // Let apply
-          setTimeout(() => {
-            resolve(true);
-          }, 1);
-        }
-      };
-      this.document.head.appendChild(stylesheet);
+      this.styles.set(id, node);
     });
   }
 
   /**
-   * _getStylesheetNode
+   * Remove a stylesheet link from the document head
    * @param {string} key 
-   * @returns {Element}
-   * @private
+   * @returns {boolean}
    */
-  _getStylesheetNode(key) {
-    if (!this.document) return null;
-    key = "epubjs-inserted-css-" + (key || "");
-    // Check if link already exists
-    let styleEl = this.document.getElementById(key);
-    if (!styleEl) {
-      styleEl = this.document.createElement("style");
-      styleEl.id = key;
-      // Append style element to head
-      this.document.head.appendChild(styleEl);
+  removeStylesheet(key) {
+    if (!this.document) {
+      return false;
     }
-    return styleEl;
+    const id = `epubjs-injected-css-${key}`;
+    const node = this.styles.get(id);
+    if (typeof node === "undefined") {
+      return false;
+    }
+    this.document.head.removeChild(node);
+    return this.styles.delete(id);
   }
 
   /**
-   * Append stylesheet css
-   * @param {string} serializedCss
-   * @param {string} key If the key is the same, the CSS will be replaced instead of inserted
-   * @returns {boolean}
+   * Clear all injected stylesheets
    */
-  addStylesheetCss(serializedCss, key) {
-    if (!this.document || !serializedCss) {
-      return false;
-    }
-    const styleEl = this._getStylesheetNode(key);
-    styleEl.innerHTML = serializedCss;
-    return true;
+  clearStylesheets() {
+    this.styles.forEach(node => {
+      this.document.head.removeChild(node);
+    });
+    this.styles.clear();
+  }
+
+  /**
+   * Append serialized stylesheet
+   * @param {string} css
+   * @param {string} key
+   * @example appendSerializedCSS("h1 { font-size: 32px; color: magenta; }", "common")
+   * @description If the key is the same, the CSS will be replaced instead of inserted
+   */
+  appendSerializedCSS(css, key) {
+    if (!this.document) return;
+    const node = this.getStylesheetNode(key);
+    node.innerHTML = css;
+    this.styles.set(node.id, node);
   }
 
   /**
    * Append stylesheet rules to a generate stylesheet
-   * Array: https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
-   * Object: https://github.com/desirable-objects/json-to-css
-   * @param {array | object} rules
-   * @param {string} key If the key is the same, the CSS will be replaced instead of inserted
+   * @link https://github.com/desirable-objects/json-to-css
+   * @param {object} rules
+   * @param {string} key
+   * @example appendStylesheetRules({ h1: { "font-size": "1.5em" }}, "common")
+   * @description If the key is the same, the CSS will be replaced instead of inserted
    */
-  addStylesheetRules(rules, key) {
-    if (!this.document || !rules || rules.length === 0) return;
-
-    // Grab style sheet
-    const styleSheet = this._getStylesheetNode(key).sheet;
-    if (Object.prototype.toString.call(rules) === "[object Array]") {
-      for (let i = 0, len = rules.length; i < len; i++) {
-        let j = 1,
-          rule = rules[i],
-          propStr = "";
-        const selector = rules[i][0];
-        // If the second argument of a rule is an array of arrays, correct our variables.
-        if (Object.prototype.toString.call(rule[1][0]) === "[object Array]") {
-          rule = rule[1];
-          j = 0;
-        }
-        for (let pl = rule.length; j < pl; j++) {
-          const prop = rule[j];
-          propStr += prop[0] + ":" + prop[1] + (prop[2] ? " !important" : "") + ";\n";
-        }
-
-        // Insert CSS Rule
-        styleSheet.insertRule(selector + "{" + propStr + "}", styleSheet.cssRules.length);
-      }
-    } else {
-      const selectors = Object.keys(rules);
-      selectors.forEach(selector => {
-        const definition = rules[selector];
-        if (Array.isArray(definition)) {
-          definition.forEach(item => {
-            const _rules = Object.keys(item);
-            const result = _rules.map(rule => {
-              return `${rule}:${item[rule]}`;
-            }).join(";");
-            styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
-          });
-        } else {
-          const _rules = Object.keys(definition);
-          const result = _rules.map(rule => {
-            return `${rule}:${definition[rule]}`;
-          }).join(";");
-          styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
-        }
-      });
-    }
+  appendStylesheetRules(rules, key) {
+    if (!this.document) return;
+    const node = this.getStylesheetNode(key);
+    Object.keys(rules).forEach(selector => {
+      const value = rules[selector];
+      const index = node.sheet.cssRules.length;
+      const items = Object.keys(value).map(k => {
+        return `${k}:${value[k]}`;
+      }).join(";");
+      node.sheet.insertRule(`${selector}{${items}}`, index);
+    });
+    this.styles.set(node.id, node);
   }
 
   /**
-   * Append a script tag to the document head
+   * Append a script node to the document head
    * @param {string} src url
+   * @param {string} key 
+   * @example appendScript("/path/to/script.js", "common")
+   * @example appendScript("https://examples.com/to/script.js", "common")
    * @returns {Promise} loaded
    */
-  addScript(src) {
+  appendScript(src, key) {
     return new Promise((resolve, reject) => {
       if (!this.document) {
-        resolve(false);
+        reject(new Error("Document cannot be null"));
         return;
       }
-      let ready = false;
-      const script = this.document.createElement("script");
-      script.type = "text/javascript";
-      script.async = true;
-      script.src = src;
-      script.onload = script.onreadystatechange = () => {
-        if (!ready && (!this.readyState || this.readyState == "complete")) {
-          ready = true;
-          setTimeout(function () {
-            resolve(true);
-          }, 1);
-        }
-      };
-      this.document.head.appendChild(script);
+      const id = `epubjs-injected-src-${key}`;
+      let node = this.styles.get(id);
+      if (typeof node === "undefined") {
+        node = this.document.createElement("script");
+        node.type = "text/javascript";
+        node.src = src;
+        node.onload = () => {
+          resolve(node);
+        };
+        node.onerror = () => {
+          reject(new Error(`Failed to load source: ${src}`));
+        };
+        this.document.head.appendChild(node);
+      }
+      this.scripts.set(id, node);
     });
   }
 
   /**
-   * Add a class to the contents container
+   * Remove a script node from the document head
+   * @param {string} key 
+   * @returns {boolean}
+   */
+  removeScript(key) {
+    if (!this.document) {
+      return false;
+    }
+    const id = `epubjs-injected-src-${key}`;
+    const node = this.scripts.get(id);
+    if (typeof node === "undefined") {
+      return false;
+    }
+    this.document.head.removeChild(node);
+    return this.scripts.remove(id);
+  }
+
+  /**
+   * Clear all injected scripts
+   */
+  clearScripts() {
+    this.scripts.forEach(node => {
+      this.document.head.removeChild(node);
+    });
+    this.scripts.clear();
+  }
+
+  /**
+   * Append a class to the contents container
    * @param {string} className
    */
-  addClass(className) {
+  appendClass(className) {
     if (!this.document) return;
     const content = this.content;
     if (content) {
@@ -15297,7 +15405,7 @@ class Contents {
 
   /**
    * Remove a class from the contents container
-   * @param {string} removeClass
+   * @param {string} className
    */
   removeClass(className) {
     if (!this.document) return;
@@ -15330,7 +15438,7 @@ class Contents {
 
   /**
    * Get an EpubCFI from a Dom node
-   * @param {node} node
+   * @param {Node} node
    * @param {string} [ignoreClass]
    * @returns {EpubCFI} cfi
    */
@@ -15338,7 +15446,12 @@ class Contents {
     return new src_epubcfi(node, this.section.cfiBase, ignoreClass).toString();
   }
 
-  // TODO: find where this is used - remove?
+  /**
+   * map
+   * @param {Layout} layout 
+   * @todo TODO: find where this is used - remove?
+   * @returns {Array}
+   */
   map(layout) {
     const map = new src_mapping(layout);
     return map.section();
@@ -15761,6 +15874,10 @@ class Contents {
    */
   destroy() {
     this.removeListeners();
+    this.clearStylesheets();
+    this.styles = undefined;
+    this.clearScripts();
+    this.scripts = undefined;
   }
 }
 event_emitter_default()(Contents.prototype);
@@ -16205,6 +16322,12 @@ class IframeView {
      * @readonly
      */
     this.section = section;
+    /**
+     * @member {Contents} contents
+     * @memberof IframeView
+     * @readonly
+     */
+    this.contents = null;
     this.element = this.container();
     this.added = false;
     this.displayed = false;
@@ -19651,7 +19774,7 @@ class Rendition {
     const height = (contents.content.offsetHeight - (padding.top + padding.bottom)) * .95;
     const hPadding = padding.left + padding.right;
     const maxWidth = (this.layout.columnWidth ? this.layout.columnWidth - hPadding + "px" : "100%") + "!important";
-    contents.addStylesheetRules({
+    contents.appendStylesheetRules({
       "img": {
         "max-width": maxWidth,
         "max-height": `${height}px !important`,
@@ -19666,7 +19789,7 @@ class Rendition {
         "page-break-inside": "avoid",
         "break-inside": "avoid"
       }
-    });
+    }, "images");
     return new Promise((resolve, reject) => {
       // Wait to apply
       setTimeout(() => {
