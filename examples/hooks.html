@@ -11,13 +11,12 @@
 </head>
 
 <body>
-    <div id="content" class="doc">
+    <div id="content" class="doc" dir="ltr">
         <div id="viewer" class="scrolled-doc"></div>
         <a id="prev" href="#prev" class="arrow"></a>
         <a id="next" href="#next" class="arrow"></a>
     </div>
     <script>
-        const content = document.getElementById("content")
         const prev = document.getElementById("prev")
         const next = document.getElementById("next")
         const book = ePub("../assets/alice/")
@@ -38,23 +37,18 @@
             rendition.prev()
             e.preventDefault()
         }
-        const update = (location) => {
+        const update = (loc) => {
 
-            const dir = rendition.layout.direction
-            const div = rendition.layout.divisor
-            const loc = location || rendition.currentLocation()
             prev.style.display = loc.atStart ? "none" : "block"
             next.style.display = loc.atEnd ? "none" : "block"
-            content.dir = dir
         }
         rendition.on("rendered", (view) => {
 
-            console.log(view.iframe.contentDocument)
+            console.log(view.contents)
         })
         rendition.on("relocated", (location) => {
 
             update(location)
-            console.log(location)
         })
         // Hooks: Add several scripts / css
         rendition.hooks.content.register((contents) => {
@@ -62,8 +56,8 @@
             const src = "https://code.jquery.com/jquery-3.7.1.min.js"
             const css = "https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"
             return Promise.all([
-                contents.addScript(src),
-                contents.addStylesheet(css)
+                contents.appendScript(src, "jquery"),
+                contents.appendStylesheet(css, "jquery")
             ])
         })
     </script>

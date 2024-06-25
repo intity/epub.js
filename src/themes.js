@@ -19,13 +19,14 @@ class Themes extends Map {
 		 * @memberof Themes
 		 * @readonly
 		 */
-		this.current = undefined;
+		this.current = null;
 		/**
-		 * @member {object} overrides
+		 * Injected css rules
+		 * @member {object} rules
 		 * @memberof Themes
 		 * @readonly
 		 */
-		this.overrides = {};
+		this.rules = {};
 		this.rendition.hooks.content.register(this.inject.bind(this));
 		this.rendition.hooks.content.register(this.update.bind(this));
 	}
@@ -33,9 +34,9 @@ class Themes extends Map {
 	/**
 	 * Add themes to be used by a rendition
 	 * @param {object|Array<object>|string} args
-	 * @example themes.register("light", "http://example.com/light.css")
-	 * @example themes.register("light", { body: { color: "purple"}})
-	 * @example themes.register({ light: {...}, dark: {...}})
+	 * @example register("light", "http://example.com/light.css")
+	 * @example register("light", { body: { color: "purple"}})
+	 * @example register({ light: {...}, dark: {...}})
 	 */
 	register() {
 
@@ -74,8 +75,8 @@ class Themes extends Map {
 	 * Register a url
 	 * @param {string} name Theme name
 	 * @param {string} input URL string
-	 * @example themes.registerUrl("light", "light.css")
-	 * @example themes.registerUrl("light", "http://example.com/light.css")
+	 * @example registerUrl("light", "light.css")
+	 * @example registerUrl("light", "http://example.com/light.css")
 	 */
 	registerUrl(name, input) {
 
@@ -90,7 +91,7 @@ class Themes extends Map {
 	 * Register rule
 	 * @param {string} name
 	 * @param {object} rules
-	 * @example themes.registerRules("light", { body: { color: "purple"}})
+	 * @example registerRules("light", { body: { color: "purple"}})
 	 */
 	registerRules(name, rules) {
 
@@ -103,21 +104,35 @@ class Themes extends Map {
 	/**
 	 * Select a theme
 	 * @param {string} name Theme name
+	 * @description Use null to reject the current selected theme
 	 */
 	select(name) {
 
-		const theme = this.get(name);
-		if (this.current === name || !theme) return;
-
 		const prev = this.current;
+
+		let theme;
+		if (name) {
+			theme = this.get(name);
+		} else if (prev && name === null) {
+			theme = this.get(prev);
+		}
+		if (this.current === name || !theme) {
+			return;
+		}
+
 		this.current = name;
 
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
-			if (content) {
+			if (!content) {
+				return;
+			} else if (name) {
 				content.removeClass(prev);
-				content.addClass(name);
-				this.add(name, theme, content);
+				content.appendClass(name);
+				this.append(name, theme, content);
+			} else if (prev) {
+				content.removeClass(prev);
+				this.remove(prev, theme, content);
 			}
 		});
 		/**
@@ -131,22 +146,65 @@ class Themes extends Map {
 	}
 
 	/**
-	 * Add Theme to contents
+	 * Append theme to contents
 	 * @param {string} key
-	 * @param {object} value 
+	 * @param {object} theme 
 	 * @param {Contents} contents
 	 * @private
 	 */
-	add(key, value, contents) {
+	append(key, theme, contents) {
 
-		if (value.url) {
-			contents.addStylesheet(value.url);
-			value.injected = true;
+		if (theme.url) {
+			contents.appendStylesheet(theme.url, key);
+			theme.injected = true;
 		}
-		if (value.rules) {
-			contents.addStylesheetRules(value.rules, key);
-			value.injected = true;
+		if (theme.rules) {
+			contents.appendStylesheetRules(theme.rules, key);
+			theme.injected = true;
 		}
+		if (theme.injected) {
+			/**
+			 * Emit of injected a stylesheet into contents
+			 * @event injected
+			 * @param {string} key Theme key
+			 * @param {object} theme Theme value
+			 * @param {Contents} contents
+			 * @memberof Themes
+			 */
+			this.emit(EVENTS.THEMES.INJECTED, key, theme, contents);
+		}
+	}
+
+	/**
+	 * Remove theme from contents
+	 * @param {string} key 
+	 * @param {object} theme 
+	 * @param {Contents} contents 
+	 * @private
+	 */
+	remove(key, theme, contents) {
+
+		if (contents.removeStylesheet(key)) {
+			theme.injected = false;
+			/**
+			 * Emit of rejected a stylesheet into contents
+			 * @event rejected
+			 * @param {string} key Theme key
+			 * @param {object} theme Theme value
+			 * @param {Contents} contents
+			 * @memberof Themes
+			 */
+			this.emit(EVENTS.THEMES.REJECTED, key, theme, contents);
+		}
+	}
+
+	/**
+	 * Clear all themes
+	 */
+	clear() {
+
+		this.select(null);
+		super.clear();
 	}
 
 	/**
@@ -155,15 +213,15 @@ class Themes extends Map {
 	 * @private
 	 */
 	inject(contents) {
-		
-		this.forEach((value, key) => {
+
+		this.forEach((theme, key) => {
 
 			if (this.current === key) {
-				this.add(key, value, contents);
+				this.append(key, theme, contents);
 			}
 		});
 
-		contents.addClass(this.current);
+		contents.appendClass(this.current);
 	}
 
 	/**
@@ -173,7 +231,7 @@ class Themes extends Map {
 	 */
 	update(contents) {
 
-		const rules = this.overrides;
+		const rules = this.rules;
 
 		for (const rule in rules) {
 			if (rules.hasOwnProperty(rule)) {
@@ -195,7 +253,7 @@ class Themes extends Map {
 
 		const rule = {
 			value: value,
-			priority: priority === true
+			priority: priority
 		};
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
@@ -206,7 +264,7 @@ class Themes extends Map {
 				);
 			}
 		});
-		this.overrides[name] = rule;
+		this.rules[name] = rule;
 	}
 
 	/**
@@ -215,12 +273,22 @@ class Themes extends Map {
 	 */
 	removeRule(name) {
 
-		delete this.overrides[name];
+		delete this.rules[name];
 		const contents = this.rendition.getContents();
 		contents.forEach((content) => {
 			if (content) {
 				content.css(name);
 			}
+		});
+	}
+
+	/**
+	 * Remove all rules
+	 */
+	removeRules() {
+
+		Object.keys(this.rules).forEach((key) => {
+			this.removeRule(key);
 		});
 	}
 
@@ -248,8 +316,9 @@ class Themes extends Map {
 	destroy() {
 
 		this.clear();
+		this.removeRules();
 		this.current = undefined;
-		this.overrides = {};
+		this.rules = undefined;
 	}
 }
 

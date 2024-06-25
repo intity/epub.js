@@ -22,15 +22,20 @@ Handles DOM manipulation, queries and events for View contents
         * [.viewport([options])](#Contents+viewport)
         * [.root()](#Contents+root) ⇒ <code>element</code>
         * [.locationOf(target, [ignoreClass])](#Contents+locationOf) ⇒ <code>object</code>
-        * [.addStylesheet(src)](#Contents+addStylesheet) ⇒ <code>Promise</code>
-        * [.addStylesheetCss(serializedCss, key)](#Contents+addStylesheetCss) ⇒ <code>boolean</code>
-        * [.addStylesheetRules(rules, key)](#Contents+addStylesheetRules)
-        * [.addScript(src)](#Contents+addScript) ⇒ <code>Promise</code>
-        * [.addClass(className)](#Contents+addClass)
-        * [.removeClass(removeClass)](#Contents+removeClass)
+        * [.appendStylesheet(src, key)](#Contents+appendStylesheet) ⇒ <code>Promise</code>
+        * [.removeStylesheet(key)](#Contents+removeStylesheet) ⇒ <code>boolean</code>
+        * [.clearStylesheets()](#Contents+clearStylesheets)
+        * [.appendSerializedCSS(css, key)](#Contents+appendSerializedCSS)
+        * [.appendStylesheetRules(rules, key)](#Contents+appendStylesheetRules)
+        * [.appendScript(src, key)](#Contents+appendScript) ⇒ <code>Promise</code>
+        * [.removeScript(key)](#Contents+removeScript) ⇒ <code>boolean</code>
+        * [.clearScripts()](#Contents+clearScripts)
+        * [.appendClass(className)](#Contents+appendClass)
+        * [.removeClass(className)](#Contents+removeClass)
         * [.range(cfi, [ignoreClass])](#Contents+range) ⇒ <code>Range</code>
         * [.cfiFromRange(range, [ignoreClass])](#Contents+cfiFromRange) ⇒ <code>EpubCFI</code>
         * [.cfiFromNode(node, [ignoreClass])](#Contents+cfiFromNode) ⇒ <code>EpubCFI</code>
+        * [.map(layout)](#Contents+map) ⇒ <code>Array</code>
         * [.size([width], [height], [dir])](#Contents+size)
         * [.columns(width, height, columnWidth, gap, dir)](#Contents+columns)
         * [.scaler(scale, offsetX, offsetY)](#Contents+scaler)
@@ -209,9 +214,9 @@ Get the location offset of a EpubCFI or an #id
 | target | <code>string</code> \| <code>EpubCFI</code> |  |
 | [ignoreClass] | <code>string</code> | for the cfi |
 
-<a name="Contents+addStylesheet"></a>
+<a name="Contents+appendStylesheet"></a>
 
-## contents.addStylesheet(src) ⇒ <code>Promise</code>
+## contents.appendStylesheet(src, key) ⇒ <code>Promise</code>
 Append a stylesheet link to the document head
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
@@ -219,37 +224,70 @@ Append a stylesheet link to the document head
 | Param | Type | Description |
 | --- | --- | --- |
 | src | <code>string</code> | url |
+| key | <code>string</code> |  |
 
-<a name="Contents+addStylesheetCss"></a>
+**Example**  
+```js
+appendStylesheet("/pach/to/stylesheet.css", "common")
+```
+**Example**  
+```js
+appendStylesheet("https://example.com/to/stylesheet.css", "common")
+```
+<a name="Contents+removeStylesheet"></a>
 
-## contents.addStylesheetCss(serializedCss, key) ⇒ <code>boolean</code>
-Append stylesheet css
-
-**Kind**: instance method of [<code>Contents</code>](#Contents)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| serializedCss | <code>string</code> |  |
-| key | <code>string</code> | If the key is the same, the CSS will be replaced instead of inserted |
-
-<a name="Contents+addStylesheetRules"></a>
-
-## contents.addStylesheetRules(rules, key)
-Append stylesheet rules to a generate stylesheet
-Array: https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
-Object: https://github.com/desirable-objects/json-to-css
+## contents.removeStylesheet(key) ⇒ <code>boolean</code>
+Remove a stylesheet link from the document head
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| rules | <code>array</code> \| <code>object</code> |  |
-| key | <code>string</code> | If the key is the same, the CSS will be replaced instead of inserted |
+| Param | Type |
+| --- | --- |
+| key | <code>string</code> | 
 
-<a name="Contents+addScript"></a>
+<a name="Contents+clearStylesheets"></a>
 
-## contents.addScript(src) ⇒ <code>Promise</code>
-Append a script tag to the document head
+## contents.clearStylesheets()
+Clear all injected stylesheets
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+<a name="Contents+appendSerializedCSS"></a>
+
+## contents.appendSerializedCSS(css, key)
+If the key is the same, the CSS will be replaced instead of inserted
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+
+| Param | Type |
+| --- | --- |
+| css | <code>string</code> | 
+| key | <code>string</code> | 
+
+**Example**  
+```js
+appendSerializedCSS("h1 { font-size: 32px; color: magenta; }", "common")
+```
+<a name="Contents+appendStylesheetRules"></a>
+
+## contents.appendStylesheetRules(rules, key)
+If the key is the same, the CSS will be replaced instead of inserted
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+**Link**: https://github.com/desirable-objects/json-to-css  
+
+| Param | Type |
+| --- | --- |
+| rules | <code>object</code> | 
+| key | <code>string</code> | 
+
+**Example**  
+```js
+appendStylesheetRules({ h1: { "font-size": "1.5em" }}, "common")
+```
+<a name="Contents+appendScript"></a>
+
+## contents.appendScript(src, key) ⇒ <code>Promise</code>
+Append a script node to the document head
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 **Returns**: <code>Promise</code> - loaded  
@@ -257,11 +295,37 @@ Append a script tag to the document head
 | Param | Type | Description |
 | --- | --- | --- |
 | src | <code>string</code> | url |
+| key | <code>string</code> |  |
 
-<a name="Contents+addClass"></a>
+**Example**  
+```js
+appendScript("/path/to/script.js", "common")
+```
+**Example**  
+```js
+appendScript("https://examples.com/to/script.js", "common")
+```
+<a name="Contents+removeScript"></a>
 
-## contents.addClass(className)
-Add a class to the contents container
+## contents.removeScript(key) ⇒ <code>boolean</code>
+Remove a script node from the document head
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+
+| Param | Type |
+| --- | --- |
+| key | <code>string</code> | 
+
+<a name="Contents+clearScripts"></a>
+
+## contents.clearScripts()
+Clear all injected scripts
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+<a name="Contents+appendClass"></a>
+
+## contents.appendClass(className)
+Append a class to the contents container
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 
@@ -271,14 +335,14 @@ Add a class to the contents container
 
 <a name="Contents+removeClass"></a>
 
-## contents.removeClass(removeClass)
+## contents.removeClass(className)
 Remove a class from the contents container
 
 **Kind**: instance method of [<code>Contents</code>](#Contents)  
 
 | Param | Type |
 | --- | --- |
-| removeClass | <code>string</code> | 
+| className | <code>string</code> | 
 
 <a name="Contents+range"></a>
 
@@ -316,8 +380,23 @@ Get an EpubCFI from a Dom node
 
 | Param | Type |
 | --- | --- |
-| node | <code>node</code> | 
+| node | <code>Node</code> | 
 | [ignoreClass] | <code>string</code> | 
+
+<a name="Contents+map"></a>
+
+## contents.map(layout) ⇒ <code>Array</code>
+map
+
+**Kind**: instance method of [<code>Contents</code>](#Contents)  
+**Todo**
+
+- [ ] TODO: find where this is used - remove?
+
+
+| Param | Type |
+| --- | --- |
+| layout | <code>Layout</code> | 
 
 <a name="Contents+size"></a>
 

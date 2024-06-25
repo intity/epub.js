@@ -55,8 +55,10 @@ class Contents {
 		 * @readonly
 		 */
 		this.section = section;
-		this.window = this.document.defaultView;
+		this.scripts = new Map();
+		this.styles = new Map();
 		this.active = true;
+		this.window = this.document.defaultView;
 
 		this.epubReadingSystem("epub.js", EPUBJS_VERSION);
 		this.listeners();
@@ -492,178 +494,203 @@ class Contents {
 	}
 
 	/**
+	 * Get injected stylesheet node
+	 * @param {string} key 
+	 * @returns {Node}
+	 * @private
+	 */
+	getStylesheetNode(key) {
+
+		if (!this.document) return null;
+
+		const id = `epubjs-injected-css-${key}`;
+		let node = this.styles.get(id);
+		if (typeof node === "undefined") {
+			node = this.document.createElement("style");
+			node.id = id;
+			this.document.head.appendChild(node);
+		}
+		return node;
+	}
+
+	/**
 	 * Append a stylesheet link to the document head
 	 * @param {string} src url
+	 * @param {string} key 
+	 * @example appendStylesheet("/pach/to/stylesheet.css", "common")
+	 * @example appendStylesheet("https://example.com/to/stylesheet.css", "common")
 	 * @returns {Promise}
 	 */
-	addStylesheet(src) {
+	appendStylesheet(src, key) {
 
 		return new Promise((resolve, reject) => {
 
-			let ready = false;
-
 			if (!this.document) {
-				resolve(false);
+				reject(new Error("Document cannot be null"));
 				return;
 			}
 
-			// Check if link already exists
-			let stylesheet = this.document.querySelector("link[href='" + src + "']");
-			if (stylesheet) {
-				resolve(true);
-				return; // already present
+			const id = `epubjs-injected-css-${key}`;
+			let node = this.styles.get(id);
+			if (typeof node === "undefined") {
+				node = this.document.createElement("link");
+				node.rel = "stylesheet";
+				node.type = "text/css";
+				node.href = src;
+				node.onload = () => {
+					resolve(node);
+				};
+				node.onerror = () => {
+					reject(new Error(`Failed to load source: ${src}`));
+				};
+				this.document.head.appendChild(node);
 			}
-
-			stylesheet = this.document.createElement("link");
-			stylesheet.type = "text/css";
-			stylesheet.rel = "stylesheet";
-			stylesheet.href = src;
-			stylesheet.onload = stylesheet.onreadystatechange = () => {
-				if (!ready && (!this.readyState || this.readyState == "complete")) {
-					ready = true;
-					// Let apply
-					setTimeout(() => {
-						resolve(true);
-					}, 1);
-				}
-			};
-
-			this.document.head.appendChild(stylesheet);
+			this.styles.set(id, node);
 		});
 	}
 
 	/**
-	 * _getStylesheetNode
+	 * Remove a stylesheet link from the document head
 	 * @param {string} key 
-	 * @returns {Element}
-	 * @private
+	 * @returns {boolean}
 	 */
-	_getStylesheetNode(key) {
+	removeStylesheet(key) {
 
-		if (!this.document) return null;
-
-		key = "epubjs-inserted-css-" + (key || "");
-		// Check if link already exists
-		let styleEl = this.document.getElementById(key);
-		if (!styleEl) {
-			styleEl = this.document.createElement("style");
-			styleEl.id = key;
-			// Append style element to head
-			this.document.head.appendChild(styleEl);
+		if (!this.document) {
+			return false;
 		}
-		return styleEl;
+		const id = `epubjs-injected-css-${key}`;
+		const node = this.styles.get(id);
+		if (typeof node === "undefined") {
+			return false;
+		}
+		this.document.head.removeChild(node);
+		return this.styles.delete(id);
 	}
 
 	/**
-	 * Append stylesheet css
-	 * @param {string} serializedCss
-	 * @param {string} key If the key is the same, the CSS will be replaced instead of inserted
-	 * @returns {boolean}
+	 * Clear all injected stylesheets
 	 */
-	addStylesheetCss(serializedCss, key) {
+	clearStylesheets() {
 
-		if (!this.document || !serializedCss) {
-			return false;
-		}
+		this.styles.forEach((node) => {
+			this.document.head.removeChild(node);
+		});
+		this.styles.clear();
+	}
 
-		const styleEl = this._getStylesheetNode(key);
-		styleEl.innerHTML = serializedCss;
+	/**
+	 * Append serialized stylesheet
+	 * @param {string} css
+	 * @param {string} key
+	 * @example appendSerializedCSS("h1 { font-size: 32px; color: magenta; }", "common")
+	 * @description If the key is the same, the CSS will be replaced instead of inserted
+	 */
+	appendSerializedCSS(css, key) {
 
-		return true;
+		if (!this.document) return;
+
+		const node = this.getStylesheetNode(key);
+		node.innerHTML = css;
+		this.styles.set(node.id, node);
 	}
 
 	/**
 	 * Append stylesheet rules to a generate stylesheet
-	 * Array: https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
-	 * Object: https://github.com/desirable-objects/json-to-css
-	 * @param {array | object} rules
-	 * @param {string} key If the key is the same, the CSS will be replaced instead of inserted
+	 * @link https://github.com/desirable-objects/json-to-css
+	 * @param {object} rules
+	 * @param {string} key
+	 * @example appendStylesheetRules({ h1: { "font-size": "1.5em" }}, "common")
+	 * @description If the key is the same, the CSS will be replaced instead of inserted
 	 */
-	addStylesheetRules(rules, key) {
+	appendStylesheetRules(rules, key) {
 
-		if (!this.document || !rules || rules.length === 0) return;
+		if (!this.document) return;
 
-		// Grab style sheet
-		const styleSheet = this._getStylesheetNode(key).sheet;
+		const node = this.getStylesheetNode(key);
 
-		if (Object.prototype.toString.call(rules) === "[object Array]") {
-			for (let i = 0, len = rules.length; i < len; i++) {
-				let j = 1, rule = rules[i], propStr = "";
-				const selector = rules[i][0];
-				// If the second argument of a rule is an array of arrays, correct our variables.
-				if (Object.prototype.toString.call(rule[1][0]) === "[object Array]") {
-					rule = rule[1];
-					j = 0;
-				}
+		Object.keys(rules).forEach((selector) => {
+			const value = rules[selector];
+			const index = node.sheet.cssRules.length;
+			const items = Object.keys(value).map((k) => {
+				return `${k}:${value[k]}`;
+			}).join(";");
+			node.sheet.insertRule(`${selector}{${items}}`, index);
+		});
 
-				for (let pl = rule.length; j < pl; j++) {
-					const prop = rule[j];
-					propStr += prop[0] + ":" + prop[1] + (prop[2] ? " !important" : "") + ";\n";
-				}
-
-				// Insert CSS Rule
-				styleSheet.insertRule(selector + "{" + propStr + "}", styleSheet.cssRules.length);
-			}
-		} else {
-			const selectors = Object.keys(rules);
-			selectors.forEach((selector) => {
-				const definition = rules[selector];
-				if (Array.isArray(definition)) {
-					definition.forEach((item) => {
-						const _rules = Object.keys(item);
-						const result = _rules.map((rule) => {
-							return `${rule}:${item[rule]}`;
-						}).join(";");
-						styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
-					});
-				} else {
-					const _rules = Object.keys(definition);
-					const result = _rules.map((rule) => {
-						return `${rule}:${definition[rule]}`;
-					}).join(";");
-					styleSheet.insertRule(`${selector}{${result}}`, styleSheet.cssRules.length);
-				}
-			});
-		}
+		this.styles.set(node.id, node);
 	}
 
 	/**
-	 * Append a script tag to the document head
+	 * Append a script node to the document head
 	 * @param {string} src url
+	 * @param {string} key 
+	 * @example appendScript("/path/to/script.js", "common")
+	 * @example appendScript("https://examples.com/to/script.js", "common")
 	 * @returns {Promise} loaded
 	 */
-	addScript(src) {
+	appendScript(src, key) {
 
 		return new Promise((resolve, reject) => {
 
 			if (!this.document) {
-				resolve(false);
+				reject(new Error("Document cannot be null"));
 				return;
 			}
 
-			let ready = false;
-			const script = this.document.createElement("script");
-			script.type = "text/javascript";
-			script.async = true;
-			script.src = src;
-			script.onload = script.onreadystatechange = () => {
-				if (!ready && (!this.readyState || this.readyState == "complete")) {
-					ready = true;
-					setTimeout(function () {
-						resolve(true);
-					}, 1);
-				}
-			};
-
-			this.document.head.appendChild(script);
+			const id = `epubjs-injected-src-${key}`;
+			let node = this.styles.get(id);
+			if (typeof node === "undefined") {
+				node = this.document.createElement("script");
+				node.type = "text/javascript";
+				node.src = src;
+				node.onload = () => {
+					resolve(node);
+				};
+				node.onerror = () => {
+					reject(new Error(`Failed to load source: ${src}`));
+				};
+				this.document.head.appendChild(node);
+			}
+			this.scripts.set(id, node);
 		});
 	}
 
 	/**
-	 * Add a class to the contents container
+	 * Remove a script node from the document head
+	 * @param {string} key 
+	 * @returns {boolean}
+	 */
+	removeScript(key) {
+
+		if (!this.document) {
+			return false;
+		}
+		const id = `epubjs-injected-src-${key}`;
+		const node = this.scripts.get(id);
+		if (typeof node === "undefined") {
+			return false;
+		}
+		this.document.head.removeChild(node);
+		return this.scripts.remove(id);
+	}
+
+	/**
+	 * Clear all injected scripts
+	 */
+	clearScripts() {
+
+		this.scripts.forEach((node) => {
+			this.document.head.removeChild(node);
+		})
+		this.scripts.clear();
+	}
+
+	/**
+	 * Append a class to the contents container
 	 * @param {string} className
 	 */
-	addClass(className) {
+	appendClass(className) {
 
 		if (!this.document) return;
 
@@ -676,7 +703,7 @@ class Contents {
 
 	/**
 	 * Remove a class from the contents container
-	 * @param {string} removeClass
+	 * @param {string} className
 	 */
 	removeClass(className) {
 
@@ -714,7 +741,7 @@ class Contents {
 
 	/**
 	 * Get an EpubCFI from a Dom node
-	 * @param {node} node
+	 * @param {Node} node
 	 * @param {string} [ignoreClass]
 	 * @returns {EpubCFI} cfi
 	 */
@@ -723,7 +750,12 @@ class Contents {
 		return new EpubCFI(node, this.section.cfiBase, ignoreClass).toString();
 	}
 
-	// TODO: find where this is used - remove?
+	/**
+	 * map
+	 * @param {Layout} layout 
+	 * @todo TODO: find where this is used - remove?
+	 * @returns {Array}
+	 */
 	map(layout) {
 
 		const map = new Mapping(layout);
@@ -999,7 +1031,7 @@ class Contents {
 		if (!this.document) return;
 		//-- DOM EVENTS
 		DOM_EVENTS.forEach(eventName => {
-			this.document.addEventListener(eventName, 
+			this.document.addEventListener(eventName,
 				this.triggerEvent.bind(this), { passive: true });
 		}, this);
 		//-- SELECTION
@@ -1026,11 +1058,11 @@ class Contents {
 		if (!this.document) return;
 		//-- DOM EVENTS
 		DOM_EVENTS.forEach(eventName => {
-			this.document.removeEventListener(eventName, 
+			this.document.removeEventListener(eventName,
 				this.triggerEvent.bind(this), { passive: true });
 		}, this);
 		//-- SELECTION
-		this.document.removeEventListener("selectionchange", 
+		this.document.removeEventListener("selectionchange",
 			this.selectionHandler.bind(this), { passive: true }
 		);
 		//-- RESIZE
@@ -1167,7 +1199,7 @@ class Contents {
 				//console.log(m)
 			});
 		}
-		
+
 		this.mutationObserver = new MutationObserver(mutation);
 		this.mutationObserver.observe(this.document, {
 			attributes: true,
@@ -1183,6 +1215,10 @@ class Contents {
 	destroy() {
 
 		this.removeListeners();
+		this.clearStylesheets();
+		this.styles = undefined;
+		this.clearScripts();
+		this.scripts = undefined;
 	}
 }
 

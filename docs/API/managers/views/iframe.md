@@ -35,6 +35,7 @@ IframeView class
         * [.settings](#IframeView.settings) : <code>object</code>
         * [.id](#IframeView.id) : <code>string</code>
         * [.section](#IframeView.section) : <code>Section</code>
+        * [.contents](#IframeView.contents) : <code>Contents</code>
         * [.epubcfi](#IframeView.epubcfi) : <code>EpubCFI</code>
         * [.layout](#IframeView.layout) : <code>Layout</code>
         * [.marks](#IframeView.marks) : <code>Marks</code>
@@ -312,6 +313,11 @@ destroy
 <a name="IframeView.section"></a>
 
 ## IframeView.section : <code>Section</code>
+**Kind**: static property of [<code>IframeView</code>](#IframeView)  
+**Read only**: true  
+<a name="IframeView.contents"></a>
+
+## IframeView.contents : <code>Contents</code>
 **Kind**: static property of [<code>IframeView</code>](#IframeView)  
 **Read only**: true  
 <a name="IframeView.epubcfi"></a>

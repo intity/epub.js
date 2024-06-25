@@ -35,6 +35,13 @@ class Locations extends Array {
 			index: -1,
 			percentage: 0
 		};
+		this.processing = new Defer();
+		/**
+		 * @member {Promise} generated
+		 * @memberof Locations
+		 * @readonly
+		 */
+		this.generated = this.processing.promise;
 		this.processingTimeout = undefined;
 		this.q = new Queue(this);
 	}
@@ -68,6 +75,7 @@ class Locations extends Array {
 				this.current.index = 0;
 				this.current.percentage = 0;
 			}
+			this.processing.resolve(this);
 			return this;
 		});
 	}
@@ -269,7 +277,7 @@ class Locations extends Array {
 			return cfi.toString();
 		}
 
-		const loc = Math.ceil((this.length - 1) * percentage);
+		const loc = Math.floor((this.length - 1) * percentage);
 		return this.cfiFromLocation(loc);
 	}
 
@@ -372,6 +380,17 @@ class Locations extends Array {
 	}
 
 	/**
+	 * clear locations
+	 */
+	clear() {
+
+		this.current.cfi = null;
+		this.current.index = -1;
+		this.current.percentage = 0;
+		this.splice(0);
+	}
+
+	/**
 	 * destroy
 	 */
 	destroy() {
@@ -380,12 +399,11 @@ class Locations extends Array {
 		this.pause = undefined;
 		this.break = undefined;
 		this.request = undefined;
-		this.current.cfi = null;
-		this.current.index = -1;
-		this.current.percentage = 0;
 		this.q.stop();
 		this.q = undefined;
-		this.splice(0);
+		this.clear();
+		this.current = undefined;
+		this.generated = undefined;
 		clearTimeout(this.processingTimeout);
 	}
 }
