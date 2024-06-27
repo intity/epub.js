@@ -1,11 +1,17 @@
 {
-  "name": "epubjs",
+  "name": "epub-js",
   "version": "0.3.93",
   "description": "Parse and Render Epubs",
   "main": "lib/index.js",
   "module": "src/index.js",
   "types": "types/index.d.ts",
-  "repository": "https://github.com/futurepress/epub.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intity/epub-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/intity/epub-js/issues"
+  },
   "directories": {
     "test": "test"
   },
