@@ -9,10 +9,11 @@ describe("Section", () => {
             height: 400
         })
         await book.opened
+        section1 = book.section("chapter_001.xhtml")
+        section2 = book.section("chapter_010.xhtml")
     })
     describe("#load()", () => {
-        it("should load section", async () => {
-            section1 = book.section("chapter_001.xhtml")
+        it("should load section #001", async () => {
             assert.equal(section1.idref, "chapter_001")
             assert.equal(section1.linear, true)
             assert.equal(section1.index, 3)
@@ -23,18 +24,29 @@ describe("Section", () => {
             assert.equal(section1.document instanceof Document, true)
             assert.equal(section1.contents instanceof Element, true)
         })
+        it("should load section #010", async () => {
+            assert.equal(section2.idref, "chapter_010")
+            assert.equal(section2.linear, true)
+            assert.equal(section2.index, 12)
+            assert.equal(section2.href, "chapter_010.xhtml")
+            assert.equal(section2.url, "/assets/alice/OPS/chapter_010.xhtml")
+            assert.equal(section2.cfiBase, "/6/26")
+            await section2.load(book.request)
+            assert.equal(section2.document instanceof Document, true)
+            assert.equal(section2.contents instanceof Element, true)
+        })
     })
     describe("#render()", () => {
-        it("should render section", async () => {
+        it("should render section #001", async () => {
             await section1.render(book.request)
+            assert.equal(typeof section1.output === "string", true)
+        })
+        it("should render section #010", async () => {
+            await section2.render(book.request)
             assert.equal(typeof section1.output === "string", true)
         })
     })
     describe("#find()", () => {
-        before(async () => {
-            section2 = book.section("chapter_010.xhtml")
-            await section2.load(book.request)
-        })
         it("should finds a single result in a section", () => {
             const pattern = "they were filled with cupboards and book-shelves"
             const results = section1.find(pattern)
@@ -53,10 +65,6 @@ describe("Section", () => {
         })
     })
     describe("#search()", () => {
-        before(async () => {
-            section2 = book.section("chapter_010.xhtml")
-            await section2.load(book.request)
-        })
         it("should finds a single result in a section", () => {
             const pattern = "they were filled with cupboards and book-shelves"
             const results = section1.search(pattern)
