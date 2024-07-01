@@ -294,7 +294,7 @@ class Themes extends Map {
 
 	/**
 	 * Adjust the font size of a rendition
-	 * @param {number} size
+	 * @param {string} size
 	 */
 	fontSize(size) {
 
