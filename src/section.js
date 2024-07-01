@@ -10,80 +10,95 @@ import { replaceBase } from "./utils/replacements";
 class Section {
 	/**
 	 * Constructor
-	 * @param {object} item 
-	 * @param {object} hooks 
+	 * @param {Object} item Spine Item
+	 * @param {Object} hooks 
 	 */
 	constructor(item, hooks) {
 		/**
-		 * @member {string} idref
+		 * @member {String} idref
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.idref = item.idref;
 		/**
-		 * @member {boolean} linear
+		 * @member {Boolean} linear
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.linear = item.linear === "yes";
 		/**
-		 * @member {number} index
+		 * @member {Number} index
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.index = item.index;
 		/**
-		 * @member {string} href
+		 * @member {String} href
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.href = item.href;
 		/**
-		 * @member {string} url
+		 * @member {String} url
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.url = item.url;
 		/**
-		 * @member {string} canonical
+		 * @member {String} canonical
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.canonical = item.canonical;
 		/**
-		 * @member {string} cfiBase
+		 * @member {String} cfiBase
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.cfiBase = item.cfiBase;
 		/**
-		 * @member {function} next
+		 * @member {Function} next
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.next = item.next;
 		/**
-		 * @member {function} prev
+		 * @member {Function} prev
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.prev = item.prev;
 		/**
-		 * @member {object[]} properties
+		 * @member {Array<String>} properties
 		 * @memberof Section
 		 * @readonly
 		 */
 		this.properties = item.properties;
 		this.hooks = hooks;
+		/**
+		 * @member {Document} document
+		 * @memberof Section
+		 * @readonly
+		 */
 		this.document = undefined;
+		/**
+		 * @member {Element} contents
+		 * @memberof Section
+		 * @readonly
+		 */
 		this.contents = undefined;
+		/**
+		 * @member {String} output
+		 * @memberof Section
+		 * @readonly
+		 */
 		this.output = undefined;
 	}
 
 	/**
 	 * Load the section from its url
-	 * @param {function} request a request method to use for loading
-	 * @return {Promise} a promise with the xml document
+	 * @param {Function} request a request method to use for loading
+	 * @return {Promise<Element>} a promise with the xml document
 	 */
 	load(request) {
 
@@ -118,8 +133,8 @@ class Section {
 
 	/**
 	 * Render the contents of a section
-	 * @param {function} request a request method to use for loading
-	 * @return {Promise} output a serialized XML Document
+	 * @param {Function} request a request method to use for loading
+	 * @return {Promise<String>} output a serialized XML Document
 	 */
 	render(request) {
 
@@ -143,8 +158,8 @@ class Section {
 
 	/**
 	 * Find a string in a section
-	 * @param {string} query The query string to find
-	 * @return {object[]} A list of matches, with form {cfi, excerpt}
+	 * @param {String} query The query string to find
+	 * @return {Array<Object>} A list of matches, with form { cfi, excerpt }
 	 */
 	find(query) {
 
@@ -199,9 +214,9 @@ class Section {
 	 * Search a string in multiple sequential Element of the section.
 	 * If the document.createTreeWalker api is missed(eg: IE8), use 
 	 * `find` as a fallback.
-	 * @param {string} query The query string to search
-	 * @param {number} [maxSeqEle=5] The maximum number of Element that are combined for search, default value is 5.
-	 * @return {object[]} A list of matches, with form {cfi, excerpt}
+	 * @param {String} query The query string to search
+	 * @param {Number} [maxSeqEle=5] The maximum number of Element that are combined for search, default value is 5.
+	 * @return {Array<Object>} A list of matches, with form { cfi, excerpt }
 	 */
 	search(query, maxSeqEle = 5) {
 
@@ -273,8 +288,8 @@ class Section {
 	/**
 	* Reconciles the current chapters layout properties with
 	* the global layout properties.
-	* @param {object} globalLayout The global layout settings object, chapter properties string
-	* @return {object} layoutProperties Object with layout properties
+	* @param {Object} globalLayout The global layout settings object, chapter properties string
+	* @return {Object} layoutProperties Object with layout properties
 	*/
 	reconcileLayoutSettings(globalLayout) {
 		//-- Get the global defaults
@@ -301,8 +316,8 @@ class Section {
 
 	/**
 	 * Get a CFI from a Range in the Section
-	 * @param {range} range
-	 * @return {string} cfi an EpubCFI string
+	 * @param {Range} range
+	 * @return {String} cfi an EpubCFI string
 	 */
 	cfiFromRange(range) {
 
@@ -311,8 +326,8 @@ class Section {
 
 	/**
 	 * Get a CFI from an Element in the Section
-	 * @param {element} el
-	 * @return {string} cfi an EpubCFI string
+	 * @param {Element} el
+	 * @return {String} cfi an EpubCFI string
 	 */
 	cfiFromElement(el) {
 
