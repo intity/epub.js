@@ -12,7 +12,7 @@ class Hook {
 	constructor(context) {
 
 		this.context = context || this;
-		this.hooks = [];
+		this.tasks = [];
 	}
 
 	/**
@@ -23,7 +23,7 @@ class Hook {
 
 		for (let i = 0; i < arguments.length; ++i) {
 			if (typeof arguments[i] === "function") {
-				this.hooks.push(arguments[i]);
+				this.tasks.push(arguments[i]);
 			} else if (arguments[i] instanceof Array) {
 				// unpack array
 				this.register(arguments[i]); // recursive call
@@ -39,9 +39,9 @@ class Hook {
 	 */
 	deregister(func) {
 
-		for (let i = 0; i < this.hooks.length; i++) {
-			if (this.hooks[i] === func) {
-				this.hooks.splice(i, 1);
+		for (let i = 0; i < this.tasks.length; i++) {
+			if (this.tasks[i] === func) {
+				this.tasks.splice(i, 1);
 				break;
 			}
 		}
@@ -59,7 +59,7 @@ class Hook {
 		const promises = [];
 		let executing;
 
-		this.hooks.forEach((task) => {
+		this.tasks.forEach((task) => {
 			try {
 				executing = task.apply(context, args);
 			} catch (err) {
@@ -81,7 +81,7 @@ class Hook {
 	 */
 	list() {
 
-		return this.hooks;
+		return this.tasks;
 	}
 
 	/**
@@ -89,7 +89,7 @@ class Hook {
 	 */
 	clear() {
 
-		this.hooks = [];
+		this.tasks = [];
 	}
 }
 
