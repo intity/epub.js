@@ -13,9 +13,9 @@ const _URL = window.URL || window.webkitURL || window.mozURL;
 class Storage {
 	/**
 	 * Constructor
-	 * @param {string} name This should be the name of the application for modals
-	 * @param {method} request
-	 * @param {method} resolve
+	 * @param {String} name This should be the name of the application for modals
+	 * @param {Function} request
+	 * @param {Function} resolve
 	 */
 	constructor(name, request, resolve) {
 
@@ -29,13 +29,13 @@ class Storage {
 		 */
 		this.instance = undefined;
 		/**
-		 * @member {object} urlCache
+		 * @member {Object} urlCache
 		 * @memberof Storage
 		 * @readonly
 		 */
 		this.urlCache = {};
 		/**
-		 * @member {boolean} online Current status
+		 * @member {Boolean} online Current status
 		 * @memberof Storage
 		 * @readonly
 		 */
@@ -99,8 +99,8 @@ class Storage {
 	/**
 	 * Add all of a book manifest to the storage
 	 * @param {Manifest} manifest  book manifest
-	 * @param {boolean} [force=false] force resaving manifest
-	 * @return {Promise<object>} store objects
+	 * @param {Boolean} [force=false] force resaving manifest
+	 * @return {Promise<Object>} store objects
 	 */
 	add(manifest, force = false) {
 
@@ -126,9 +126,9 @@ class Storage {
 
 	/**
 	 * Put binary data from a url to storage
-	 * @param {string} url  a url to request from storage
-	 * @param {boolean} [withCredentials]
-	 * @param {object} [headers]
+	 * @param {String} url  a url to request from storage
+	 * @param {Boolean} [withCredentials]
+	 * @param {Array<String>} [headers]
 	 * @return {Promise<Blob>}
 	 */
 	async put(url, withCredentials, headers) {
@@ -137,7 +137,12 @@ class Storage {
 
 		return await this.instance.getItem(encodedUrl).then((result) => {
 			if (!result) {
-				return this.request(url, "binary", withCredentials, headers).then((data) => {
+				return this.request(
+					url,
+					"binary",
+					withCredentials,
+					headers
+				).then((data) => {
 					return this.instance.setItem(encodedUrl, data);
 				});
 			}
@@ -147,17 +152,22 @@ class Storage {
 
 	/**
 	 * Dispatch request by url
-	 * @param {string} url a url to request from storage
-	 * @param {string} [type] specify the type of the returned result
-	 * @param {boolean} [withCredentials]
-	 * @param {Array} [headers]
-	 * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
+	 * @param {String} url a url to request from storage
+	 * @param {String} [type] specify the type of the returned result
+	 * @param {Boolean} [withCredentials]
+	 * @param {Array<String>} [headers]
+	 * @return {Promise<Blob|String|JSON|Document|XMLDocument>}
 	 */
 	async dispatch(url, type, withCredentials, headers) {
 
 		if (this.online) {
 			// From network
-			return this.request(url, type, withCredentials, headers).then(async (data) => {
+			return this.request(
+				url,
+				type,
+				withCredentials,
+				headers
+			).then(async (data) => {
 				// save to store if not present
 				await this.put(url);
 				return data;
@@ -170,9 +180,9 @@ class Storage {
 
 	/**
 	 * Request a url from storage
-	 * @param {string} url a url to request from storage
-	 * @param {string} [type] specify the type of the returned result
-	 * @return {Promise<Blob|string|JSON|Document|XMLDocument>}
+	 * @param {String} url a url to request from storage
+	 * @param {String} [type] specify the type of the returned result
+	 * @return {Promise<Blob|String|JSON|Document|XMLDocument>}
 	 */
 	async retrieve(url, type) {
 
@@ -208,7 +218,7 @@ class Storage {
 	/**
 	 * Handle the response from request
 	 * @param {any} response
-	 * @param {string} [type]
+	 * @param {String} [type]
 	 * @return {any} the parsed result
 	 * @private
 	 */
@@ -231,8 +241,8 @@ class Storage {
 
 	/**
 	 * Get a Blob from Storage by Url
-	 * @param {string} url
-	 * @param {string} [mimeType]
+	 * @param {String} url
+	 * @param {String} [mimeType]
 	 * @return {Blob}
 	 */
 	getBlob(url, mimeType) {
@@ -248,9 +258,9 @@ class Storage {
 
 	/**
 	 * Get Text from Storage by Url
-	 * @param {string} url
-	 * @param {string} [mimeType]
-	 * @return {string}
+	 * @param {String} url
+	 * @param {String} [mimeType]
+	 * @return {String}
 	 */
 	getText(url, mimeType) {
 
@@ -273,9 +283,9 @@ class Storage {
 
 	/**
 	 * Get a base64 encoded result from Storage by Url
-	 * @param {string} url
-	 * @param {string} [mimeType]
-	 * @return {string} base64 encoded
+	 * @param {String} url
+	 * @param {String} [mimeType]
+	 * @return {String} base64 encoded
 	 */
 	getBase64(url, mimeType) {
 
@@ -298,8 +308,8 @@ class Storage {
 
 	/**
 	 * Create a Url from a stored item
-	 * @param {string} url
-	 * @param {object} [options.base64] use base64 encoding or blob url
+	 * @param {String} url
+	 * @param {Object} [options.base64] use base64 encoding or blob url
 	 * @return {Promise} url promise with Url string
 	 */
 	createUrl(url, options) {
@@ -347,7 +357,7 @@ class Storage {
 
 	/**
 	 * Revoke Temp Url for a archive item
-	 * @param {string} url url of the item in the store
+	 * @param {String} url url of the item in the store
 	 */
 	revokeUrl(url) {
 
