@@ -123,15 +123,6 @@ class Section {
 	}
 
 	/**
-	 * Adds a base tag for resolving urls in the section (unused)
-	 * @private
-	 */
-	base() {
-
-		return replaceBase(this.document, this);
-	}
-
-	/**
 	 * Render the contents of a section
 	 * @param {Function} request a request method to use for loading
 	 * @return {Promise<String>} output a serialized XML Document
