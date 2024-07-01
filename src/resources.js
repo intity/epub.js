@@ -15,7 +15,7 @@ class Resources {
 	 * @param {Archive} [options.archive]
 	 * @param {Function} options.request
 	 * @param {Function} options.resolve
-	 * @param {String} options.replacements
+	 * @param {String} [options.replacements]
 	 */
 	constructor(manifest, { archive, request, resolve, replacements }) {
 
