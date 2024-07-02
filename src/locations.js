@@ -61,7 +61,7 @@ class Locations extends Array {
 		}
 
 		this.q.pause();
-		this.sections.each(section => {
+		this.sections.forEach((section) => {
 
 			if (section.linear) {
 				this.q.enqueue(this.process.bind(this), section);
