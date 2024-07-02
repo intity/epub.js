@@ -45,9 +45,10 @@ class Sections extends Array {
      * @param {String|Number} [target]
      * @return {Section|null} section
      * @example sections.get();
-     * @example sections.get(1);
-     * @example sections.get("chap1.html");
-     * @example sections.get("#id1234");
+     * @example sections.get(3);
+     * @example sections.get("#chapter_001");
+     * @example sections.get("chapter_001.xhtml");
+     * @example sections.get("epubcfi(/6/8!/4/2/16/1:0)")
      */
     get(target) {
 
@@ -64,7 +65,10 @@ class Sections extends Array {
         } else if (typeof target === "number" && isNaN(target) === false) {
             index = target;
         } else if (typeof target === "string") {
-            if (target.indexOf("#") === 0) {
+            if (EpubCFI.prototype.isCfiString(target)) {
+                const cfi = new EpubCFI(target);
+                index = cfi.spinePos;
+            } else if (target.indexOf("#") === 0) {
                 index = this.spineById[target.substring(1)];
             } else {
                 target = target.split("#")[0]; // Remove fragments
